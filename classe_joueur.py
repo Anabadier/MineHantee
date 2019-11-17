@@ -19,11 +19,11 @@ class joueur(object):
     
     """ Initilialisation de la classe """
       
-    def __init__(self,acide = "def"):
-        if acide == "def" :
+    def __init__(self,joueur = "def"):
+        if joueur == "def" :
             print("Veuillez indentifier le joueur")
         else :
-            self.identifiant = acide 
+            self.identifiant = joueur 
             self.nb_points = 0
             self.ordre_de_mission = []
             self.ref_plateau = "null"
