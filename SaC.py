@@ -45,22 +45,23 @@ class Save_and_Charge(object):
         if (file_path != ""):
             content = self.read_file(_file_path=file_path)
             values = [val.split(",")[1] for val in content]
+            
             self.setScalersValues(values)
     
     def save_config_file(self):
         values = self.getObjectValues(self.scalers)
-
         file = tkfd.asksaveasfile(mode='w',
                                   filetypes = [('CSV Files', '*.csv')],
                                   defaultextension=".csv")
         if file:
             try:
-                file.write("dim_plateau" + str(values[0])+ "\n" +
-                           "nb_joueur" + str(values[1])+ "\n" +
-                           "nb_fantome_OdM" + str(values[2])+ "\n" +
-                           "pts_pepite" + str(values[3])+ "\n" +
-                           "pts_fantome" + str(values[4])+ "\n" +
-                           "pts_fantome_OdM" + str(values[5]))
+                file.write("dim_plateau," + str(values[0].strip())+ "\n" +
+                           "nb_joueur," + str(values[1])+ "\n" +
+                           "nb_fantome," + str(values[2])+ "\n" +
+                           "nb_fantome_OdM," + str(values[3])+ "\n" +
+                           "pts_pepite," + str(values[4])+ "\n" +
+                           "pts_fantome," + str(values[5])+ "\n" +
+                           "pts_fantome_OdM," + str(values[6]))
                 file.close()
                 print("Le fichier a bien été sauvegardé")
                 

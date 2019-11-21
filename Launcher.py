@@ -107,14 +107,15 @@ class LauncherMineHantee(object):
                                     from_ = 1, to = self.nb_fantome_max, resolution = 1,
                                     tickinterval = self.nb_fantome_max-1,
                                     width = 20, length = 500,
+                                    command = self.update_nb_fantome_OM_max,
                                     activebackground = "#105105105",
                                     relief = "sunken")
         self.Scale_NbFantome.grid(column=0, row=_start_row+1, columnspan = 2)
         
         self.Scale_NbFantomeOdM = tk.Scale(master = self.fen,
                                     orient = "horizontal",
-                                    label = "Nombre de Fantômes sur l'ordre de mission",
-                                    from_ = 1, to = self.nb_fantome_max, resolution = 1,
+                                    label = "Nombre de Fantômes sur l'OdM",
+                                    from_ = 1, to = 21, resolution = 1,
                                     tickinterval = self.nb_fantome_max-1,
                                     width = 20, length = 500,
                                     activebackground = "#105105105",
@@ -200,8 +201,10 @@ class LauncherMineHantee(object):
         self.nb_fantome_max = N**2-4*(N-1)-((N-4)//2+1)**2
         self.Scale_NbFantome.config(to = self.nb_fantome_max,
                                     tickinterval = self.nb_fantome_max-1)
-        self.Scale_NbFantomeOdM.config(to = self.nb_fantome_max,
-                                    tickinterval = self.nb_fantome_max-1)
+    
+    def update_nb_fantome_OM_max(self, N):
+        self.Scale_NbFantomeOdM.config(to = int(N),
+                                       tickinterval = int(N)-1)
     
     def jouer_ligne(self):
         self.fen.title("Jouer en ligne - Mine Hantée")
