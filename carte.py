@@ -8,9 +8,9 @@ Created on Wed Nov 13 05:18:23 2019
 
 
 #[Nord,Sud,Est,Ouest] 
-connectivité={'coin':[[0,1,1,0],[1,0,1,0],[1,0,0,1],[0,1,0,1]],
-              'couloir':[[1,1,0,0],[0,0,1,1]],
-              'carrefour':[[1,1,1,0],[1,0,1,1],[1,1,0,1],[0,1,1,1]]}
+connectivité={'coin':['0110','1010','1001','0101'],
+              'couloir':['1100','0011'],
+              'carrefour':['1110','1011','1101','0111']}
 
 class carte():
     def __init__(self,type_carte,dict_elements,\

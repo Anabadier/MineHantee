@@ -7,6 +7,7 @@ Created on Mon Nov 18 18:06:56 2019
 import pygame
 from pygame.locals import *
 import random
+import os
 
 # =============================================================================
 # Initialisation
@@ -34,7 +35,7 @@ pygame.init() #initialisation des modules
 
 def genere_carte(carte):
     """génerer les images de cartes"""
-    image=pygame.image.load(dic_case_img[carte]).convert_alpha()
+    image=pygame.image.load(os.path.abspath(dic_case_img[carte])).convert_alpha()
     carte=pygame.transform.scale(image, (49,49)) #forcer la taille de la case
     return(carte)
 
