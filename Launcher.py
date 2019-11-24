@@ -6,9 +6,16 @@ Created on Wed Nov 20 12:01:43 2019
 """
 
 import os
+import subprocess
+import threading
+
 import tkinter as tk
 from tkinter import ttk
+
 import SaC
+import clientMH as cMH
+import serveurMH as sMH
+
 
 class LauncherMineHantee(object):
     def __init__(self):
@@ -28,12 +35,19 @@ class LauncherMineHantee(object):
                                 2:self.configurer_partie,
                                 3:self.jouer_ligne,
                                 4:self.rejoindre_serveur,
-                                5:self.creer_serveur}
+                                5:self.creer_configurer_serveur}
+        
+        self.partie_en_ligne = False
+        self.server_subprocess = None
         
         self.launch()
         self.fen.mainloop()
     
     def retour(self):
+        
+        if (self.partie_en_ligne):
+            self.partie_en_ligne = False
+        
         self.navigation_flow = self.navigation_flow[:-1]
         self.navigation_tool[self.navigation_flow[-1]]()
         
@@ -63,7 +77,8 @@ class LauncherMineHantee(object):
             widget.destroy()
         
         Partie_rapide = ttk.Button(self.fen,
-                                 text = "Partie rapide")
+                                 text = "Partie rapide",
+                                 command = self.choix_pseudo)
         Partie_rapide.grid(column = 0, row = 0, padx = 15)
         
         Configurer_partie = ttk.Button(self.fen,
@@ -91,7 +106,7 @@ class LauncherMineHantee(object):
                                     bg = "white")
         self.Scale_DimPlateau.grid(column=1, row=_start_row)
         
-        Scale_NbJoueur = tk.Scale(master = self.fen,
+        self.Scale_NbJoueur = tk.Scale(master = self.fen,
                                     orient = "horizontal",
                                     label = "Nombre de Joueurs",
                                     from_ = 2, to = 4, resolution = 1,
@@ -99,7 +114,7 @@ class LauncherMineHantee(object):
                                     width = 20, length = 500,
                                     activebackground = "#105105105",
                                     relief = "sunken")
-        Scale_NbJoueur.grid(column=2, row=_start_row, columnspan = 2)
+        self.Scale_NbJoueur.grid(column=2, row=_start_row, columnspan = 2)
         
         self.Scale_NbFantome = tk.Scale(master = self.fen,
                                     orient = "horizontal",
@@ -122,7 +137,7 @@ class LauncherMineHantee(object):
                                     relief = "sunken")
         self.Scale_NbFantomeOdM.grid(column=2, row=_start_row+1, columnspan = 2)
         
-        Scale_PtsPepite = tk.Scale(master = self.fen,
+        self.Scale_PtsPepite = tk.Scale(master = self.fen,
                                     orient = "horizontal",
                                     label = "Points pour 1 pépite d'or",
                                     from_ = 1, to = 100, resolution = 1,
@@ -130,9 +145,9 @@ class LauncherMineHantee(object):
                                     width = 20, length = 500,
                                     activebackground = "#105105105",
                                     relief = "sunken")
-        Scale_PtsPepite.grid(column=0, row=_start_row+2, columnspan = 4)
+        self.Scale_PtsPepite.grid(column=0, row=_start_row+2, columnspan = 4)
         
-        Scale_PtsFantome = tk.Scale(master = self.fen,
+        self.Scale_PtsFantome = tk.Scale(master = self.fen,
                                     orient = "horizontal",
                                     label = "Points pour 1 fantôme",
                                     from_ = 1, to = 100, resolution = 1,
@@ -140,9 +155,9 @@ class LauncherMineHantee(object):
                                     width = 20, length = 500,
                                     activebackground = "#105105105",
                                     relief = "sunken")
-        Scale_PtsFantome.grid(column=0, row=_start_row+3, columnspan = 4)
+        self.Scale_PtsFantome.grid(column=0, row=_start_row+3, columnspan = 4)
         
-        Scale_PtsFantomeOdM = tk.Scale(master = self.fen,
+        self.Scale_PtsFantomeOdM = tk.Scale(master = self.fen,
                                     orient = "horizontal",
                                     label = "Points pour 1 fantôme de l'OM",
                                     from_ = 1, to = 100, resolution = 1,
@@ -150,12 +165,12 @@ class LauncherMineHantee(object):
                                     width = 20, length = 500,
                                     activebackground = "#105105105",
                                     relief = "sunken")
-        Scale_PtsFantomeOdM.grid(column=0, row=_start_row+4, columnspan = 4)
+        self.Scale_PtsFantomeOdM.grid(column=0, row=_start_row+4, columnspan = 4)
         
         
-        scalers = [self.Scale_DimPlateau, Scale_NbJoueur,
+        scalers = [self.Scale_DimPlateau, self.Scale_NbJoueur,
                    self.Scale_NbFantome, self.Scale_NbFantomeOdM,
-                   Scale_PtsPepite, Scale_PtsFantome, Scale_PtsFantomeOdM]
+                   self.Scale_PtsPepite, self.Scale_PtsFantome, self.Scale_PtsFantomeOdM]
         SaverCharger = SaC.Save_and_Charge(scalers, self)
         values = SaverCharger.read_file(_file_path = os.getcwd()+"/config.csv")
         values = [val.split(",")[1] for val in values]
@@ -188,7 +203,8 @@ class LauncherMineHantee(object):
         self.message_space.grid(column=0, row=9, columnspan = 4, padx = 15)
         
         Creer_partie = ttk.Button(self.fen,
-                                 text = "Créer la partie")
+                                 text = "Créer la partie",
+                                 command = self.choix_pseudo)
         Creer_partie.grid(column = 0, row = 10, padx = 15)
         
         Retour = ttk.Button(self.fen,
@@ -220,7 +236,7 @@ class LauncherMineHantee(object):
         
         creer_serveur = ttk.Button(self.fen,
                                  text = "Créer un serveur",
-                                 command = self.creer_serveur)
+                                 command = self.creer_configurer_serveur)
         creer_serveur.grid(column = 1, row = 0, padx = 15)
         
         Retour = ttk.Button(self.fen,
@@ -230,26 +246,27 @@ class LauncherMineHantee(object):
     
     def rejoindre_serveur(self):
         self.fen.title("Jouer en ligne - Mine Hantée")
-        if self.navigation_flow[-1] != 3:
-            self.navigation_flow.append(3)
+        if self.navigation_flow[-1] != 4:
+            self.navigation_flow.append(4)
         for widget in self.fen.winfo_children():
             widget.destroy()
         
         tk.Label(self.fen, text = "Port:").grid(column=0, row=0, padx = 15)
-        port = tk.Entry(self.fen)
-        port.grid(column = 1, row = 0, padx = 15)
-        port.insert(0,"50026")
+        self.PORT = tk.Entry(self.fen)
+        self.PORT.grid(column = 1, row = 0, padx = 15)
+        self.PORT.insert(0,"50026")
         
         tk.Label(self.fen, text = "Addresse:").grid(column=0, row=1, padx = 15)
-        addresse = tk.Entry(self.fen)
-        addresse.grid(column = 1, row = 1, padx = 15)
-        addresse.insert(0,"127.0.0.1")
+        self.HOST = tk.Entry(self.fen)
+        self.HOST.grid(column = 1, row = 1, padx = 15)
+        self.HOST.insert(0,"127.0.0.1")
         
         self.message_space = tk.Label(self.fen)
         self.message_space.grid(column=0, row=2, columnspan = 2, padx = 15)
         
         connexion_serveur = ttk.Button(self.fen,
-                                 text = "Connexion au serveur")
+                                 text = "Connexion au serveur", 
+                                 command = self.serveur_choix_pseudo)
         connexion_serveur.grid(column = 0, row = 4, padx = 15)
         
         Retour = ttk.Button(self.fen,
@@ -257,10 +274,10 @@ class LauncherMineHantee(object):
                             command = self.retour)
         Retour.grid(column = 1, row = 4, padx = 15)
     
-    def creer_serveur(self):
+    def creer_configurer_serveur(self):
         self.fen.title("Configurer une partie - Mine Hantée")
-        if self.navigation_flow[-1] != 2:
-            self.navigation_flow.append(2)
+        if self.navigation_flow[-1] != 5:
+            self.navigation_flow.append(5)
         for widget in self.fen.winfo_children():
             widget.destroy()
             
@@ -268,28 +285,104 @@ class LauncherMineHantee(object):
         self.nb_fantome_max = 21
         
         tk.Label(self.fen, text = "Port:").grid(column=0, row=0, columnspan=2, padx = 15)
-        port = tk.Entry(self.fen)
-        port.grid(column = 2, row = 0, columnspan=2, padx = 15)
-        port.insert(0,"50026")
+        self.PORT = tk.Entry(self.fen)
+        self.PORT.grid(column = 2, row = 0, columnspan=2, padx = 15)
+        self.PORT.insert(0,"50026")
         
         tk.Label(self.fen, text = "Addresse:").grid(column=0, row=1, columnspan=2, padx = 15)
-        addresse = tk.Entry(self.fen)
-        addresse.grid(column = 2, row = 1, columnspan=2, padx = 15)
-        addresse.insert(0,"127.0.0.1")
+        self.HOST = tk.Entry(self.fen)
+        self.HOST.grid(column = 2, row = 1, columnspan=2, padx = 15)
+        self.HOST.insert(0,"127.0.0.1")
         
         self.setup_scalers(_start_row=2)
         
         self.message_space = tk.Label(self.fen)
         self.message_space.grid(column=0, row=9, columnspan = 4, padx = 15)
         
-        Creer_partie = ttk.Button(self.fen,
-                                 text = "Créer la partie")
-        Creer_partie.grid(column = 0, row = 12, padx = 15)
+        Creer_serveur = ttk.Button(self.fen,
+                                 text = "Créer la partie",
+                                 command = self.creer_serveur)
+        Creer_serveur.grid(column = 0, row = 12, padx = 15)
         
         Retour = ttk.Button(self.fen,
                                  text = "Retour",
                                  command = self.retour)
         Retour.grid(column = 3, row = 12, padx = 15)
+    
+    def subprocess_creation_serveur(self):
+        subprocess.Popen(["cmd.exe", "/c", "start",
+                          "python", "serveurMH.py",
+                          self.PORT, self.HOST],shell = True)
+        
+    def creer_serveur(self):
+        self.PORT = self.PORT.get()
+        self.HOST = self.HOST.get()
+        self.thread_serveur = threading.Thread(target = self.subprocess_creation_serveur)
+        self.thread_serveur.start()
+# =============================================================================
+#         self.server_subprocess = subprocess.Popen(["cmd.exe", "/c", "start",
+#                                                    "python", "serveurMH.py",
+#                                                    self.PORT, self.HOST],
+#                                                   shell = True)
+# =============================================================================
+# =============================================================================
+#         sMH.Server(self.PORT.get(), self.HOST.get())
+# =============================================================================
+        self.partie_en_ligne = True
+        self.choix_pseudo()
+    
+    def serveur_choix_pseudo(self):
+        self.PORT = self.PORT.get()
+        self.HOST = self.HOST.get()
+        self.partie_en_ligne = True
+        self.choix_pseudo()
+    
+    def choix_pseudo(self):
+        self.fen.title("Joindre la partie - Mine Hantée")
+        if self.navigation_flow[-1] != 6:
+            self.navigation_flow.append(6)
+        for widget in self.fen.winfo_children():
+            widget.destroy()
+            
+        self.taile_plateau = 7
+        self.nb_fantome_max = 21
+        
+        tk.Label(self.fen, text = "Pseudonyme:").grid(column=0, row=0, padx = 15)
+        self.PSEUDO = tk.Entry(self.fen)
+        self.PSEUDO.grid(column = 1, row = 0, padx = 15)
+        self.PSEUDO.insert(0,"Joueur_1")
+        
+        self.message_space = tk.Label(self.fen)
+        self.message_space.grid(column=0, row=1, columnspan = 2)
+        
+        Creer_serveur = ttk.Button(self.fen,
+                                   text = "Rejoindre la partie",
+                                   command = self.rejoindre_partie)
+        Creer_serveur.grid(column = 0, row = 2, padx = 15)
+        
+        Retour = ttk.Button(self.fen,
+                                 text = "Retour",
+                                 command = self.retour)
+        Retour.grid(column = 1, row = 2, padx = 15)
+    
+    def rejoindre_partie(self):
+        self.pseudo = self.PSEUDO.get()
+        if (self.partie_en_ligne):
+            self.ref_client = cMH.Client(self)
+        self.plateau_exemple()
+    
+    def plateau_exemple(self):
+        self.fen.title("Joindre la partie - Mine Hantée")
+        if self.navigation_flow[-1] != 6:
+            self.navigation_flow.append(6)
+        for widget in self.fen.winfo_children():
+            widget.destroy()
+        
+        Creer_serveur = ttk.Button(self.fen,
+                                   text = "touche test",
+                                   command = self.ref_client.envoyer_Touche)
+        Creer_serveur.grid(column = 0, row = 2, padx = 15)
+
         
 if __name__=="__main__":
     LauncherMineHantee()
