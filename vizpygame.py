@@ -73,6 +73,9 @@ def afficher(Mat_plat,plateau,fenetre):
         for case in ligne:
             x=num_case*taille_case
             y=num_ligne*taille_case
+            #cartes immobiles 
+            if num_case%2==0 and num_ligne%2==0:
+                plateau.fill(RED, (x,y,int(taille_case),int(taille_case)))
             num_case+=1
             carte=genere_carte(case,(int(taille_case),int(taille_case)))
             plateau.blit(carte,(x,y))
@@ -85,12 +88,12 @@ def afficher(Mat_plat,plateau,fenetre):
             if num_case%2==0:
                 fleche_gauche=Button_img(fenetre, img_fleche_gauche, (90-int(taille_case-5), 100+x),(int(taille_case-5),int(taille_case-5)))
                 dic_boutons_fleches["G"+str(num_case)]=fleche_gauche
-                fleche_droite=Button_img(fenetre, img_fleche_droite, (500-int(taille_case-5), 100+x),(int(taille_case-5),int(taille_case-5)))
+                fleche_droite=Button_img(fenetre, img_fleche_droite, (500-int(taille_case), 100+x),(int(taille_case-5),int(taille_case-5)))
                 dic_boutons_fleches["D"+str(num_case)]=fleche_droite
-            if num_ligne%2==0:
+            if num_ligne%2!=0:
                 fleche_haut=Button_img(fenetre, img_fleche_haut, (y+100, 90-int(taille_case-5)),(int(taille_case-5),int(taille_case-5)))
                 dic_boutons_fleches["H"+str(num_ligne)]=fleche_haut
-                fleche_bas=Button_img(fenetre, img_fleche_bas, (y+100, 500-int(taille_case-5)),(int(taille_case-5),int(taille_case-5)))
+                fleche_bas=Button_img(fenetre, img_fleche_bas, (y+100, 500-int(taille_case)),(int(taille_case-5),int(taille_case-5)))
                 dic_boutons_fleches["B"+str(num_ligne)]=fleche_bas
             ##Rafraîchissement de l'écran
             pygame.display.flip()
@@ -204,19 +207,24 @@ def ecran():
     pivotdroit=pygame.image.load(os.path.abspath(os.path.join('img_cartes','pivotdroit.png'))).convert_alpha()
     bouton_pivot_droit=Button_img(fenetre,pivotdroit,(700,80),(50,50))   
     carte_eject=genere_carte(random.choice(list(dic_case_img.keys())),(50,50))
+    fenetre.fill((202,193,188) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
     fenetre.blit(carte_eject,(625,80))
+    
+    #Affichage du score
+    valscore=0
+    score(valscore)
     
     #BOUCLE INFINIE
     continuer = 1
     pygame.key.set_repeat(400, 30) #maintenir déplacement quand touche enfoncée
-    while continuer:
+    while continuer:       
     	for event in pygame.event.get():	#Attente des événements
             if event.type == pygame.MOUSEBUTTONDOWN:
                 bouton_pause.update_button(fenetre, action=pause)
                 bouton_save.update_button(fenetre, action=save)
                 bouton_quit.update_button(fenetre, action=gamequit)
                 for i in dic_boutons_fleches:
-                    dic_boutons_fleches[i].update_button(fenetre,action=deplacement,arg=i)
+                    dic_boutons_fleches[i].update_button(fenetre,action=deplacement,arg=[i])
                 bouton_pivot_gauche.update_button(fenetre,action=chgmt_orientation,arg='gauche')
                 bouton_pivot_droit.update_button(fenetre,action=chgmt_orientation,arg='droit')
             elif event.type == QUIT:
@@ -243,15 +251,24 @@ def deplacement(i):
     plateau=pygame.Surface((cote_fenetre,cote_fenetre))
     fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()
     plateau.blit(fond, (0,0))
-    dic_boutons_fleches=afficher(Mat_plat,plateau,fenetre)
+    afficher(Mat_plat,plateau,fenetre)
     fenetre.blit(plateau,(100,100))
     
 def chgmt_orientation(direction):
     print('bouton'+str(direction)+'cliqué')
-    fenetre.fill(WHITE, (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
+    fenetre.fill((202,193,188) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
     carte_eject=genere_carte(random.choice(list(dic_case_img.keys())),(50,50)) #aléatoire pour le moment
     fenetre.blit(carte_eject,(625,80))
     pygame.display.flip()
+    
+def score(valscore):
+    police = pygame.font.Font(None,36)
+    texte = police.render("Score "+str(valscore),True,pygame.Color("#000000"))
+    rectTexte = texte.get_rect() #surface rectangle autour du texte
+    rectTexte.topleft=(600,300)
+    fenetre.fill(WHITE,rectTexte)  #efface précédent score
+    print(rectTexte)
+    fenetre.blit(texte,rectTexte)
     
 ecran()
 
