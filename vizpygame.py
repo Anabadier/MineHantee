@@ -16,7 +16,7 @@ import sys
 # =============================================================================
 #Paramètres de la fenêtre
 
-nombre_case_cote = 9
+nombre_case_cote = 7
 taille_case = 350/nombre_case_cote
 cote_fenetre = nombre_case_cote * taille_case
 
@@ -46,10 +46,10 @@ GREEN = 0, 255, 0
 
 pygame.init() #initialisation des modules
 
-def genere_carte(carte):
+def genere_carte(carte,size):
     """génerer les images de cartes"""
     image=pygame.image.load(os.path.abspath(os.path.join('img_cartes',dic_case_img[carte]))).convert_alpha()
-    carte=pygame.transform.scale(image, (int(taille_case-1),int(taille_case-1))) #forcer la taille de la case
+    carte=pygame.transform.scale(image, size) #forcer la taille de la case
     return(carte)
 
 def afficher(Mat_plat,plateau,fenetre):
@@ -60,6 +60,12 @@ def afficher(Mat_plat,plateau,fenetre):
     img_fleche_gauche=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"fleche_gauche.png"))).convert_alpha()
     img_fleche_droite=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"fleche_droite.png"))).convert_alpha()
     
+    img_pepite=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"triskel.png"))).convert_alpha()
+    pepite=pygame.transform.scale(img_pepite,(int((taille_case-1)/2),int((taille_case-1)/2)))
+    
+    img_fantome=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"fantome.png"))).convert_alpha()
+    fantome=pygame.transform.scale(img_fantome,(int((taille_case-1)/2),int((taille_case-1)/2)))
+    
     
     num_ligne=0
     for ligne in Mat_plat:
@@ -68,19 +74,23 @@ def afficher(Mat_plat,plateau,fenetre):
             x=num_case*taille_case
             y=num_ligne*taille_case
             num_case+=1
-            carte=genere_carte(case)
+            carte=genere_carte(case,(int(taille_case),int(taille_case)))
             plateau.blit(carte,(x,y))
+            #Si pépite/fantome sur la carte, voir condition avec la matrice des instances de cartes
+            plateau.blit(pepite,(x,y))
+            if random.random()<0.5:
+                plateau.blit(fantome,(x+taille_case/5,y+taille_case/5))
             
             #Si paire : peu coulisser : insérer bouton de chaque côté
             if num_case%2==0:
                 fleche_gauche=Button_img(fenetre, img_fleche_gauche, (90-int(taille_case-5), 100+x),(int(taille_case-5),int(taille_case-5)))
                 dic_boutons_fleches["G"+str(num_case)]=fleche_gauche
-                fleche_droite=Button_img(fenetre, img_fleche_droite, (490-int(taille_case-5), 100+x),(int(taille_case-5),int(taille_case-5)))
+                fleche_droite=Button_img(fenetre, img_fleche_droite, (500-int(taille_case-5), 100+x),(int(taille_case-5),int(taille_case-5)))
                 dic_boutons_fleches["D"+str(num_case)]=fleche_droite
             if num_ligne%2==0:
                 fleche_haut=Button_img(fenetre, img_fleche_haut, (y+100, 90-int(taille_case-5)),(int(taille_case-5),int(taille_case-5)))
                 dic_boutons_fleches["H"+str(num_ligne)]=fleche_haut
-                fleche_bas=Button_img(fenetre, img_fleche_bas, (y+100, 490-int(taille_case-5)),(int(taille_case-5),int(taille_case-5)))
+                fleche_bas=Button_img(fenetre, img_fleche_bas, (y+100, 500-int(taille_case-5)),(int(taille_case-5),int(taille_case-5)))
                 dic_boutons_fleches["B"+str(num_ligne)]=fleche_bas
             ##Rafraîchissement de l'écran
             pygame.display.flip()
@@ -173,7 +183,7 @@ def ecran():
     fenetre.fill((255,255,255)) #remplissage fond blanc
     
     plateau=pygame.Surface((cote_fenetre,cote_fenetre))
-    fond = pygame.image.load("fond_laby.jpg").convert()
+    fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()
     plateau.blit(fond, (0,0))
     dic_boutons_fleches=afficher(Mat_plat,plateau,fenetre)
     fenetre.blit(plateau,(100,100))
@@ -190,9 +200,11 @@ def ecran():
     
     #Carte éjectée
     pivotgauche=pygame.image.load(os.path.abspath(os.path.join('img_cartes','pivotgauche.png'))).convert_alpha()
-    bouton_pivot_gauche=Button_img(fenetre,pivotgauche,(500,80),(50,50))
+    bouton_pivot_gauche=Button_img(fenetre,pivotgauche,(550,80),(50,50))
     pivotdroit=pygame.image.load(os.path.abspath(os.path.join('img_cartes','pivotdroit.png'))).convert_alpha()
-    bouton_pivot_droit=Button_img(fenetre,pivotdroit,(700,80),(50,50))     
+    bouton_pivot_droit=Button_img(fenetre,pivotdroit,(700,80),(50,50))   
+    carte_eject=genere_carte(random.choice(list(dic_case_img.keys())),(50,50))
+    fenetre.blit(carte_eject,(625,80))
     
     #BOUCLE INFINIE
     continuer = 1
@@ -205,8 +217,8 @@ def ecran():
                 bouton_quit.update_button(fenetre, action=gamequit)
                 for i in dic_boutons_fleches:
                     dic_boutons_fleches[i].update_button(fenetre,action=deplacement,arg=i)
-                bouton_pivot_gauche.update_button(fenetre,action=test,arg='gauche')
-                bouton_pivot_droit.update_button(fenetre,action=test,arg='droit')
+                bouton_pivot_gauche.update_button(fenetre,action=chgmt_orientation,arg='gauche')
+                bouton_pivot_droit.update_button(fenetre,action=chgmt_orientation,arg='droit')
             elif event.type == QUIT:
                 continuer=0
                 pygame.quit()
@@ -229,13 +241,17 @@ def deplacement(i):
     print("la flèche "+str(i)+" a été cliquée")
     Mat_plat=genere_mat()
     plateau=pygame.Surface((cote_fenetre,cote_fenetre))
-    fond = pygame.image.load("fond_laby.jpg").convert()
+    fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()
     plateau.blit(fond, (0,0))
     dic_boutons_fleches=afficher(Mat_plat,plateau,fenetre)
     fenetre.blit(plateau,(100,100))
     
-def test(direction):
+def chgmt_orientation(direction):
     print('bouton'+str(direction)+'cliqué')
+    fenetre.fill(WHITE, (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
+    carte_eject=genere_carte(random.choice(list(dic_case_img.keys())),(50,50)) #aléatoire pour le moment
+    fenetre.blit(carte_eject,(625,80))
+    pygame.display.flip()
     
 ecran()
 

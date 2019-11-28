@@ -21,12 +21,12 @@ class carte():
         position_graph : ref noeud networkX
         position_detail : (int,int)
         orientation : int
-        connectivité : [[],[],[],[]]"""
+        nom : str ('0010')"""
         self.type=type_carte
         self.elements=dict_elements
         self.position_G=position_graph
         self.position_D=position_detail
-        self.orientation=orientation
+        self.nom=orientation
         self.connectivité=connectivité[type_carte]
     
     def pivoter(self,sens):
