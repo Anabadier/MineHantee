@@ -10,7 +10,7 @@ import random
 import os
 import sys
 
-
+from carte.py import carte
 # =============================================================================
 # Initialisation
 # =============================================================================
@@ -135,17 +135,7 @@ class Button:
                 action(arg)
             else:
                 action()
-#            if self.color == RED:
-#                self.color = GREEN
-#                self.state = True
-#            elif self.color == GREEN:
-#                # sauf les + et -, pour que ce soit toujours vert
-#                if len(self.text) > 5:  # 5 char avec les espaces
-#                    self.color = RED
-#                self.state = False
-        # à la bonne couleur
-        #self.rect = pygame.draw.rect(self.fond, self.color, self.textpos)
-        #self.fond.blit(self.title, self.textpos)
+
 
     def display_button(self, fond):
         self.fond = fond
@@ -254,6 +244,9 @@ def deplacement(i):
     plateau.blit(fond, (0,0))
     afficher(Mat_plat,plateau,fenetre)
     fenetre.blit(plateau,(100,100))
+    fenetre.fill((202,193,188) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
+    carte_eject=genere_carte(random.choice(list(dic_case_img.keys())),(50,50)) #aléatoire pour le moment
+    fenetre.blit(carte_eject,(625,80))
     
 def chgmt_orientation(direction):
     print('bouton'+str(direction)+'cliqué')
