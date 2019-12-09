@@ -10,7 +10,7 @@ import random
 import os
 import sys
 
-from carte.py import carte
+from carte import carte
 # =============================================================================
 # Initialisation
 # =============================================================================
@@ -196,8 +196,9 @@ def ecran():
     pivotgauche=pygame.image.load(os.path.abspath(os.path.join('img_cartes','pivotgauche.png'))).convert_alpha()
     bouton_pivot_gauche=Button_img(fenetre,pivotgauche,(550,80),(50,50))
     pivotdroit=pygame.image.load(os.path.abspath(os.path.join('img_cartes','pivotdroit.png'))).convert_alpha()
-    bouton_pivot_droit=Button_img(fenetre,pivotdroit,(700,80),(50,50))   
-    carte_eject=genere_carte(random.choice(list(dic_case_img.keys())),(50,50))
+    bouton_pivot_droit=Button_img(fenetre,pivotdroit,(700,80),(50,50))
+    carte_ej=carte(random.choice(['coin','couloir','carrefour']))
+    carte_eject=genere_carte(carte_ej.nom,(50,50))
     fenetre.fill((202,193,188) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
     fenetre.blit(carte_eject,(625,80))
     
@@ -216,8 +217,8 @@ def ecran():
                 bouton_quit.update_button(fenetre, action=gamequit)
                 for i in dic_boutons_fleches:
                     dic_boutons_fleches[i].update_button(fenetre,action=deplacement,arg=[i])
-                bouton_pivot_gauche.update_button(fenetre,action=chgmt_orientation,arg='gauche')
-                bouton_pivot_droit.update_button(fenetre,action=chgmt_orientation,arg='droit')
+                bouton_pivot_gauche.update_button(fenetre,action=chgmt_orientation,arg={'carte':carte_ej,'sens':'gauche'})
+                bouton_pivot_droit.update_button(fenetre,action=chgmt_orientation,arg={'carte':carte_ej,'sens':'droit'})
             elif event.type == QUIT:
                 continuer=0
                 pygame.quit()
@@ -248,10 +249,13 @@ def deplacement(i):
     carte_eject=genere_carte(random.choice(list(dic_case_img.keys())),(50,50)) #aléatoire pour le moment
     fenetre.blit(carte_eject,(625,80))
     
-def chgmt_orientation(direction):
-    print('bouton'+str(direction)+'cliqué')
+def chgmt_orientation(arg):
+    print('bouton '+str(arg['sens'])+' cliqué')
+    print(arg['carte'].nom)
+    arg['carte'].pivoter(arg['sens'])
+    print(arg['carte'].nom)
     fenetre.fill((202,193,188) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
-    carte_eject=genere_carte(random.choice(list(dic_case_img.keys())),(50,50)) #aléatoire pour le moment
+    carte_eject=genere_carte(arg['carte'].nom,(50,50)) #aléatoire pour le moment
     fenetre.blit(carte_eject,(625,80))
     pygame.display.flip()
     
