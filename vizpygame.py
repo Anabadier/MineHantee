@@ -30,8 +30,9 @@ def genere_mat():
     for i in range(len(Mat_plat)):
         for j in range(len(Mat_plat[i])):
             Mat_plat[i][j]=random.choice(list(dic_case_img.keys()))
+    print(Mat_plat)
     return(Mat_plat)
-
+    
 
 BLACK = 0, 0, 0
 WHITE = 255, 255, 255
