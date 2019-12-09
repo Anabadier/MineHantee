@@ -43,7 +43,7 @@ import matplotlib.pyplot as plt
 ###############################################################################
 # Classe Plateau
 ###############################################################################
-cartes_disponibles = {'coin' : 20, 'couloir' : 25, 'carrefour' : 16}
+cartes_disponibles = {'coin' : 20, 'couloir' : 25, 'carrefour' : 16} #a actualiser
 
 class Plateau(object) :
     '''
@@ -306,33 +306,34 @@ class Plateau(object) :
         
         #la nouvelle carte à coulisser sera la carte qui est sortie
         self.carte_en_dehors = carte_sortante 
+        # actualiser network graph
     
-    def coulisser_graphe (self) :
-        """
-        Change la connectivité de “self.labyrinthe_graphe”
-        lorsque qu’une nouvelle carte est insérée dans le plateau.
-        La nouvelle carte doit être connectée au réseau; la carte sortante
-        ne doit plus être connectée; les cartes intermédiaire doivent
-        modifier leur connection.
-        """
-        pass
-    
-    def coulisser (self):
-        """
-        Effectue tous les changements associés à l’introduction
-        d’une carte dans le plateau au début du tour d’un joueur.
-        Notamment, appelle les méthodes “coulisser_detail”
-        et “coulisser_graphe”.
-        """
-        pass
-    
-    def check_deplacement (self):
-        """
-        Vérifie que le déplacement demandé par un joueur
-        est valide. Si possible, effectue la mise à jour de la position du
-        joueur sinon, renvoie un message d’erreur visible par le joueur.
-        """
-        pass
+#    def coulisser_graphe (self) :
+#        """
+#        Change la connectivité de “self.labyrinthe_graphe”
+#        lorsque qu’une nouvelle carte est insérée dans le plateau.
+#        La nouvelle carte doit être connectée au réseau; la carte sortante
+#        ne doit plus être connectée; les cartes intermédiaire doivent
+#        modifier leur connection.
+#        """
+#        pass
+#    
+#    def coulisser (self):
+#        """
+#        Effectue tous les changements associés à l’introduction
+#        d’une carte dans le plateau au début du tour d’un joueur.
+#        Notamment, appelle les méthodes “coulisser_detail”
+#        et “coulisser_graphe”.
+#        """
+#        pass
+#    
+#    def check_deplacement (self):
+#        """
+#        Vérifie que le déplacement demandé par un joueur
+#        est valide. Si possible, effectue la mise à jour de la position du
+#        joueur sinon, renvoie un message d’erreur visible par le joueur.
+#        """
+#        pass
         
         
         
