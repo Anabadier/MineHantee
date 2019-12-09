@@ -14,20 +14,20 @@ import os
 import networkx as nx
 import matplotlib.pyplot as plt
 
-class Carte(object):
-    
-    def __init__(self,type_,elements,position_graph,position_detail,orientation) :
-        self.type = type_
-        self.elements = elements
-        self.position_graph = position_graph
-        self.position_detail = position_detail
-        self.orientation = orientation
-        
-        dico_connectivite = {'couloir' : [[0,0,1,1],[1,1,0,0],[0,0,1,1],[1,1,0,0]],
-                             'coin' : [[0,1,1,0],[0,1,0,1],[1,0,0,1],[1,0,1,0]],
-                             'carrefour' : [[0,1,1,1],[1,1,0,1],[1,0,1,1],[1,1,1,0]]}
-        
-        self.connectivite = dico_connectivite[self.type]
+#class Carte(object):
+#    
+#    def __init__(self,type_,elements,position_graph,position_detail,orientation) :
+#        self.type = type_
+#        self.elements = elements
+#        self.position_graph = position_graph
+#        self.position_detail = position_detail
+#        self.orientation = orientation
+#        
+#        dico_connectivite = {'couloir' : [[0,0,1,1],[1,1,0,0],[0,0,1,1],[1,1,0,0]],
+#                             'coin' : [[0,1,1,0],[0,1,0,1],[1,0,0,1],[1,0,1,0]],
+#                             'carrefour' : [[0,1,1,1],[1,1,0,1],[1,0,1,1],[1,1,1,0]]}
+#        
+#        self.connectivite = dico_connectivite[self.type]
         
     def pivoter(self,n) :
         '''
