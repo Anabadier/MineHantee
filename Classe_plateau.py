@@ -277,30 +277,30 @@ class Plateau(object) :
         :return:
         """
         ## on modifie la ligne
-        # en coulissant de gauche à droite
+        # en coulissant du haut vers le bas 
         if coord_x == 0 :
             carte_sortante = self.labyrinthe_detail[self.taille-1,coord_y]
             for i in range(self.taille-1, 0, -1) :
                 self.labyrinthe_detail[i,coord_y] = self.labyrinthe_detail[i-1,coord_y]
             self.labyrinthe_detail[0,coord_y] = self.carte_en_dehors
-        # en coulissant de droite à gauche    
+        # en coulissant du bas vers le haut    
         if coord_x == self.taille-1 :
             carte_sortante = self.labyrinthe_detail[0,coord_y]
-            for i in range(self.taille) :
+            for i in range(self.taille-1) :
                 self.labyrinthe_detail[i,coord_y] = self.labyrinthe_detail[i+1,coord_y]
             self.labyrinthe_detail[self.taille-1,coord_y] = self.carte_en_dehors
                 
         ## on modifie la colonne
-        # en coulissant de haut en bas
+        # en coulissant de gauche à droite
         if coord_y == 0 :
             carte_sortante = self.labyrinthe_detail[coord_x, self.taille-1]
             for i in range(self.taille-1, 0, -1) :
                 self.labyrinthe_detail[coord_x,i] = self.labyrinthe_detail[coord_x, i-1]
             self.labyrinthe_detail[coord_x, 0] = self.carte_en_dehors
-        # en coulissant du bas vers le haut
+        # en coulissant de droite a gauche
         if coord_y == self.taille-1 :
             carte_sortante = self.labyrinthe_detail[coord_x,0]
-            for i in range(self.taille) :
+            for i in range(self.taille-1) :
                 self.labyrinthe_detail[coord_x, i] = self.labyrinthe_detail[coord_x,i+1]
             self.labyrinthe_detail[coord_x,self.taille-1] = self.carte_en_dehors
         
