@@ -14,6 +14,7 @@ import os
 import networkx as nx
 import matplotlib.pyplot as plt
 
+from carte import carte
 #class Carte(object):
 #    
 #    def __init__(self,type_,elements,position_graph,position_detail,orientation) :
@@ -28,17 +29,17 @@ import matplotlib.pyplot as plt
 #                             'carrefour' : [[0,1,1,1],[1,1,0,1],[1,0,1,1],[1,1,1,0]]}
 #        
 #        self.connectivite = dico_connectivite[self.type]
-        
-    def pivoter(self,n) :
-        '''
-        L'action de pivoter correspond à tourner la carte de 45° dans le sens des
-        aiguilles d'une montre.
-        
-        n : nombre de pivot à appliquer
-        '''
-        
-        orientation_new = (self.orientation + n)%4
-        self.orientation = orientation_new
+#        
+#    def pivoter(self,n) :
+#        '''
+#        L'action de pivoter correspond à tourner la carte de 45° dans le sens des
+#        aiguilles d'une montre.
+#        
+#        n : nombre de pivot à appliquer
+#        '''
+#        
+#        orientation_new = (self.orientation + n)%4
+#        self.orientation = orientation_new
 
 ###############################################################################
 # Classe Plateau

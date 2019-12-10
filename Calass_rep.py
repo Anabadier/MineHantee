@@ -39,39 +39,39 @@ class ghost(object):
 #Classe Carte
 ##################################################################################
 
-
-class carte(object):
-    def __init__(self,type_carte,dict_elements,\
-                 position_graph,position_detail,
-                 orientation,mobilite=True):
-        """type_carte : str
-        dict_elements : dict {fantome,pepite,joueur)
-        position_graph : ref noeud networkX
-        position_detail : (int,int)
-        orientation : int
-        connectivité : [[],[],[],[]]"""
-        self.type=type_carte
-        self.elements=dict_elements
-        self.position_G=position_graph
-        self.position_D=position_detail
-        self.orientation=orientation
-        self.mobilite=mobilite
-        self.connectivite=connectivite[type_carte]
-    
-    def pivoter(self,sens):
-        if sens=='horaire' :
-            if self.orientation < len(self.connectivité):
-                self.orientation=self.connectivité[self.orientation+1]
-            else :
-                self.orientation=self.connectivité[0] #retour au premier
-        
-        else: #anti-horaire
-            if self.orientation > 0:
-                self.orientation=self.connectivité[self.orientation-1]
-            else :
-                self.orientation=self.connectivité[-1] #retour au dernier
-        
-
+#
+#class carte(object):
+#    def __init__(self,type_carte,dict_elements,\
+#                 position_graph,position_detail,
+#                 orientation,mobilite=True):
+#        """type_carte : str
+#        dict_elements : dict {fantome,pepite,joueur)
+#        position_graph : ref noeud networkX
+#        position_detail : (int,int)
+#        orientation : int
+#        connectivité : [[],[],[],[]]"""
+#        self.type=type_carte
+#        self.elements=dict_elements
+#        self.position_G=position_graph
+#        self.position_D=position_detail
+#        self.orientation=orientation
+#        self.mobilite=mobilite
+#        self.connectivite=connectivite[type_carte]
+#    
+#    def pivoter(self,sens):
+#        if sens=='horaire' :
+#            if self.orientation < len(self.connectivité):
+#                self.orientation=self.connectivité[self.orientation+1]
+#            else :
+#                self.orientation=self.connectivité[0] #retour au premier
+#        
+#        else: #anti-horaire
+#            if self.orientation > 0:
+#                self.orientation=self.connectivité[self.orientation-1]
+#            else :
+#                self.orientation=self.connectivité[-1] #retour au dernier
+#        
+from carte import carte
 ##################################################################################
 #Classe Joueur
 ##################################################################################

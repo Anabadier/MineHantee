@@ -14,7 +14,7 @@ import os
 import networkx as nx
 import pandas
 
-import Calass_rep
+from Calass_rep import *
 
 
 

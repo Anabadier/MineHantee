@@ -41,6 +41,8 @@ CIEL = 0, 200, 255
 RED = 255, 0, 0
 ORANGE = 255, 100, 0
 GREEN = 0, 255, 0
+
+carte_ej=carte(random.choice(['coin','couloir','carrefour']))
 # =============================================================================
 # Générer plateau
 # =============================================================================
@@ -197,7 +199,6 @@ def ecran():
     bouton_pivot_gauche=Button_img(fenetre,pivotgauche,(550,80),(50,50))
     pivotdroit=pygame.image.load(os.path.abspath(os.path.join('img_cartes','pivotdroit.png'))).convert_alpha()
     bouton_pivot_droit=Button_img(fenetre,pivotdroit,(700,80),(50,50))
-    carte_ej=carte(random.choice(['coin','couloir','carrefour']))
     carte_eject=genere_carte(carte_ej.nom,(50,50))
     fenetre.fill((202,193,188) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
     fenetre.blit(carte_eject,(625,80))
@@ -238,6 +239,7 @@ def gamequit():
     
 def deplacement(i):
     """Actualise la matrice des cartes"""
+    global carte_ej
     print("la flèche "+str(i)+" a été cliquée")
     Mat_plat=genere_mat()
     plateau=pygame.Surface((cote_fenetre,cote_fenetre))
@@ -246,7 +248,8 @@ def deplacement(i):
     afficher(Mat_plat,plateau,fenetre)
     fenetre.blit(plateau,(100,100))
     fenetre.fill((202,193,188) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
-    carte_eject=genere_carte(random.choice(list(dic_case_img.keys())),(50,50)) #aléatoire pour le moment
+    carte_ej=carte(random.choice(['coin','couloir','carrefour']))
+    carte_eject=genere_carte(carte_ej.nom,(50,50)) #aléatoire pour le moment
     fenetre.blit(carte_eject,(625,80))
     
 def chgmt_orientation(arg):
