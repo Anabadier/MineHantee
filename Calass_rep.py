@@ -165,6 +165,7 @@ class Plateau(object) :
         
         self.node_pos = node_pos
         self.graph = graph
+        self.carte_en_dehors=carte(random.choice(['coin','couloir','carrefour']),dict_elements={'fantome':[],'pepite':[],'joueur':[]})
         
         # print(self.config)
         
@@ -307,31 +308,34 @@ class Plateau(object) :
         """
         ## on modifie la ligne
         # en coulissant de gauche à droite
+        if coord_y == -1:
+            carte_sortante = self.labyrinthe_detail[coord_x,self.taille-1]
+            for i in range(0,self.taille-1) :
+                self.labyrinthe_detail[coord_x,i] = self.labyrinthe_detail[coord_x,i+1]
+            self.labyrinthe_detail[coord_x,0] = self.carte_en_dehors
+                
+        # en coulissant de droite à gauche    
+        if coord_y == self.taille :
+            carte_sortante = self.labyrinthe_detail[coord_x,0]
+            for i in range(self.taille-1) :
+                self.labyrinthe_detail[coord_x,i] = self.labyrinthe_detail[coord_x,i+1]
+            self.labyrinthe_detail[coord_x,self.taille-1] = self.carte_en_dehors
+                
+        ## on modifie la colonne
+        # en coulissant de haut en bas
         if coord_x == -1 :
             carte_sortante = self.labyrinthe_detail[self.taille-1,coord_y]
             for i in range(self.taille-1, 0, -1) :
                 self.labyrinthe_detail[i,coord_y] = self.labyrinthe_detail[i-1,coord_y]
             self.labyrinthe_detail[0,coord_y] = self.carte_en_dehors
-        # en coulissant de droite à gauche    
+                
+        # en coulissant du bas vers le haut
         if coord_x == self.taille :
             carte_sortante = self.labyrinthe_detail[0,coord_y]
-            for i in range(self.taille) :
+            for i in range(self.taille-1) :
                 self.labyrinthe_detail[i,coord_y] = self.labyrinthe_detail[i+1,coord_y]
             self.labyrinthe_detail[self.taille-1,coord_y] = self.carte_en_dehors
-                
-        ## on modifie la colonne
-        # en coulissant de haut en bas
-        if coord_y == -1 :
-            carte_sortante = self.labyrinthe_detail[coord_x, self.taille-1]
-            for i in range(self.taille-1, 0, -1) :
-                self.labyrinthe_detail[coord_x,i] = self.labyrinthe_detail[coord_x, i-1]
-            self.labyrinthe_detail[coord_x, 0] = self.carte_en_dehors
-        # en coulissant du bas vers le haut
-        if coord_y == self.taille :
-            carte_sortante = self.labyrinthe_detail[coord_x,0]
-            for i in range(self.taille) :
-                self.labyrinthe_detail[coord_x, i] = self.labyrinthe_detail[coord_x,i+1]
-            self.labyrinthe_detail[coord_x,self.taille-1] = self.carte_en_dehors
+
         
         #la nouvelle carte à coulisser sera la carte qui est sortie
         self.carte_en_dehors = carte_sortante 
