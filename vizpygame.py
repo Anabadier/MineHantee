@@ -16,22 +16,22 @@ from carte import carte
 # =============================================================================
 #Paramètres de la fenêtre
 
-nombre_case_cote = 7
-taille_case = 350/nombre_case_cote
-cote_fenetre = nombre_case_cote * taille_case
+#nombre_case_cote = 7
+#taille_case = 350/nombre_case_cote
+#cote_fenetre = nombre_case_cote * taille_case
 
 dic_case_img={'0110':'NXXO.png','1010':'XSXO.png','1001':'XSEX.png','0101':'NXEX.png',\
               '1100':'XXEO.png','0011':'NSXX.png',\
               '1110':'XXXO.png','1011':'XSXX.png','1101':'XXEX.png','0111':'NXXX.png'}
 
-#On génère une matrice aléatoire
-def genere_mat():
-    Mat_plat=[[[] for i in range(nombre_case_cote)] for i in range(nombre_case_cote)]
-    for i in range(len(Mat_plat)):
-        for j in range(len(Mat_plat[i])):
-            Mat_plat[i][j]=random.choice(list(dic_case_img.keys()))
-    print(Mat_plat)
-    return(Mat_plat)
+##On génère une matrice aléatoire
+#def genere_mat():
+#    Mat_plat=[[[] for i in range(nombre_case_cote)] for i in range(nombre_case_cote)]
+#    for i in range(len(Mat_plat)):
+#        for j in range(len(Mat_plat[i])):
+#            Mat_plat[i][j]=random.choice(list(dic_case_img.keys()))
+#    print(Mat_plat)
+#    return(Mat_plat)
     
 
 BLACK = 0, 0, 0
@@ -57,6 +57,9 @@ def genere_carte(carte,size):
 
 def afficher(Mat_plat,plateau,fenetre):
     """afficher les cartes sur le plateau"""
+    nombre_case_cote=Mat_plat.taille
+    taille_case = 350/nombre_case_cote
+    
     dic_boutons_fleches={} #dictionnaire de tous les boutons flèches
     img_fleche_haut=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"fleche_haut.png"))).convert_alpha()
     img_fleche_bas=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"fleche_bas.png"))).convert_alpha()
@@ -171,10 +174,13 @@ class Button_img:
         self.fond.blit(self.img, self.textpos)
 		
 #Création de la fenêtre
-def ecran():
-    global fenetre,plateau
+def ecran(Mat_plat):
+    global fenetre,plateau,cote_fenetre
     
-    Mat_plat=genere_mat()
+    nombre_case_cote=Mat_plat.taille
+    taille_case = 350/nombre_case_cote
+    cote_fenetre = nombre_case_cote * taille_case
+    
     fenetre = pygame.display.set_mode((800,600))
     fenetre.fill((255,255,255)) #remplissage fond blanc
     
@@ -271,6 +277,6 @@ def score(valscore):
     print(rectTexte)
     fenetre.blit(texte,rectTexte)
     
-ecran()
+
 
 
