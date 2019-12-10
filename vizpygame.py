@@ -11,6 +11,7 @@ import os
 import sys
 
 from carte import carte
+import Jeu_mine
 # =============================================================================
 # Initialisation
 # =============================================================================
@@ -43,6 +44,7 @@ ORANGE = 255, 100, 0
 GREEN = 0, 255, 0
 
 carte_ej=carte(random.choice(['coin','couloir','carrefour']))
+
 # =============================================================================
 # Générer plateau
 # =============================================================================
@@ -55,10 +57,11 @@ def genere_carte(carte,size):
     carte=pygame.transform.scale(image, size) #forcer la taille de la case
     return(carte)
 
-def afficher(Mat_plat,plateau,fenetre):
+def afficher(plat,plateau,fenetre):
     """afficher les cartes sur le plateau"""
-    nombre_case_cote=Mat_plat.taille
+    nombre_case_cote=plat.taille
     taille_case = 350/nombre_case_cote
+    Mat_plat=plat.labyrinthe_detail
     
     dic_boutons_fleches={} #dictionnaire de tous les boutons flèches
     img_fleche_haut=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"fleche_haut.png"))).convert_alpha()
@@ -83,14 +86,14 @@ def afficher(Mat_plat,plateau,fenetre):
             if num_case%2==0 and num_ligne%2==0:
                 plateau.fill(RED, (x,y,int(taille_case),int(taille_case)))
             num_case+=1
-            carte=genere_carte(case,(int(taille_case),int(taille_case)))
+            carte=genere_carte(case.nom,(int(taille_case),int(taille_case)))
             plateau.blit(carte,(x,y))
             #Si pépite/fantome sur la carte, voir condition avec la matrice des instances de cartes
             plateau.blit(pepite,(x,y))
             if random.random()<0.5:
                 plateau.blit(fantome,(x+taille_case/5,y+taille_case/5))
             
-            #Si paire : peu coulisser : insérer bouton de chaque côté
+            #Si paire : peut coulisser : insérer bouton de chaque côté
             if num_case%2==0:
                 fleche_gauche=Button_img(fenetre, img_fleche_gauche, (90-int(taille_case-5), 100+x),(int(taille_case-5),int(taille_case-5)))
                 dic_boutons_fleches["G"+str(num_case)]=fleche_gauche
@@ -174,12 +177,13 @@ class Button_img:
         self.fond.blit(self.img, self.textpos)
 		
 #Création de la fenêtre
-def ecran(Mat_plat):
+def ecran(plat):
     global fenetre,plateau,cote_fenetre
     
-    nombre_case_cote=Mat_plat.taille
+    nombre_case_cote=plat.taille
     taille_case = 350/nombre_case_cote
     cote_fenetre = nombre_case_cote * taille_case
+    Mat_plat=plat.labyrinthe_detail
     
     fenetre = pygame.display.set_mode((800,600))
     fenetre.fill((255,255,255)) #remplissage fond blanc
@@ -187,7 +191,7 @@ def ecran(Mat_plat):
     plateau=pygame.Surface((cote_fenetre,cote_fenetre))
     fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()
     plateau.blit(fond, (0,0))
-    dic_boutons_fleches=afficher(Mat_plat,plateau,fenetre)
+    dic_boutons_fleches=afficher(plat,plateau,fenetre)
     fenetre.blit(plateau,(100,100))
     
     #Boutons menus
@@ -278,5 +282,5 @@ def score(valscore):
     fenetre.blit(texte,rectTexte)
     
 
-
+ecran(Jeu_mine.main())
 
