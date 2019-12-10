@@ -15,6 +15,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 from carte import carte
+
 #class Carte(object):
 #    
 #    def __init__(self,type_,elements,position_graph,position_detail,orientation) :
@@ -40,6 +41,7 @@ from carte import carte
 #        
 #        orientation_new = (self.orientation + n)%4
 #        self.orientation = orientation_new
+
 
 ###############################################################################
 # Classe Plateau
