@@ -310,8 +310,8 @@ class Plateau(object) :
         # en coulissant de gauche à droite
         if coord_y == -1:
             carte_sortante = self.labyrinthe_detail[coord_x,self.taille-1]
-            for i in range(0,self.taille-1) :
-                self.labyrinthe_detail[coord_x,i] = self.labyrinthe_detail[coord_x,i+1]
+            for i in range(self.taille-1,0,-1) :
+                self.labyrinthe_detail[coord_x,i] = self.labyrinthe_detail[coord_x,i-1]
             self.labyrinthe_detail[coord_x,0] = self.carte_en_dehors
                 
         # en coulissant de droite à gauche    
