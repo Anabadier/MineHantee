@@ -89,8 +89,9 @@ def afficher(plat,plateau,fenetre):
             carte=genere_carte(case.nom,(int(taille_case),int(taille_case)))
             plateau.blit(carte,(x,y))
             #Si pépite/fantome sur la carte, voir condition avec la matrice des instances de cartes
-            plateau.blit(pepite,(x,y))
-            if random.random()<0.5:
+            if case.elements['pepite'] == True:
+                plateau.blit(pepite,(x,y))
+            if case.elements['fantome'] == True:
                 plateau.blit(fantome,(x+taille_case/5,y+taille_case/5))
             
             #Si paire : peut coulisser : insérer bouton de chaque côté
@@ -178,12 +179,11 @@ class Button_img:
 		
 #Création de la fenêtre
 def ecran(plat):
-    global fenetre,plateau,cote_fenetre
+    global fenetre,plateau,cote_fenetre,nombre_case
     
     nombre_case_cote=plat.taille
     taille_case = 350/nombre_case_cote
     cote_fenetre = nombre_case_cote * taille_case
-    Mat_plat=plat.labyrinthe_detail
     
     fenetre = pygame.display.set_mode((800,600))
     fenetre.fill((255,255,255)) #remplissage fond blanc
@@ -227,7 +227,7 @@ def ecran(plat):
                 bouton_save.update_button(fenetre, action=save)
                 bouton_quit.update_button(fenetre, action=gamequit)
                 for i in dic_boutons_fleches:
-                    dic_boutons_fleches[i].update_button(fenetre,action=deplacement,arg=[i])
+                    dic_boutons_fleches[i].update_button(fenetre,action=deplacement,arg=[i,plat])
                 bouton_pivot_gauche.update_button(fenetre,action=chgmt_orientation,arg={'carte':carte_ej,'sens':'gauche'})
                 bouton_pivot_droit.update_button(fenetre,action=chgmt_orientation,arg={'carte':carte_ej,'sens':'droit'})
             elif event.type == QUIT:
@@ -248,18 +248,28 @@ def gamequit():
     sys.exit()
     
 def deplacement(i):
-    """Actualise la matrice des cartes"""
+    """Actualise la matrice des cartes
+    i : list[fleche,plateau]"""
     global carte_ej
-    print("la flèche "+str(i)+" a été cliquée")
-    Mat_plat=genere_mat()
+    fleche=i[0]
+    plat=i[1]
+    print("la flèche "+str(fleche)+" a été cliquée")
+    convertFlecheCoord={'G':[int(fleche[1:])-1,-1],'D':[int(fleche[1:])-1,plat.taille],'H':[-1,int(fleche[1:])-1],'B':[plat.taille,int(fleche[1:])-1,]}
+    coord_x=convertFlecheCoord[fleche[0]][0]
+    coord_y=convertFlecheCoord[fleche[0]][1]
+    print(coord_x,coord_y)
+    #régénérer plat
+    plat.coulisser_detail(coord_x,coord_y)
     plateau=pygame.Surface((cote_fenetre,cote_fenetre))
     fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()
     plateau.blit(fond, (0,0))
-    afficher(Mat_plat,plateau,fenetre)
+    afficher(plat,plateau,fenetre)
     fenetre.blit(plateau,(100,100))
     fenetre.fill((202,193,188) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
-    carte_ej=carte(random.choice(['coin','couloir','carrefour']))
+    #extraire carte_ej de la méthode coulisser
+    carte_ej=plat.carte_en_dehors
     carte_eject=genere_carte(carte_ej.nom,(50,50)) #aléatoire pour le moment
+    fenetre.fill((202,193,188) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
     fenetre.blit(carte_eject,(625,80))
     
 def chgmt_orientation(arg):
