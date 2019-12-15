@@ -15,6 +15,10 @@ tout en maximisant son propre gain.
 
 import pandas as pd
 import numpy as np
+import math as math
+import random as rd
+
+joker = 5
 
 def initialisation_points(chemin_fichier_config) :
     
@@ -62,8 +66,17 @@ def fonction_evaluation(un_chemin, joueur):
 def tous_les_chemins_possibles(position):
     liste_chemins = []
     return(liste_chemins)
-
-def mini_max(position, joueur, ordre_joueurs):
+    
+def is_terminal_node(plateau) :
+    dict_vide = {'fantome' : False , 'pepite' : False, 'joueur': False}
+    taille = len(plateau)
+    compteur=0
+    for i in plateau :
+        if i.elements == dict_vide :
+            compteur += 1
+    return (compteur == taille^2)
+    
+def mini_max(plateau, position, depth, alpha, beta, maximizingPlayer, terminal_node):
     """
     La fonction mini_max permet de calculer le meilleur gain que le joueur peut faire, c'est-à-dire :
         1) maximiser son gain en minimisant, potentiellement, le gain dans les prochains tour du joueur avec le plus de points
@@ -75,33 +88,49 @@ def mini_max(position, joueur, ordre_joueurs):
         
     :returns chemin_optimal: le chemin que le joueur a intérêt à suivre pour garantir un gain maximal dans le court terme
     """
-    # combien de points à chaque joueur ? 
-    points = [joueur.nb_points]
+    is_terminal = is_terminal_node(plateau)
+    carte_test = plateau.carte_en_dehors
     
-    for joujou in ordre_joueurs :
-        points += [joujou.nb_points]
+    if depth == 0 or is_terminal:
+        if is_terminal: #il n'y a plus de pépites ni de fantonmes à capturer
+            return (None, 0)
+        else: # Depth is zero
+            chemins = tous_les_chemins_possibles(position)
+            points = [fonction_evaluation(i, joker) for i in chemins]
+            le_chemin = max(points)
+            return (None, fonction_evaluation(le_chemin, joker))
     
-    # quels sont les chemins qui s'offrent à notre joueur 
-    chemins_possibles_j1 = tous_les_chemins_possibles(position)
+    if maximizingPlayer:
+        value = -math.inf
+        entree = rd.choice(plateau.entrees)
+        for orientation in range(1,5):
+            carte_test.orientation = orientation
+            for une_entree in plateau.entrees:
+                p_copy = plateau.copy()
+                p_copy.coulisser_detail(une_entree[0], une_entree[1], carte_test)
+                new_score = mini_max(p_copy, depth-1, alpha, beta, False)[1]
+                if new_score > value:
+                    value = new_score
+                    entree = une_entree
+                alpha = max(alpha, value)
+                if alpha >= beta:
+                    break
+        return (entree, value)
     
-    # quels sont les gains potentiels pour tous ces chemins
-    # la liste sera triée dans l'ordre croissant
-    # dans la liste on a des tuples, (i,j) i index dans la liste des chemins, j gain associé au chemin
-    gains_potentiels = []
-    for chemin in chemins_possibles_j1 :
-        # appel de la fontion définie plus haut
-        gain = fonction_evaluation(chemin, joueur)
-        if gains_potentiels == [] : # premier element
-            gains_potentiels += [(chemins_possibles_j1.index(chemin),gain)]
-        else: # tri dans l'ordre decroissant
-            j=0
-            n=len(gains_potentiels)
-            while j<n and gain<gains_potentiels[j][1]:
-                j=j+1
-            x = (chemins_possibles_j1.index(chemin),gain)
-            gains_potentiels.insert(j,x) #liste des gains possibles triée par ordre decroissant
-    
-    indice_chemin_opti = gains_potentiels[0][0]
-    chemin_optimal = [chemins_possibles_j1(indice_chemin_opti)]
-    
-    return (chemin_optimal)
+    else: # Minimizing player
+        value = math.inf
+        entree = rd.choice(plateau.entrees)
+        for orientation in range(1,5):
+            carte_test.orientation = orientation
+            for une_entree in plateau.entrees:
+                p_copy = plateau.copy()
+                p_copy.coulisser_detail(une_entree[0], une_entree[1], carte_test)
+                new_score = mini_max(p_copy, depth-1, alpha, beta, True)[1]
+                if new_score < value:
+                    value = new_score
+                    entree = une_entree
+                    beta = min(beta, value)
+                if alpha >= beta:
+                    break
+        return (entree, value)
+ 
