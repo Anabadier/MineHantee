@@ -306,6 +306,7 @@ class Plateau(object) :
         :param coord_y: ordonnée du lieu où l'on souhaite faire coulisser la carte
         :return:
         """
+        dict_vide = {'fantome' : False , 'pepite' : False, 'joueur': False}
         ## on modifie la ligne
         # en coulissant de gauche à droite
         if coord_y == -1:
@@ -335,10 +336,15 @@ class Plateau(object) :
             for i in range(self.taille-1) :
                 self.labyrinthe_detail[i,coord_y] = self.labyrinthe_detail[i+1,coord_y]
             self.labyrinthe_detail[self.taille-1,coord_y] = self.carte_en_dehors
+        
+        self.carte_en_dehors.elements = carte_sortante.elements
+        carte_sortante.elements = dict_vide
+        self.carte_en_dehors = carte_sortante 
+        # actualiser network graph
 
         
         #la nouvelle carte à coulisser sera la carte qui est sortie
-        self.carte_en_dehors = carte_sortante 
+        #self.carte_en_dehors = carte_sortante 
     
     def coulisser_graphe (self) :
         """
