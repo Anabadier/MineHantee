@@ -156,6 +156,11 @@ class Plateau(object) :
         self.taille = dim_plateau #int(self.config.dim_plateau)
         self.labyrinthe_detail = np.array([[object]*self.taille]*self.taille)
         
+        entrees = []
+        for i in [0,self.taille-1]:
+            for j in [coord for coord in range(1,11,+2)]:
+                entrees+=[(i,j),(j,i)]
+        
         graph = nx.Graph()
         graph.add_nodes_from(list(range(self.taille**2)))
         node_pos = [(i,j) for i in range(self.taille) for j in range(self.taille)]
@@ -166,6 +171,7 @@ class Plateau(object) :
         self.node_pos = node_pos
         self.graph = graph
         self.carte_en_dehors=carte(random.choice(['coin','couloir','carrefour']),dict_elements={'fantome':[],'pepite':[],'joueur':[]})
+        self.entrees = entrees
         
         # print(self.config)
         
