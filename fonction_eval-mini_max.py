@@ -18,7 +18,7 @@ import numpy as np
 import math as math
 import random as rd
 
-joker = 5
+joker = 5 # en realité égal au joueur qui utilise le joker
 
 def initialisation_points(chemin_fichier_config) :
     
