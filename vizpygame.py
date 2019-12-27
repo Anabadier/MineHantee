@@ -303,6 +303,6 @@ def score(valscore):
     print(rectTexte)
     fenetre.blit(texte,rectTexte)
     
-
-ecran(Jeu_mine.main())
+if __name__=="__main__":
+    ecran(Jeu_mine.JEU())
 

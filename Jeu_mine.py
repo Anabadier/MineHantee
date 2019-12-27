@@ -15,10 +15,9 @@ import networkx as nx
 import pandas
 
 from Calass_rep import *
-
-
     
-def main():    
+def JEU(dimension = 7, nombre_joueur = 2, nombre_ghost = 6, nombre_ordre_mission = 4,
+        nombre_pepite = 49, pts_pepite = 1, pts_fantome = 5, pts_ordre_mission = 15):    
     
     connectivite={'coin':[[0,1,1,0],[1,0,1,0],[1,0,0,1],[0,1,0,1]],
                   'couloir':[[1,1,0,0],[0,0,1,1]],
@@ -34,11 +33,13 @@ def main():
     #Extraction des fichiers de config , code d'Eliott 
     ##################################################################################
     
-    nombre_ghost = 6
-    nombre_pepite = 49
-    dimension = 7
-    nombre_joueur = 2
-    nombre_ordre_mission=4
+# =============================================================================
+#     nombre_ghost = 6
+#     nombre_pepite = 49
+#     dimension = 7
+#     nombre_joueur = 2
+#     nombre_ordre_mission=4
+# =============================================================================
     
     #####################################################################################
     #Initialisation du jeu 
@@ -50,7 +51,7 @@ def main():
         Liste_ghost.append(new_ghost)
     
     """
-    Génértion des cartes
+    Génération des cartes
     """
         
     Liste_carte = []
