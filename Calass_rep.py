@@ -158,13 +158,21 @@ class Plateau(object) :
         
         graph = nx.Graph()
         graph.add_nodes_from(list(range(self.taille**2)))
-        node_pos = [(i,j) for i in range(self.taille) for j in range(self.taille)]
         
+  
+#        node_pos = [((self.taille-1)-i,j) for i in range(self.taille) for j in range(self.taille)]
+        node_pos = []
+        for j in range(self.taille):
+            for i in range(self.taille):
+                node_pos.append((i,j))
+        print(node_pos)
+        print(graph.node)        
         for k in range(self.taille**2) : 
             graph.node[k]['pos'] = node_pos[k]
         
         self.node_pos = node_pos
         self.graph = graph
+        self.carte_en_dehors="vide"
         
         # print(self.config)
         
@@ -354,6 +362,38 @@ class Plateau(object) :
         et “coulisser_graphe”.
         """
         pass
+    
+    def chemin_possible(self,id_joueur):
+#        for i in self.labyrinthe_detail:
+#            if i.dict_elements["joueur"]==id_joueur:
+#                pos_joueur = i
+        compteur=0
+        for v in self.graph.node : 
+            if self.graph.node[compteur]['pos']==(1,0):# pos_joueur 
+                nodi=v
+            compteur +=1
+        #for v in self.graph.node:
+        spl = nx.single_source_shortest_path(self.graph,source = nodi)
+        dico={}
+        for keys in spl.keys():
+            #print(keys)
+            z =  spl[keys]
+            #print(spl[keys])
+            inter=[]
+            for i in z:
+                inter.append(self.node_pos[i])
+            dico[self.node_pos[keys]]=inter
+        return(dico)
+        
+        
+            
+#           
+#        for v in self.graph.node:
+#            spl = nx.single_source_shortest_path_length(self.graph,nodi,v)
+#            print(spl)
+#            
+            
+        
     
     def check_deplacement (self):
         """
