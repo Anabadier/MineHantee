@@ -6,6 +6,7 @@ Created on Wed Nov 27 15:46:27 2019
 """
 
 import math
+from math import ceil
 import matplotlib as mt
 import matplotlib.pyplot as plt
 import numpy as np
@@ -58,9 +59,11 @@ def JEU(dimension = 7, nombre_joueur = 2, nombre_ghost = 6, nombre_ordre_mission
     
     nombre_carte_mobile = (dimension**2)-((dimension//2+1)**2)+1
     
-    nombre_carrefour = round(nombre_carte_mobile*proportion['Carrefour'])
-    nombre_coin = round(nombre_carte_mobile*proportion['Coin'])                                
-    nombre_couloir = round(nombre_carte_mobile*proportion['Couloir'])
+    nombre_carrefour = ceil(nombre_carte_mobile*proportion['Carrefour']) #arrondit supérieur
+    nombre_coin = ceil(nombre_carte_mobile*proportion['Coin']) #arrondit supérieur   
+    #nombre_couloir = round(nombre_carte_mobile*proportion['Couloir']) 
+    nombre_couloir=nombre_carte_mobile-nombre_carrefour-nombre_coin #complément au nb de cartes
+    
     
     for i in range (0,nombre_carrefour):
         new_carte = carte("carrefour",{'fantome':[],'pepite':[],'joueur':[]},0,(0,0),random.randint(0,3))
@@ -73,7 +76,6 @@ def JEU(dimension = 7, nombre_joueur = 2, nombre_ghost = 6, nombre_ordre_mission
     for i in range (0,nombre_couloir):
         new_carte = carte("couloir",{'fantome':[],'pepite':[],'joueur':[]},0,(0,0),random.randint(0,1))
         Liste_carte.append(new_carte)
-    
     
     
     carte_dehors = random.choice(Liste_carte)

@@ -10,7 +10,7 @@ import random
 import os
 import sys
 
-from carte import carte
+from classe_carte import carte
 import Jeu_mine
 # =============================================================================
 # Initialisation
