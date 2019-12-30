@@ -40,7 +40,7 @@ class Save_and_Charge(object):
         return content
     
     def charge_config_file(self):
-        file_path = tkfd.askopenfilename()
+        file_path = tkfd.askopenfilename(filetypes = [('CSV Files', '*.csv')])
         
         if (file_path != ""):
             content = self.read_file(_file_path=file_path)
@@ -59,9 +59,10 @@ class Save_and_Charge(object):
                            "nb_joueur," + str(values[1])+ "\n" +
                            "nb_fantome," + str(values[2])+ "\n" +
                            "nb_fantome_OdM," + str(values[3])+ "\n" +
-                           "pts_pepite," + str(values[4])+ "\n" +
-                           "pts_fantome," + str(values[5])+ "\n" +
-                           "pts_fantome_OdM," + str(values[6]))
+                           "nb_pepite," + str(values[4])+ "\n" +
+                           "pts_pepite," + str(values[5])+ "\n" +
+                           "pts_fantome," + str(values[6])+ "\n" +
+                           "pts_fantome_OdM," + str(values[7]))
                 file.close()
                 print("Le fichier a bien été sauvegardé")
                 

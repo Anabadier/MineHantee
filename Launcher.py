@@ -16,6 +16,10 @@ import SaC
 import clientMH as cMH
 import serveurMH as sMH
 
+import Jeu_mine as Jm
+
+import vizpygame as vpyg
+
 
 class LauncherMineHantee(object):
     def __init__(self):
@@ -92,6 +96,7 @@ class LauncherMineHantee(object):
         Retour.grid(column = 2, row = 0, padx = 15)
     
     def setup_scalers(self, _start_row = 0):
+        
         tk.Label(self.fen, text = "Dimension du plateau:").grid(column=0, 
                                                                 row=_start_row,
                                                                 padx = 15)
@@ -137,6 +142,16 @@ class LauncherMineHantee(object):
                                     relief = "sunken")
         self.Scale_NbFantomeOdM.grid(column=2, row=_start_row+1, columnspan = 2)
         
+        self.Scale_NbPepite = tk.Scale(master = self.fen,
+                                    orient = "horizontal",
+                                    label = "Nombre de pépites",
+                                    from_ = 1, to = self.taile_plateau*self.taile_plateau, resolution = 1,
+                                    tickinterval = self.taile_plateau*self.taile_plateau-1,
+                                    width = 20, length = 500,
+                                    activebackground = "#105105105",
+                                    relief = "sunken")
+        self.Scale_NbPepite.grid(column=0, row=_start_row+2, columnspan = 2)
+        
         self.Scale_PtsPepite = tk.Scale(master = self.fen,
                                     orient = "horizontal",
                                     label = "Points pour 1 pépite d'or",
@@ -145,7 +160,7 @@ class LauncherMineHantee(object):
                                     width = 20, length = 500,
                                     activebackground = "#105105105",
                                     relief = "sunken")
-        self.Scale_PtsPepite.grid(column=0, row=_start_row+2, columnspan = 4)
+        self.Scale_PtsPepite.grid(column=2, row=_start_row+2, columnspan = 2)
         
         self.Scale_PtsFantome = tk.Scale(master = self.fen,
                                     orient = "horizontal",
@@ -169,7 +184,7 @@ class LauncherMineHantee(object):
         
         
         scalers = [self.Scale_DimPlateau, self.Scale_NbJoueur,
-                   self.Scale_NbFantome, self.Scale_NbFantomeOdM,
+                   self.Scale_NbFantome, self.Scale_NbFantomeOdM, self.Scale_NbPepite,
                    self.Scale_PtsPepite, self.Scale_PtsFantome, self.Scale_PtsFantomeOdM]
         SaverCharger = SaC.Save_and_Charge(scalers, self)
         values = SaverCharger.read_file(_file_path = os.getcwd()+"/config.csv")
@@ -217,6 +232,8 @@ class LauncherMineHantee(object):
         self.nb_fantome_max = N**2-4*(N-1)-((N-4)//2+1)**2
         self.Scale_NbFantome.config(to = self.nb_fantome_max,
                                     tickinterval = self.nb_fantome_max-1)
+        self.Scale_NbPepite.config(to = N*N,
+                                    tickinterval = N*N-1)
     
     def update_nb_fantome_OM_max(self, N):
         self.Scale_NbFantomeOdM.config(to = int(N),
@@ -319,15 +336,6 @@ class LauncherMineHantee(object):
         self.HOST = self.HOST.get()
         self.thread_serveur = threading.Thread(target = self.subprocess_creation_serveur)
         self.thread_serveur.start()
-# =============================================================================
-#         self.server_subprocess = subprocess.Popen(["cmd.exe", "/c", "start",
-#                                                    "python", "serveurMH.py",
-#                                                    self.PORT, self.HOST],
-#                                                   shell = True)
-# =============================================================================
-# =============================================================================
-#         sMH.Server(self.PORT.get(), self.HOST.get())
-# =============================================================================
         self.partie_en_ligne = True
         self.choix_pseudo()
     
@@ -338,14 +346,16 @@ class LauncherMineHantee(object):
         self.choix_pseudo()
     
     def choix_pseudo(self):
+        #avant de construire la fenetre du pseudo, on enregistre les valeurs des
+        #scalers
+        self.get_plateau_options()
+        
+        
         self.fen.title("Joindre la partie - Mine Hantée")
         if self.navigation_flow[-1] != 6:
             self.navigation_flow.append(6)
         for widget in self.fen.winfo_children():
             widget.destroy()
-            
-        self.taile_plateau = 7
-        self.nb_fantome_max = 21
         
         tk.Label(self.fen, text = "Pseudonyme:").grid(column=0, row=0, padx = 15)
         self.PSEUDO = tk.Entry(self.fen)
@@ -365,11 +375,55 @@ class LauncherMineHantee(object):
                                  command = self.retour)
         Retour.grid(column = 1, row = 2, padx = 15)
     
+    def get_plateau_options(self):
+        
+        try :
+            self.value_DimPlateau = int(self.Scale_DimPlateau.get())
+            self.value_NbJoueur = int(self.Scale_NbJoueur.get())
+            self.value_NbFantome = int(self.Scale_NbFantome.get())
+            self.value_NbFantomeOdM = int(self.Scale_NbFantomeOdM.get())
+            self.value_NbPepite = int(self.Scale_NbPepite.get())
+            self.value_PtsPepite = int(self.Scale_PtsPepite.get())
+            self.value_PtsFantome = int(self.Scale_PtsFantome.get())
+            self.value_PtsFantomeOdM = int(self.Scale_PtsFantomeOdM.get())
+        except:
+            self.value_DimPlateau = 7
+            self.value_NbJoueur = 2
+            self.value_NbFantome = 21
+            self.value_NbFantomeOdM = 3
+            self.value_NbPepite = 49
+            self.value_PtsPepite = 1
+            self.value_PtsFantome = 5
+            self.value_PtsFantomeOdM = 15
+            
+        print(self.value_DimPlateau,
+            self.value_NbJoueur,
+            self.value_NbFantome,
+            self.value_NbFantomeOdM,
+            self.value_NbPepite,
+            self.value_PtsPepite,
+            self.value_PtsFantome,
+            self.value_PtsFantomeOdM)
+            
+    
     def rejoindre_partie(self):
         self.pseudo = self.PSEUDO.get()
         if (self.partie_en_ligne):
             self.ref_client = cMH.Client(self)
-        self.plateau_exemple()
+            self.plateau_exemple()
+        
+        else:
+            self.fen.destroy()
+            plateau = Jm.JEU(dimension = self.value_DimPlateau,
+                              nombre_joueur = self.value_NbJoueur,
+                              nombre_ghost = self.value_NbFantome,
+                              nombre_ordre_mission = self.value_NbFantomeOdM,
+                              nombre_pepite = self.value_NbPepite,
+                              pts_pepite = self.value_PtsPepite,
+                              pts_fantome = self.value_PtsFantome,
+                              pts_ordre_mission = self.value_PtsFantomeOdM)
+            vpyg.ecran(plateau)
+            
     
     def plateau_exemple(self):
         self.fen.title("Joindre la partie - Mine Hantée")
@@ -378,10 +432,10 @@ class LauncherMineHantee(object):
         for widget in self.fen.winfo_children():
             widget.destroy()
         
-        Creer_serveur = ttk.Button(self.fen,
+        Info_serveur = ttk.Button(self.fen,
                                    text = "touche test",
                                    command = self.ref_client.envoyer_Touche)
-        Creer_serveur.grid(column = 0, row = 2, padx = 15)
+        Info_serveur.grid(column = 0, row = 2, padx = 15)
 
         
 if __name__=="__main__":
