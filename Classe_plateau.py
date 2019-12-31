@@ -20,8 +20,6 @@ from classe_carte import carte
 ###############################################################################
 # Classe Plateau
 ###############################################################################
-cartes_disponibles = {'coin' : 20, 'couloir' : 25, 'carrefour' : 16} #a actualiser
-
 class Plateau(object) :
     '''
     Le fichier de configuration en exemple :
@@ -44,7 +42,7 @@ class Plateau(object) :
         
         self.taille = dim_plateau #int(self.config.dim_plateau)
         self.labyrinthe_detail = np.array([[object]*self.taille]*self.taille)
-        
+        print(self.labyrinthe_detail)
         entrees = []
         for i in [0,self.taille-1]:
             for j in [coord for coord in range(1,11,+2)]:
@@ -55,54 +53,56 @@ class Plateau(object) :
         node_pos = [(i,j) for i in range(self.taille) for j in range(self.taille)]
         
         for k in range(self.taille**2) : 
-            graph.node[k]['pos'] = node_pos[k]
+            graph.nodes[k]['pos'] = node_pos[k]
         
         self.node_pos = node_pos
         self.graph = graph
         self.carte_en_dehors=carte(random.choice(['coin','couloir','carrefour']),dict_elements={'fantome':[],'pepite':[],'joueur':[]})
         self.entrees = entrees
         
+        #pour visualiser le graphe
+        self.fig = plt.figure()
+        self.ax_graph = self.fig.add_subplot(111)
+        
         # print(self.config)
         
-
-#        
+#
     def placer_carte_libre(self,liste_carte):
         for i in range (self.taille):
             for j in range (self.taille):
-                if type(self.labyrinthe_detail[i,j]) == type : #si la place est vacante, i.e si pas de carte fixe installée
-                    print(type(self.labyrinthe_detail[i,j]))
+                if type(self.labyrinthe_detail[i,j]) == type :
+                    
                     new_carte = random.choice(liste_carte)
                     new_carte.position_D=(i,j)
                     self.labyrinthe_detail[i][j] = new_carte
                     
                     liste_carte.remove(new_carte)
-                    
-                else:
-                    print(type(self.labyrinthe_detail[i,j]))
     
     def etablir_connexion(self,carte):
+        """
+        carte(instance de carte):
+            carte que l'on considère et que l'on cherche à relier à ces voisins
+        """
+        i, j = carte.position_D[0], carte.position_D[1]
         #Connexion Nord
-        if carte.connectivite[carte.orientation][0] == 1 and i != 0:
-            if self.labyrinthe_detail[i-1][j].connectivite[self.labyrinthe_detail[i-1][j].orientation][1] == 1 :
-                print('Youhou !')
+        if carte.connectivite[carte.orientation][0] == "1" and i != 0:
+            if self.labyrinthe_detail[i-1][j].connectivite[self.labyrinthe_detail[i-1][j].orientation][1] == "1" :
                 self.graph.add_edge(self.node_pos.index((i-1,j)),self.node_pos.index((i,j)))
         
         #Connexion Ouest
-        if carte.connectivite[carte.orientation][3] == 1 and j != 0:
-            if self.labyrinthe_detail[i][j-1].connectivite[self.labyrinthe_detail[i][j-1].orientation][2] == 1 :
+        if carte.connectivite[carte.orientation][3] == "1" and j != 0:
+            if self.labyrinthe_detail[i][j-1].connectivite[self.labyrinthe_detail[i][j-1].orientation][2] == "1" :
                 self.graph.add_edge(self.node_pos.index((i,j)),self.node_pos.index((i,j-1)))
         
         #Connexion Est
-        if carte.connectivite[carte.orientation][2] == 1 and j != self.taille-1:
-            if self.labyrinthe_detail[i][j+1].connectivite[self.labyrinthe_detail[i][j+1].orientation][3] == 1 :
+        if carte.connectivite[carte.orientation][2] == "1" and j != self.taille-1:
+            if self.labyrinthe_detail[i][j+1].connectivite[self.labyrinthe_detail[i][j+1].orientation][3] == "1" :
                 self.graph.add_edge(self.node_pos.index((i,j)),self.node_pos.index((i,j+1)))
         
         #Connexion Sud
-        if carte.connectivite[carte.orientation][1] == 1 and i != self.taille-1:
-            if self.labyrinthe_detail[i+1][j].connectivite[self.labyrinthe_detail[i+1][j].orientation][0] == 1 :
+        if carte.connectivite[carte.orientation][1] == "1" and i != self.taille-1:
+            if self.labyrinthe_detail[i+1][j].connectivite[self.labyrinthe_detail[i+1][j].orientation][0] == "1" :
                 self.graph.add_edge(self.node_pos.index((i,j)),self.node_pos.index((i+1,j)))
-
-        
  
     
     def placer_pepites(self, nb_pepites) :
@@ -163,8 +163,7 @@ class Plateau(object) :
         #Construction des listes des cartes fixes sur le plateau, selon
         #que le nombre de cartes fixes est pair ou impair
         liste_CF_PP = [(i,j) for i in range(0,taille, 2) for j in range(0, taille, 2)]
-        liste_CF_PI = [(i,j) for i in range(0,taille, 2) for j in range(0, taille, 2)]
-        print(liste_CF_PI)
+        liste_CF_PI = [(i,j) for i in range(1,taille, 2) for j in range(1, taille, 2)]
     
         #On stocke la liste des index des cartes fixes sur le plateau
         if Pair :
@@ -175,13 +174,13 @@ class Plateau(object) :
         
         for i in range(taille) :
             for j in range(taille) :
-                print(i,j)
+                
                 if ((i,j) in self.Index_Cartes_fixes):
                     
                     
                     Nord_ouvert = (i > 0 and i <= taille-1)  
                     Sud_ouvert =  (i >= 0 and i < taille-1)
-                    Est_ouvert = (j <= taille//2)
+                    Est_ouvert = (j < taille//2)
                     Ouest_ouvert = (j > taille//2)
                     
                     orientation_CF = [int(Nord_ouvert), int(Sud_ouvert),
@@ -191,14 +190,13 @@ class Plateau(object) :
                         type_CF = 'carrefour'
                     else :
                         type_CF = 'coin'
-                        
                     carte_in = carte(type_CF, {'fantome':[],'pepite':[],'joueur':[]}, 0, 
                                                (i,j), dico_connectivite[type_CF].index(orientation_CF),mobilite=False)
                     self.labyrinthe_detail[i][j] = carte_in
                 
     
    
-    def coulisser_detail (self,coord_x, coord_y):
+    def coulisser_detail (self, coord_x, coord_y):
         """
         Change les positions des objets cartes dans la matrice “self.labyrinthe_detail”
         :param coord_x: abscisse du lieu où l'on souhaite faire coulisser la carte
@@ -209,10 +207,11 @@ class Plateau(object) :
         ## on modifie la ligne
         # en coulissant de gauche à droite
         if coord_y == -1:
-            carte_sortante = self.labyrinthe_detail[coord_x,self.taille-1]
-            for i in range(self.taille-1,0,-1) :
+            carte_sortante = self.labyrinthe_detail[coord_x,self.taille-1]#nouvelle carte libre
+            for i in range(self.taille-1,0,-1) :#on opère le décalage dans la matrice
                 self.labyrinthe_detail[coord_x,i] = self.labyrinthe_detail[coord_x,i-1]
-            self.labyrinthe_detail[coord_x,0] = self.carte_en_dehors
+            self.labyrinthe_detail[coord_x,0] = self.carte_en_dehors#on insère la carte dans la matrice
+            self.labyrinthe_detail[coord_x,0].position_D = (coord_x,0)#on donne sa position à la nouvelle carte
                 
         # en coulissant de droite à gauche    
         if coord_y == self.taille :
@@ -220,6 +219,7 @@ class Plateau(object) :
             for i in range(self.taille-1) :
                 self.labyrinthe_detail[coord_x,i] = self.labyrinthe_detail[coord_x,i+1]
             self.labyrinthe_detail[coord_x,self.taille-1] = self.carte_en_dehors
+            self.labyrinthe_detail[coord_x,self.taille-1].position_D = (coord_x,self.taille-1)
                 
         ## on modifie la colonne
         # en coulissant de haut en bas
@@ -228,6 +228,7 @@ class Plateau(object) :
             for i in range(self.taille-1, 0, -1) :
                 self.labyrinthe_detail[i,coord_y] = self.labyrinthe_detail[i-1,coord_y]
             self.labyrinthe_detail[0,coord_y] = self.carte_en_dehors
+            self.labyrinthe_detail[0,coord_y].position_D = (0,coord_y)
                 
         # en coulissant du bas vers le haut
         if coord_x == self.taille :
@@ -235,48 +236,37 @@ class Plateau(object) :
             for i in range(self.taille-1) :
                 self.labyrinthe_detail[i,coord_y] = self.labyrinthe_detail[i+1,coord_y]
             self.labyrinthe_detail[self.taille-1,coord_y] = self.carte_en_dehors
+            self.labyrinthe_detail[self.taille-1,coord_y].position_D = (self.taille-1,coord_y)
         
         self.carte_en_dehors.elements = carte_sortante.elements
         carte_sortante.elements = dict_vide
-        self.carte_en_dehors = carte_sortante 
+        self.carte_en_dehors = carte_sortante
         # actualiser network graph
+
 
         
         #la nouvelle carte à coulisser sera la carte qui est sortie
         #self.carte_en_dehors = carte_sortante 
     
-    def coulisser_graphe (self) :
-        """
-        Change la connectivité de “self.labyrinthe_graphe”
-        lorsque qu’une nouvelle carte est insérée dans le plateau.
-        La nouvelle carte doit être connectée au réseau; la carte sortante
-        ne doit plus être connectée; les cartes intermédiaire doivent
-        modifier leur connection.
-        """
-        pass
     
-    def coulisser (self):
+    def coulisser (self, coord_x, coord_y):
         """
         Effectue tous les changements associés à l’introduction
         d’une carte dans le plateau au début du tour d’un joueur.
-        Notamment, appelle les méthodes “coulisser_detail”
-        et “coulisser_graphe”.
+        
+        :param coord_x: abscisse du lieu où l'on souhaite faire coulisser la carte
+        :param coord_y: ordonnée du lieu où l'on souhaite faire coulisser la carte
         """
-        pass
-    
-    def check_deplacement (self):
-        """
-        Vérifie que le déplacement demandé par un joueur
-        est valide. Si possible, effectue la mise à jour de la position du
-        joueur sinon, renvoie un message d’erreur visible par le joueur.
-        """
-        pass
+        self.coulisser_detail(coord_x, coord_y)
+        self.graph.remove_edges_from(self.graph.edges())#on enlève toutes les connexions
+        for i in range (self.taille):
+            for j in range(self.taille):
+                self.etablir_connexion(self.labyrinthe_detail[i,j])#on refait les connexions
         
-        
-        
-        
-        
-        
+        #on dessine
+        self.ax_graph.clear()       
+        nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph)
+
         
         
         
