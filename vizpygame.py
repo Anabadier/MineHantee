@@ -10,7 +10,7 @@ import random
 import os
 import sys
 
-from carte import carte
+from classe_carte import carte
 import Jeu_mine
 # =============================================================================
 # Initialisation
@@ -74,6 +74,9 @@ def afficher(plat,plateau,fenetre):
     img_fantome=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"fantome.png"))).convert_alpha()
     fantome=pygame.transform.scale(img_fantome,(int((taille_case-1)/2),int((taille_case-1)/2)))
     
+    img_perso=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"pinguin.png"))).convert_alpha()
+    perso=pygame.transform.scale(img_perso,(int((taille_case-1)/1.5),int((taille_case-1)/1.5)))
+
     
     num_ligne=0
     for ligne in Mat_plat:
@@ -93,6 +96,8 @@ def afficher(plat,plateau,fenetre):
                 plateau.blit(pepite,(x,y))
             if case.elements['fantome'] == True:
                 plateau.blit(fantome,(x+taille_case/5,y+taille_case/5))
+            if case.elements['joueur']==True:
+                plateau.blit(perso,(x+taille_case/6,y+taille_case/6))
             
             #Si paire : peut coulisser : insérer bouton de chaque côté
             if num_case%2==0:
@@ -114,10 +119,7 @@ def afficher(plat,plateau,fenetre):
     carte_eject=genere_carte(carte_ej.nom,(50,50)) #aléatoire pour le moment
     fenetre.fill((202,193,188) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
     fenetre.blit(carte_eject,(625,80))
-    if carte_ej.elements['pepite'] == True:
-        fenetre.blit(pepite,(625,80))
-    if carte_ej.elements['fantome'] == True:
-        fenetre.blit(fantome,(625+taille_case/5,80+taille_case/5))
+
     
     ##Rafraîchissement de l'écran
     pygame.display.flip()
