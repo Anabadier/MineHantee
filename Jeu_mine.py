@@ -74,11 +74,8 @@ def JEU(dimension = 7, nombre_joueur = 2, nombre_ghost = 6, nombre_ordre_mission
         new_carte = carte("couloir",{'fantome':[],'pepite':[],'joueur':[]},0,(0,0),random.randint(0,1))
         Liste_carte.append(new_carte)
     
-    
-    
     carte_dehors = random.choice(Liste_carte)
     Liste_carte.remove(carte_dehors) 
-    print(len(Liste_carte))   
     
     """
     Remplissage du plateau
@@ -91,7 +88,6 @@ def JEU(dimension = 7, nombre_joueur = 2, nombre_ghost = 6, nombre_ordre_mission
     
     plateau.generer_carte_fixe(nombre_ghost,nombre_pepite)
     plateau.placer_carte_libre(Liste_carte)
-    print(plateau.labyrinthe_detail)
     
     
     """ 
@@ -114,6 +110,7 @@ def JEU(dimension = 7, nombre_joueur = 2, nombre_ghost = 6, nombre_ordre_mission
     for i in range (dimension):
         for j in range(dimension):
             plateau.etablir_connexion(plateau.labyrinthe_detail[i,j])
+    nx.draw_networkx(plateau.graph, pos = plateau.node_pos, ax = plateau.ax_graph)
     
     """ 
     Génération des jouers et placement sur le plateau
@@ -125,8 +122,6 @@ def JEU(dimension = 7, nombre_joueur = 2, nombre_ghost = 6, nombre_ordre_mission
         new_joueur.ref_plateau = plateau
         Liste_joueur.append(new_joueur)
         
-    
-    
     for joueur in Liste_joueur:
         joueur.generer_odre_mission(nombre_ordre_mission,nombre_ghost)          # Attribution des ordres de missions 
         
@@ -138,3 +133,6 @@ def JEU(dimension = 7, nombre_joueur = 2, nombre_ghost = 6, nombre_ordre_mission
     ################################################################################
     
     return(plateau)
+
+if __name__=="__main__":
+    JEU()

@@ -21,9 +21,9 @@ import Jeu_mine
 #taille_case = 350/nombre_case_cote
 #cote_fenetre = nombre_case_cote * taille_case
 
-dic_case_img={'0110':'NXXO.png','1010':'XSXO.png','1001':'XSEX.png','0101':'NXEX.png',\
-              '1100':'XXEO.png','0011':'NSXX.png',\
-              '1110':'XXXO.png','1011':'XSXX.png','1101':'XXEX.png','0111':'NXXX.png'}
+dic_case_img={'0110':'NXXO_2.png','1010':'XSXO_2.png','1001':'XSEX_2.png','0101':'NXEX_2.png',\
+              '1100':'XXEO_2.png','0011':'NSXX_2.png',\
+              '1110':'XXXO_2.png','1011':'XSXX_2.png','1101':'XXEX_2.png','0111':'NXXX_2.png'}
 
 ##On génère une matrice aléatoire
 #def genere_mat():
@@ -85,6 +85,7 @@ def afficher(plat,plateau,fenetre):
             if num_case%2==0 and num_ligne%2==0:
                 plateau.fill(RED, (x,y,int(taille_case),int(taille_case)))
             num_case+=1
+            print(case.nom)
             carte=genere_carte(case.nom,(int(taille_case),int(taille_case)))
             plateau.blit(carte,(x,y))
             #Si pépite/fantome sur la carte, voir condition avec la matrice des instances de cartes
@@ -272,7 +273,7 @@ def deplacement(i):
     coord_y=convertFlecheCoord[fleche[0]][1]
     print(coord_x,coord_y)
     #régénérer plat
-    plat.coulisser_detail(coord_x,coord_y)
+    plat.coulisser(coord_x,coord_y)
     plateau=pygame.Surface((cote_fenetre,cote_fenetre))
     fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()
     plateau.blit(fond, (0,0))
