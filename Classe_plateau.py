@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import math
 
 from classe_carte import carte
+import SaC
 
 ###############################################################################
 # Classe Plateau
@@ -34,15 +35,15 @@ class Plateau(object) :
                             #pas les bons chiffres
     '''
     
-    def __init__(self, dim_plateau): #chemin_fichier_config) :
+    def __init__(self, dim_plateau, _SaC = SaC.Save_and_Charge()): #chemin_fichier_config) :
         
         #self.config = pandas.read_csv(chemin_fichier_config, sep=';', 
                                      # header = None, index_col = 0).T
         
         
         self.taille = dim_plateau #int(self.config.dim_plateau)
+        self.SaC = _SaC
         self.labyrinthe_detail = np.array([[object]*self.taille]*self.taille)
-        print(self.labyrinthe_detail)
         entrees = []
         for i in [0,self.taille-1]:
             for j in [coord for coord in range(1,11,+2)]:
@@ -62,7 +63,8 @@ class Plateau(object) :
         
         #pour visualiser le graphe
         self.fig = plt.figure()
-        self.ax_graph = self.fig.add_subplot(111)
+        self.ax_graph = self.fig.add_subplot(121)
+        self.ax_graph2 = self.fig.add_subplot(122)
         
         # print(self.config)
         
@@ -141,7 +143,6 @@ class Plateau(object) :
                 self.labyrinthe_detail[i][j].elements['fantome']=liste_ghost[0].id
                 del liste_ghost[0]
                 compteur+=1
-                print(compteur)
                 
 
     def generer_carte_fixe(self,nb_fantome,nb_pepites) :
@@ -257,8 +258,12 @@ class Plateau(object) :
         :param coord_x: abscisse du lieu où l'on souhaite faire coulisser la carte
         :param coord_y: ordonnée du lieu où l'on souhaite faire coulisser la carte
         """
-        self.coulisser_detail(coord_x, coord_y)
+        self.coulisser_detail(coord_x, coord_y)#on opère les chgmts dans la matrice
+        self.SaC.log_plateau(self)#n contruit le log de la matrice
         self.graph.remove_edges_from(self.graph.edges())#on enlève toutes les connexions
+        self.ax_graph2.clear()
+        
+        nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph2)
         for i in range (self.taille):
             for j in range(self.taille):
                 self.etablir_connexion(self.labyrinthe_detail[i,j])#on refait les connexions

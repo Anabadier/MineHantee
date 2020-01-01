@@ -4,12 +4,12 @@ Created on Fri Nov 15 14:28:20 2019
 
 @author: eliot
 """
-
+import os
 from tkinter import filedialog as tkfd
 
  
 class Save_and_Charge(object):
-    def __init__(self, _scalers, _ref_launcher):
+    def __init__(self, _scalers = None, _ref_launcher = None):
         self.scalers = _scalers
         self.ref_launcher = _ref_launcher
     
@@ -70,6 +70,31 @@ class Save_and_Charge(object):
                 print("Une erreur de valeur est survenue lors de la sauvegarde de fichier.")
                 file.close()
     
+    def log_plateau(self, _plateau, _overwrite = False):
+        
+        if (not os.path.exists(os.getcwd()+"/"+"log_plateau_last_game.txt")):
+            file_object = open(os.getcwd()+"/"+"log_plateau_last_game.txt", 'w')
+        else:
+            if (_overwrite):
+                file_object = open(os.getcwd()+"/"+"log_plateau_last_game.txt", 'w')
+            else:
+                file_object = open(os.getcwd()+"/"+"log_plateau_last_game.txt", 'a')
+        
+        file_object.write("******\n")
+        dim = _plateau.labyrinthe_detail.shape
+        c = 0
+        for i in range(dim[0]):
+            _str = ""
+            for j in range(dim[1]):
+                _str += "{0}_{1},".format(c,
+                        _plateau.labyrinthe_detail[i,j].nom)
+                c+=1
+            file_object.write(_str[:-1]+"\n")
+        
+            
+        file_object.close()
+        
+        
     def charge_game_file(self):
         print("in charge_game_file")
     

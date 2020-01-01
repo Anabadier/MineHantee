@@ -186,19 +186,19 @@ class LauncherMineHantee(object):
         scalers = [self.Scale_DimPlateau, self.Scale_NbJoueur,
                    self.Scale_NbFantome, self.Scale_NbFantomeOdM, self.Scale_NbPepite,
                    self.Scale_PtsPepite, self.Scale_PtsFantome, self.Scale_PtsFantomeOdM]
-        SaverCharger = SaC.Save_and_Charge(scalers, self)
-        values = SaverCharger.read_file(_file_path = os.getcwd()+"/config.csv")
+        self.SaverCharger = SaC.Save_and_Charge(scalers, self)
+        values = self.SaverCharger.read_file(_file_path = os.getcwd()+"/config.csv")
         values = [val.split(",")[1] for val in values]
-        SaverCharger.setScalersValues(values)
+        self.SaverCharger.setScalersValues(values)
         
         ChargeConfig_Button = ttk.Button(master = self.fen,
                                         text = "Charger une configuration",
-                                        command = SaverCharger.charge_config_file)
+                                        command = self.SaverCharger.charge_config_file)
         ChargeConfig_Button.grid(column=1, row=_start_row+10, padx = 15)
         
         SaveConfig_Button = ttk.Button(master = self.fen,
                                         text = "Sauvegarder une configuration",
-                                        command = SaverCharger.save_config_file)
+                                        command = self.SaverCharger.save_config_file)
         SaveConfig_Button.grid(column=2, row=_start_row+10, padx = 15)
     
     def configurer_partie(self):
@@ -421,7 +421,8 @@ class LauncherMineHantee(object):
                               nombre_pepite = self.value_NbPepite,
                               pts_pepite = self.value_PtsPepite,
                               pts_fantome = self.value_PtsFantome,
-                              pts_ordre_mission = self.value_PtsFantomeOdM)
+                              pts_ordre_mission = self.value_PtsFantomeOdM,
+                              _SaC = self.SaverCharger)
             vpyg.ecran(plateau)
             
     

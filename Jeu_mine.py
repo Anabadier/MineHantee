@@ -16,9 +16,13 @@ import networkx as nx
 import pandas
 
 from Calass_rep import *
+from Classe_plateau import Plateau
+
+import SaC
     
 def JEU(dimension = 7, nombre_joueur = 2, nombre_ghost = 6, nombre_ordre_mission = 4,
-        nombre_pepite = 49, pts_pepite = 1, pts_fantome = 5, pts_ordre_mission = 15):    
+        nombre_pepite = 49, pts_pepite = 1, pts_fantome = 5, pts_ordre_mission = 15,
+        _SaC = SaC.Save_and_Charge()):    
     
     connectivite={'coin':[[0,1,1,0],[1,0,1,0],[1,0,0,1],[0,1,0,1]],
                   'couloir':[[1,1,0,0],[0,0,1,1]],
@@ -86,7 +90,7 @@ def JEU(dimension = 7, nombre_joueur = 2, nombre_ghost = 6, nombre_ordre_mission
     """
     
     
-    plateau=Plateau(dimension)                                             
+    plateau=Plateau(dimension, _SaC)                                             
     
     
     plateau.generer_carte_fixe(nombre_ghost,nombre_pepite)
@@ -134,6 +138,8 @@ def JEU(dimension = 7, nombre_joueur = 2, nombre_ghost = 6, nombre_ordre_mission
     ################################################################################
     # Déroulement du jeu
     ################################################################################
+    _SaC.log_plateau(_plateau = plateau, _overwrite = True)
+    
     
     return(plateau)
 
