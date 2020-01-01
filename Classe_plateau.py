@@ -5,15 +5,15 @@ Created on Sun Nov 24 23:53:33 2019
 @author: HP
 """
 
-import pandas
+#import pandas
 import numpy as np
-import pygame
-from pygame.locals import *
+#import pygame
+#from pygame.locals import *
 import random
-import os
+#import os
 import networkx as nx
 import matplotlib.pyplot as plt
-import math
+#import math
 
 from classe_carte import carte
 import SaC
@@ -271,13 +271,3 @@ class Plateau(object) :
         #on dessine
         self.ax_graph.clear()       
         nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph)
-
-        
-        
-        
-        
-        
-        
-        
-        
-        

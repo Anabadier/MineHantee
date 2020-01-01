@@ -14,7 +14,6 @@ from tkinter import ttk
 
 import SaC
 import clientMH as cMH
-import serveurMH as sMH
 
 import Jeu_mine as Jm
 

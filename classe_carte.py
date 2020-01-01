@@ -5,8 +5,6 @@ Created on Wed Nov 13 05:18:23 2019
 @author: anael
 """
 
-
-
 class carte():
     def __init__(self,type_carte,dict_elements=None,\
                  position_graph=None,position_detail=None,orientation=0,mobilite=True):

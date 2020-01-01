@@ -270,10 +270,11 @@ def deplacement(i):
     fleche=i[0]
     plat=i[1]
     print("la flèche "+str(fleche)+" a été cliquée")
-    convertFlecheCoord={'G':[int(fleche[1:]),-1],'D':[int(fleche[1:]),plat.taille],'H':[-1,int(fleche[1:])],'B':[plat.taille,int(fleche[1:]),]}
+    convertFlecheCoord={'G':[int(fleche[1:]),-1],'D':[int(fleche[1:]),plat.taille],
+                        'H':[-1,int(fleche[1:])],'B':[plat.taille,int(fleche[1:])]}
     coord_x=convertFlecheCoord[fleche[0]][0]
     coord_y=convertFlecheCoord[fleche[0]][1]
-    print(coord_x,coord_y)
+    #print(coord_x,coord_y)
     #régénérer plat
     plat.coulisser(coord_x,coord_y)
     plateau=pygame.Surface((cote_fenetre,cote_fenetre))
