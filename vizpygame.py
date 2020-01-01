@@ -56,7 +56,7 @@ def genere_carte(carte,size):
     carte=pygame.transform.scale(image, size) #forcer la taille de la case
     return(carte)
 
-def afficher(plat,plateau,fenetre):
+def afficher(plat,plateau,fenetre,id_joueur=None):
     """afficher les cartes sur le plateau"""
     global pepite, fantome
     

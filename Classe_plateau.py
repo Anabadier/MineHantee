@@ -289,3 +289,26 @@ class Plateau(object) :
         #on dessine
         self.ax_graph.clear()
         nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph)
+        
+    def chemin_possible(self,id_joueur):
+    #        for i in self.labyrinthe_detail:
+    #            if i.dict_elements["joueur"]==id_joueur:
+    #                pos_joueur = i
+        compteur=0
+        for v in self.graph.node : 
+            if self.graph.node[compteur]['pos']==(1,0):# pos_joueur 
+                nodi=v
+            compteur +=1
+        #for v in self.graph.node:
+        spl = nx.single_source_shortest_path(self.graph,source = nodi)
+        dico={}
+        for keys in spl.keys():
+            #print(keys)
+            z =  spl[keys]
+            #print(spl[keys])
+            inter=[]
+            for i in z:
+                inter.append(self.node_pos[i])
+            dico[self.node_pos[keys]]=inter
+        return(dico)
+        
