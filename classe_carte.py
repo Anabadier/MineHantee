@@ -8,13 +8,24 @@ Created on Wed Nov 13 05:18:23 2019
 class carte():
     def __init__(self,type_carte,dict_elements=None,\
                  position_graph=None,position_detail=None,orientation=0,mobilite=True):
-        """type_carte : str
-        dict_elements : dict {fantome,pepite,joueur)
-        position_graph : ref noeud networkX
-        position_detail : (int,int)
-        orientation : int
-        nom : str ('0010')
-        mobilite : bool """
+        """
+        type_carte:
+            str
+        dict_elements :
+            dict {fantome,pepite,joueur)
+        position_graph :
+            numéro du noeud networkX dans la liste plateau.node_pos. Cette liste
+            est dans le même ordre que les lables des nouds du graphe du pateau.
+            donc position_graph correspond effectivement au noeud.
+        position_detail :
+            (int,int)
+        orientation :
+            int
+        nom :
+            str ('0010')
+        mobilite :
+            bool 
+        """
         #[Nord,Sud,Est,Ouest] 
         dict_connectivité={'coin':['0110','1010','1001','0101'],
               'couloir':['1100','0011'],
