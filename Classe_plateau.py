@@ -76,6 +76,7 @@ class Plateau(object) :
                     
                     new_carte = random.choice(liste_carte)
                     new_carte.position_D=(i,j)
+                    new_carte.position_G = self.node_pos.index((i,j))
                     self.labyrinthe_detail[i][j] = new_carte
                     
                     liste_carte.remove(new_carte)
@@ -87,23 +88,23 @@ class Plateau(object) :
         """
         i, j = carte.position_D[0], carte.position_D[1]
         #Connexion Nord
-        if carte.connectivite[carte.orientation][0] == "1" and i != 0:
-            if self.labyrinthe_detail[i-1][j].connectivite[self.labyrinthe_detail[i-1][j].orientation][1] == "1" :
+        if carte.nom[0] == "1" and i != 0:
+            if self.labyrinthe_detail[i-1][j].nom[1] == "1" :
                 self.graph.add_edge(self.node_pos.index((i-1,j)),self.node_pos.index((i,j)))
         
         #Connexion Ouest
-        if carte.connectivite[carte.orientation][3] == "1" and j != 0:
-            if self.labyrinthe_detail[i][j-1].connectivite[self.labyrinthe_detail[i][j-1].orientation][2] == "1" :
+        if carte.nom[3] == "1" and j != 0:
+            if self.labyrinthe_detail[i][j-1].nom[2] == "1" :
                 self.graph.add_edge(self.node_pos.index((i,j)),self.node_pos.index((i,j-1)))
         
         #Connexion Est
-        if carte.connectivite[carte.orientation][2] == "1" and j != self.taille-1:
-            if self.labyrinthe_detail[i][j+1].connectivite[self.labyrinthe_detail[i][j+1].orientation][3] == "1" :
+        if carte.nom[2] == "1" and j != self.taille-1:
+            if self.labyrinthe_detail[i][j+1].nom[3] == "1" :
                 self.graph.add_edge(self.node_pos.index((i,j)),self.node_pos.index((i,j+1)))
         
         #Connexion Sud
-        if carte.connectivite[carte.orientation][1] == "1" and i != self.taille-1:
-            if self.labyrinthe_detail[i+1][j].connectivite[self.labyrinthe_detail[i+1][j].orientation][0] == "1" :
+        if carte.nom[1] == "1" and i != self.taille-1:
+            if self.labyrinthe_detail[i+1][j].nom[0] == "1" :
                 self.graph.add_edge(self.node_pos.index((i,j)),self.node_pos.index((i+1,j)))
  
     
@@ -178,7 +179,6 @@ class Plateau(object) :
                 
                 if ((i,j) in self.Index_Cartes_fixes):
                     
-                    
                     Nord_ouvert = (i > 0 and i <= taille-1)  
                     Sud_ouvert =  (i >= 0 and i < taille-1)
                     Est_ouvert = (j < taille//2)
@@ -191,12 +191,14 @@ class Plateau(object) :
                         type_CF = 'carrefour'
                     else :
                         type_CF = 'coin'
-                    carte_in = carte(type_CF, {'fantome':[],'pepite':[],'joueur':[]}, 0, 
-                                               (i,j), dico_connectivite[type_CF].index(orientation_CF),mobilite=False)
+                    carte_in = carte(type_CF, {'fantome':[],'pepite':[],'joueur':[]},
+                                               self.node_pos.index((i,j)), 
+                                               (i,j),
+                                               dico_connectivite[type_CF].index(orientation_CF),
+                                               mobilite=False)
                     self.labyrinthe_detail[i][j] = carte_in
                 
-    
-   
+             
     def coulisser_detail (self, coord_x, coord_y):
         """
         Change les positions des objets cartes dans la matrice “self.labyrinthe_detail”
@@ -211,33 +213,48 @@ class Plateau(object) :
             carte_sortante = self.labyrinthe_detail[coord_x,self.taille-1]#nouvelle carte libre
             for i in range(self.taille-1,0,-1) :#on opère le décalage dans la matrice
                 self.labyrinthe_detail[coord_x,i] = self.labyrinthe_detail[coord_x,i-1]
+                self.labyrinthe_detail[coord_x,i].position_D = (coord_x,i-1)
+                self.labyrinthe_detail[coord_x,i].position_G = self.node_pos.index((coord_x,i-1))
             self.labyrinthe_detail[coord_x,0] = self.carte_en_dehors#on insère la carte dans la matrice
-            self.labyrinthe_detail[coord_x,0].position_D = (coord_x,0)#on donne sa position à la nouvelle carte
-                
+            self.labyrinthe_detail[coord_x,0].position_D = (coord_x,0)#on donne sa position dans la matrice à la carte
+            self.labyrinthe_detail[coord_x,0].position_G = self.node_pos.index((coord_x,0))#on sa position dans le graphe à la carte
+            
+        
         # en coulissant de droite à gauche    
         if coord_y == self.taille :
             carte_sortante = self.labyrinthe_detail[coord_x,0]
             for i in range(self.taille-1) :
                 self.labyrinthe_detail[coord_x,i] = self.labyrinthe_detail[coord_x,i+1]
+                self.labyrinthe_detail[coord_x,i].position_D = (coord_x,i+1)
+                self.labyrinthe_detail[coord_x,i].position_G = self.node_pos.index((coord_x,i+1))
             self.labyrinthe_detail[coord_x,self.taille-1] = self.carte_en_dehors
             self.labyrinthe_detail[coord_x,self.taille-1].position_D = (coord_x,self.taille-1)
+            self.labyrinthe_detail[coord_x,self.taille-1].position_G = self.node_pos.index((coord_x,self.taille-1))
                 
+        
         ## on modifie la colonne
         # en coulissant de haut en bas
         if coord_x == -1 :
             carte_sortante = self.labyrinthe_detail[self.taille-1,coord_y]
             for i in range(self.taille-1, 0, -1) :
                 self.labyrinthe_detail[i,coord_y] = self.labyrinthe_detail[i-1,coord_y]
+                self.labyrinthe_detail[i,coord_y].position_D = (i-1,coord_y)
+                self.labyrinthe_detail[i,coord_y].position_G = self.node_pos.index((i-1,coord_y))
             self.labyrinthe_detail[0,coord_y] = self.carte_en_dehors
             self.labyrinthe_detail[0,coord_y].position_D = (0,coord_y)
+            self.labyrinthe_detail[0,coord_y].position_G = self.node_pos.index((0,coord_y))
                 
+        
         # en coulissant du bas vers le haut
         if coord_x == self.taille :
             carte_sortante = self.labyrinthe_detail[0,coord_y]
             for i in range(self.taille-1) :
                 self.labyrinthe_detail[i,coord_y] = self.labyrinthe_detail[i+1,coord_y]
+                self.labyrinthe_detail[i,coord_y].position_D = (i+1,coord_y)
+                self.labyrinthe_detail[i,coord_y].position_G = self.node_pos.index((i+1,coord_y))
             self.labyrinthe_detail[self.taille-1,coord_y] = self.carte_en_dehors
             self.labyrinthe_detail[self.taille-1,coord_y].position_D = (self.taille-1,coord_y)
+            self.labyrinthe_detail[self.taille-1,coord_y].position_G = self.node_pos.index((self.taille-1,coord_y))
         
         self.carte_en_dehors.elements = carte_sortante.elements
         carte_sortante.elements = dict_vide
@@ -259,15 +276,14 @@ class Plateau(object) :
         :param coord_y: ordonnée du lieu où l'on souhaite faire coulisser la carte
         """
         self.coulisser_detail(coord_x, coord_y)#on opère les chgmts dans la matrice
-        self.SaC.log_plateau(self)#n contruit le log de la matrice
+        self.SaC.log_plateau(self)#on contruit le log de la matrice
         self.graph.remove_edges_from(self.graph.edges())#on enlève toutes les connexions
         self.ax_graph2.clear()
-        
-        nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph2)
+        nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph2)#vérifier que les arrêtes ont été enlevées
         for i in range (self.taille):
             for j in range(self.taille):
                 self.etablir_connexion(self.labyrinthe_detail[i,j])#on refait les connexions
         
         #on dessine
-        self.ax_graph.clear()       
+        self.ax_graph.clear()
         nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph)
