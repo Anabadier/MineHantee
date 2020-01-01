@@ -86,8 +86,10 @@ class Save_and_Charge(object):
         for i in range(dim[0]):
             _str = ""
             for j in range(dim[1]):
-                _str += "{0}_{1},".format(c,
-                        _plateau.labyrinthe_detail[i,j].nom)
+                _str += "{0}_{1}_{2}_{3},".format(c,
+                        _plateau.labyrinthe_detail[i,j].nom,
+                        _plateau.labyrinthe_detail[i,j].position_D,
+                        _plateau.labyrinthe_detail[i,j].position_G)
                 c+=1
             file_object.write(_str[:-1]+"\n")
         
