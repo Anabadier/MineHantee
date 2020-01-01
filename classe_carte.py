@@ -15,7 +15,7 @@ class carte():
             dict {fantome,pepite,joueur)
         position_graph :
             numéro du noeud networkX dans la liste plateau.node_pos. Cette liste
-            est dans le même ordre que les lables des nouds du graphe du pateau.
+            est dans le même ordre que les lables des noeuds du graphe du pateau.
             donc position_graph correspond effectivement au noeud.
         position_detail :
             (int,int)
