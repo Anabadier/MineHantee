@@ -91,6 +91,14 @@ def afficher(plat,plateau,fenetre):
             print(case.nom)
             carte=genere_carte(case.nom,(int(taille_case),int(taille_case)))
             plateau.blit(carte,(x,y))
+            
+            #case transparente si accessible
+            if case.nom=='1001':
+                cache= pygame.Surface((int(taille_case),int(taille_case))) #case à surligner
+                cache.set_alpha(70)  #transparence
+                cache.fill((255,255,0))   #jaune
+                plateau.blit(cache,(x,y))
+                
             #Si pépite/fantome sur la carte, voir condition avec la matrice des instances de cartes
             if case.elements['pepite'] == True:
                 plateau.blit(pepite,(x,y))
