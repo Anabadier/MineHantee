@@ -155,3 +155,4 @@ class Joueur_IA(Joueur):
                                          self.position_graphe, _node)
         
         path = rd.choice(paths)
+        
