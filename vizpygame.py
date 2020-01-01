@@ -85,8 +85,8 @@ def afficher(plat,plateau,fenetre,id_joueur=None):
             x=num_case*taille_case
             y=num_ligne*taille_case
             #cartes immobiles 
-            if num_case%2==0 and num_ligne%2==0:
-                plateau.fill(RED, (x,y,int(taille_case),int(taille_case)))
+#            if num_case%2==0 and num_ligne%2==0:
+#                plateau.fill(RED, (x,y,int(taille_case),int(taille_case)))
             num_case+=1
             print(case.nom)
             carte=genere_carte(case.nom,(int(taille_case),int(taille_case)))
@@ -125,7 +125,7 @@ def afficher(plat,plateau,fenetre,id_joueur=None):
     #extraire carte_ej de la méthode coulisser
     carte_ej=plat.carte_en_dehors
     carte_eject=genere_carte(carte_ej.nom,(50,50)) #aléatoire pour le moment
-    fenetre.fill((202,193,188) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
+    fenetre.fill((250,250,250) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
     fenetre.blit(carte_eject,(625,80))
 
     
@@ -212,8 +212,11 @@ def ecran(plat):
     fenetre.fill((255,255,255)) #remplissage fond blanc
     
     plateau=pygame.Surface((cote_fenetre,cote_fenetre))
-    fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()
-    plateau.blit(fond, (0,0))
+    #si on veut importer une image de fond
+    #fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()     
+    #plateau.blit(fond, (0,0))
+    #pour Colorer le fond :
+    plateau.fill((250,250,250))
     dic_boutons_fleches=afficher(plat,plateau,fenetre)
     fenetre.blit(plateau,(100,100))
     
@@ -234,7 +237,7 @@ def ecran(plat):
     bouton_pivot_droit=Button_img(fenetre,pivotdroit,(700,80),(50,50))
     carte_ej=plat.carte_en_dehors
     carte_eject=genere_carte(carte_ej.nom,(50,50))
-    fenetre.fill((202,193,188) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
+    fenetre.fill((250,250,250) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
     fenetre.blit(carte_eject,(625,80))
     
     #Affichage du score
@@ -286,8 +289,9 @@ def deplacement(i):
     #régénérer plat
     plat.coulisser(coord_x,coord_y)
     plateau=pygame.Surface((cote_fenetre,cote_fenetre))
-    fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()
-    plateau.blit(fond, (0,0))
+#    fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()
+#    plateau.blit(fond, (0,0))
+    plateau.fill((250,250,250)) #fond blanc
     afficher(plat,plateau,fenetre)
     fenetre.blit(plateau,(100,100))
     
@@ -297,7 +301,7 @@ def chgmt_orientation(arg):
     print(arg['carte'].elements)
     arg['carte'].pivoter(arg['sens'])
     print(arg['carte'].elements)
-    fenetre.fill((202,193,188) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
+    fenetre.fill((250,250,250) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
     carte_ej=genere_carte(arg['carte'].nom,(50,50)) 
     fenetre.blit(carte_ej,(625,80))
     if arg['carte'].elements['pepite'] == True:
