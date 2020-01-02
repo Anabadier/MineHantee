@@ -62,7 +62,7 @@ class joueur(object):
     def oriente_carte_libre():
         print("A voir avec l'objet carte")
         
-    def fonction_evaluation(self,un_chemin_coord):
+    def fonction_evaluation(self,plateau,un_chemin_coord):
         #labyrinthe_detail ?
         """
         La fonction d'evaluation permet de calculer le gain total si on suit un chemin donné.
@@ -79,7 +79,7 @@ class joueur(object):
         gain = 0
         
         for coord in un_chemin_coord :
-            carte = labyrinthe_detail[coord]
+            carte = plateau.labyrinthe_detail[coord]
 
             if carte.elements['pepite'] is True :
                 gain+= points_pepite
@@ -118,13 +118,13 @@ class joueur(object):
         
         if depth == 0 or is_terminal:
             if is_terminal: #il n'y a plus de pépites ni de fantonmes à capturer
-                return (None, 0)
+                return (None, None, 0)
             else: # Depth is zero
                 dico_chemins = plateau.chemin_possible(id_joueur)[1]
                 chemins_coord = [dico_chemins[coord] for coord in dico_chemins.keys()]  # /!\ à revoir
-                points = [self.fonction_evaluation(i) for i in chemins_coord]
+                points = [self.fonction_evaluation(plateau, i) for i in chemins_coord]
                 le_chemin = max(points)
-                return (None, self.fonction_evaluation(le_chemin))
+                return (None, None, self.fonction_evaluation(plateau,le_chemin))
         
         if maximizingPlayer: #joker player #la personne qui utilise le joker
             value = -math.inf
@@ -139,10 +139,11 @@ class joueur(object):
                     if new_score > value:
                         value = new_score
                         entree = une_entree
+                        ori = orientation
                     alpha = max(alpha, value)
                     if alpha >= beta:
                         break
-            return (entree, value)
+            return (entree, ori, value)
         
         else: # Minimizing player
             value = math.inf
@@ -160,10 +161,11 @@ class joueur(object):
                     if new_score < value:
                         value = new_score
                         entree = une_entree
+                        ori = orientation
                         beta = min(beta, value)
                     if alpha >= beta:
                         break
-            return (entree, value)
+            return (entree, ori, value)
        
              
  
