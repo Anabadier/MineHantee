@@ -169,7 +169,7 @@ class Plateau(object) :
         #Construction des listes des cartes fixes sur le plateau, selon
         #que le nombre de cartes fixes est pair ou impair
         liste_CF_PP = [(i,j) for i in range(0,taille, 2) for j in range(0, taille, 2)]
-        liste_CF_PI = [(i,j) for i in range(1,taille, 2) for j in range(1, taille, 2)]
+        liste_CF_PI = [(i,j) for i in range(0,taille, 2) for j in range(0, taille, 2)]
     
         #On stocke la liste des index des cartes fixes sur le plateau
         if Pair :
@@ -185,7 +185,7 @@ class Plateau(object) :
                     
                     Nord_ouvert = (i > 0 and i <= taille-1)  
                     Sud_ouvert =  (i >= 0 and i < taille-1)
-                    Est_ouvert = (j < taille//2)
+                    Est_ouvert = (j <= taille//2)
                     Ouest_ouvert = (j > taille//2)
                     
                     orientation_CF = [int(Nord_ouvert), int(Sud_ouvert),

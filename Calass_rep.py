@@ -8,7 +8,7 @@ Created on Fri Nov 22 14:30:15 2019
 import random as rd
 import networkx as nx
 from classe_carte import carte
-
+from Classe_plateau import Plateau
 
 #[Nord,Sud,Est,Ouest] Definition du dictionnaire de la connectivité 
 connectivité={'coin':[[0,1,1,0],[1,0,1,0],[1,0,0,1],[0,1,0,1]],
