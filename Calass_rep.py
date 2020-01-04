@@ -32,11 +32,12 @@ class Joueur(object):
     
     """ Initilialisation de la classe """
       
-    def __init__(self, _indentifiant = "none"):
-        if _indentifiant == "none" :
+    def __init__(self, _identifiant = "none"):
+        if _identifiant == "none" :
             print("Veuillez indentifier le joueur")
         else :
-            self.identifiant = _indentifiant 
+            print(_identifiant)
+            self.identifiant = _identifiant 
             self.nb_points = 0
             self.ordre_de_mission = []
             self.ref_plateau = "null"
@@ -85,10 +86,8 @@ class Joueur(object):
 
 class Joueur_IA(Joueur):
     
-    def __init__(self, _indentifiant = "none", _niv ="facile"):
-        
-        Joueur.__init__(self)
-        self.identifiant = _indentifiant
+    def __init__(self, _identifiant = "none", _niv ="Normale"):
+        Joueur.__init__(self, _identifiant = _identifiant)
         self.niv = _niv
         
         self.liste_row_col = [] #liste des lignes et colonnes que l'on peut faire coulisser

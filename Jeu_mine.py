@@ -15,7 +15,9 @@ from Classe_plateau import Plateau
 import SaC
 
 
-def JEU(dimension = 7, nombre_joueur = 2, nombre_joueur_IA = 0,
+def JEU(dimension = 7,
+        nombre_joueur = 2, pseudos_joueurs = ["Joueur_1"],
+        nombre_joueur_IA = 1, IA_niv = ["Normale"],
         nombre_ghost = 21, nombre_ordre_mission = 3,
         nombre_pepite = 49, pts_pepite = 1, pts_fantome = 5, pts_ordre_mission = 15,
         _SaC = SaC.Save_and_Charge()):    
@@ -119,14 +121,14 @@ def JEU(dimension = 7, nombre_joueur = 2, nombre_joueur_IA = 0,
     Génération des jouers et placement sur le plateau
     """
     
-    for i in range(1,nombre_joueur_IA+1):#génération des joueurs IA
-        new_joueur = Joueur_IA(i)
+    for i in range(nombre_joueur_IA):#génération des joueurs IA
+        new_joueur = Joueur_IA(_identifiant = IA_niv[i]+"_"+str(i), _niv = IA_niv[i])
         new_joueur.ref_plateau = plateau
         new_joueur.generate_liste_row_col()
         plateau.Liste_Joueur_IA.append(new_joueur)
     
-    for i in range(nombre_joueur_IA+1,nombre_joueur+1):#génération des joueurs
-        new_joueur = Joueur(i)
+    for i in range(nombre_joueur-nombre_joueur_IA):#génération des joueurs
+        new_joueur = Joueur(_identifiant = pseudos_joueurs[i])
         new_joueur.ref_plateau = plateau
         
         plateau.Liste_Joueur_H.append(new_joueur)
@@ -136,9 +138,9 @@ def JEU(dimension = 7, nombre_joueur = 2, nombre_joueur_IA = 0,
     print(len(plateau.Liste_Joueur), len(plateau.Liste_Joueur_H), len(plateau.Liste_Joueur_IA))
         
     for joueur in plateau.Liste_Joueur:
-        joueur.generer_odre_mission(nombre_ordre_mission,nombre_ghost)          # Attribution des ordres de missions 
+        joueur.generer_odre_mission(nombre_ordre_mission,nombre_ghost)# Attribution des ordres de missions 
         
-    plateau.placer_joueurs(plateau.Liste_Joueur)                                     # Placement des joueurs sur les cases qui lerus sont attribués 
+    plateau.placer_joueurs(plateau.Liste_Joueur)# Placement des joueurs sur les cases qui lerus sont attribués 
     
     
     ################################################################################

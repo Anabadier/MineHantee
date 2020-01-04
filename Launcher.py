@@ -375,29 +375,36 @@ class LauncherMineHantee(object):
         for widget in self.fen.winfo_children():
             widget.destroy()
         
+        # Choix des pseudos des joueurs
+        self.PSEUDO = []
         if (self.partie_en_ligne):
             tk.Label(self.fen, text = "Pseudonyme:").grid(column=0, row=0, padx = 15)
-            self.PSEUDO = tk.Entry(self.fen)
-            self.PSEUDO.grid(column = 1, row = 0, padx = 15)
-            self.PSEUDO.insert(0,"Joueur_1")
+            self.PSEUDO_Entry = tk.Entry(self.fen)
+            self.PSEUDO_Entry.grid(column = 1, row = 0, padx = 15)
+            self.PSEUDO_Entry.insert(0,"Joueur_1")
+            self.PSEUDO.append(self.PSEUDO_Entry)
         
         else:
             for i in range (self.value_NbJoueur-self.value_NbJoueur_IA):
                 tk.Label(self.fen, text = "Pseudonyme Joueur "+str(i)+":").grid(
                                                     column=0, row=i, padx = 15)
-                self.PSEUDO = tk.Entry(self.fen)
-                self.PSEUDO.grid(column = 1, row = i, padx = 15)
-                self.PSEUDO.insert(0,"Joueur_"+str(i))
+                self.PSEUDO_Entry = tk.Entry(self.fen)
+                self.PSEUDO_Entry.grid(column = 1, row = i, padx = 15)
+                self.PSEUDO_Entry.insert(0,"Joueur_"+str(i))
+                self.PSEUDO.append(self.PSEUDO_Entry)
         
+        #choix des IAs
+        self.IA_NIV = []
         for i in range (self.value_NbJoueur_IA):
             k = i+self.value_NbJoueur-self.value_NbJoueur_IA
             tk.Label(self.fen, text = "Difficulté IA "+str(i)+":").grid(
                                                 column=0, row=k, padx = 15)
-            self.IA_NIV = ttk.Combobox(self.fen,
+            self.IA_NIV_Entry = ttk.Combobox(self.fen,
                                        state = "readonly",
-                                       values = ["facile", "normale", "difficile"])
-            self.IA_NIV.grid(column = 1, row = k, padx = 15)
-            self.IA_NIV.set("normale")
+                                       values = ["Facile", "Normale", "Difficile"])
+            self.IA_NIV_Entry.grid(column = 1, row = k, padx = 15)
+            self.IA_NIV_Entry.set("Normale")
+            self.IA_NIV.append(self.IA_NIV_Entry)
         
         self.message_space = tk.Label(self.fen)
         self.message_space.grid(column=0, row=1, columnspan = 2)
@@ -444,10 +451,21 @@ class LauncherMineHantee(object):
             self.value_PtsPepite,
             self.value_PtsFantome,
             self.value_PtsFantomeOdM)
+    
+    def get_pseudo_et_IA_niv(self):
+        self.value_pseudos = []
+        for _pseudo_entry in self.PSEUDO:
+            self.value_pseudos += [_pseudo_entry.get()]
+        
+        self.value_IA_niv = []
+        for _IA_niv in self.IA_NIV:
+            self.value_IA_niv += [_IA_niv.get()]
             
     
     def rejoindre_partie(self):
-        self.pseudo = self.PSEUDO.get()
+        
+        self.get_pseudo_et_IA_niv()
+        
         if (self.partie_en_ligne):
             self.ref_client = cMH.Client(self)
             self.plateau_exemple()
@@ -456,7 +474,9 @@ class LauncherMineHantee(object):
             self.fen.destroy()
             plateau = Jm.JEU(dimension = self.value_DimPlateau,
                               nombre_joueur = self.value_NbJoueur,
+                              pseudos_joueurs = self.value_pseudos,
                               nombre_joueur_IA = self.value_NbJoueur_IA,
+                              IA_niv = self.value_IA_niv,
                               nombre_ghost = self.value_NbFantome,
                               nombre_ordre_mission = self.value_NbFantomeOdM,
                               nombre_pepite = self.value_NbPepite,
