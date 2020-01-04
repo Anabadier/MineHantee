@@ -88,7 +88,6 @@ def afficher(plat,plateau,fenetre,id_joueur=None):
 #            if num_case%2==0 and num_ligne%2==0:
 #                plateau.fill(RED, (x,y,int(taille_case),int(taille_case)))
             num_case+=1
-            print(case.nom)
             carte=genere_carte(case.nom,(int(taille_case),int(taille_case)))
             plateau.blit(carte,(x,y))
             

@@ -63,8 +63,7 @@ class Plateau(object) :
         
         #pour visualiser le graphe
         self.fig = plt.figure()
-        self.ax_graph = self.fig.add_subplot(121)
-        self.ax_graph2 = self.fig.add_subplot(122)
+        self.ax_graph = self.fig.add_subplot(111)
         
         
     def placer_carte_libre(self,liste_carte):
@@ -280,12 +279,9 @@ class Plateau(object) :
         self.coulisser_detail(coord_x, coord_y)#on opère les chgmts dans la matrice
         self.SaC.log_plateau(self)#on contruit le log de la matrice
         self.graph.remove_edges_from(self.graph.edges())#on enlève toutes les connexions
-        self.ax_graph2.clear()
-        nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph2)#vérifier que les arrêtes ont été enlevées
         for i in range (self.taille):
             for j in range(self.taille):
                 self.etablir_connexion(self.labyrinthe_detail[i,j])#on refait les connexions
-        
         #on dessine
         self.ax_graph.clear()
         nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph)
