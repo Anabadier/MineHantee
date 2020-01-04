@@ -21,9 +21,9 @@ import Jeu_mine
 #taille_case = 350/nombre_case_cote
 #cote_fenetre = nombre_case_cote * taille_case
 
-dic_case_img={'0110':'NXXO_2.png','1010':'XSXO_2.png','1001':'XSEX_2.png','0101':'NXEX_2.png',\
-              '1100':'XXEO_2.png','0011':'NSXX_2.png',\
-              '1110':'XXXO_2.png','1011':'XSXX_2.png','1101':'XXEX_2.png','0111':'NXXX_2.png'}
+dic_case_img={'0110':'NXXO_3.png','1010':'XSXO_3.png','1001':'XSEX_3.png','0101':'NXEX_3.png',\
+              '1100':'XXEO_3.png','0011':'NSXX_3.png',\
+              '1110':'XXXO_3.png','1011':'XSXX_3.png','1101':'XXEX_3.png','0111':'NXXX_3.png'}
 
 ##On génère une matrice aléatoire
 #def genere_mat():
@@ -90,7 +90,6 @@ def afficher(plat,plateau,fenetre,id_joueur=None):
 #                plateau.fill(RED, (x,y,int(taille_case),int(taille_case)))
             
             num_case+=1
-            print(case.nom)
             carte=genere_carte(case.nom,(int(taille_case),int(taille_case)))
             plateau.blit(carte,(x,y))
             

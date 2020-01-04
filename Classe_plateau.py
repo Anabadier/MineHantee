@@ -43,6 +43,9 @@ class Plateau(object) :
         
         self.taille = dim_plateau #int(self.config.dim_plateau)
         self.SaC = _SaC
+        self.Liste_Joueur = []
+        self.Liste_Joueur_H = []
+        self.Liste_Joueur_IA = []
         self.labyrinthe_detail = np.array([[object]*self.taille]*self.taille)
         entrees = []
         for i in [0,self.taille-1]:
@@ -63,12 +66,9 @@ class Plateau(object) :
         
         #pour visualiser le graphe
         self.fig = plt.figure()
-        self.ax_graph = self.fig.add_subplot(121)
-        self.ax_graph2 = self.fig.add_subplot(122)
+        self.ax_graph = self.fig.add_subplot(111)
         
-        # print(self.config)
         
-#
     def placer_carte_libre(self,liste_carte):
         for i in range (self.taille):
             for j in range (self.taille):
@@ -90,22 +90,26 @@ class Plateau(object) :
         #Connexion Nord
         if carte.nom[0] == "1" and i != 0:
             if self.labyrinthe_detail[i-1][j].nom[1] == "1" :
-                self.graph.add_edge(self.node_pos.index((i-1,j)),self.node_pos.index((i,j)))
+                self.graph.add_edge(self.labyrinthe_detail[i-1][j].position_G,
+                                    carte.position_G)
         
         #Connexion Ouest
         if carte.nom[3] == "1" and j != 0:
             if self.labyrinthe_detail[i][j-1].nom[2] == "1" :
-                self.graph.add_edge(self.node_pos.index((i,j)),self.node_pos.index((i,j-1)))
+                self.graph.add_edge(self.labyrinthe_detail[i][j-1].position_G,
+                                    carte.position_G)
         
         #Connexion Est
         if carte.nom[2] == "1" and j != self.taille-1:
             if self.labyrinthe_detail[i][j+1].nom[3] == "1" :
-                self.graph.add_edge(self.node_pos.index((i,j)),self.node_pos.index((i,j+1)))
+                self.graph.add_edge(self.labyrinthe_detail[i][j+1].position_G,
+                                    carte.position_G)
         
         #Connexion Sud
         if carte.nom[1] == "1" and i != self.taille-1:
             if self.labyrinthe_detail[i+1][j].nom[0] == "1" :
-                self.graph.add_edge(self.node_pos.index((i,j)),self.node_pos.index((i+1,j)))
+                self.graph.add_edge(self.labyrinthe_detail[i+1][j].position_G,
+                                    carte.position_G)
  
     
     def placer_pepites(self, nb_pepites) :
@@ -213,8 +217,8 @@ class Plateau(object) :
             carte_sortante = self.labyrinthe_detail[coord_x,self.taille-1]#nouvelle carte libre
             for i in range(self.taille-1,0,-1) :#on opère le décalage dans la matrice
                 self.labyrinthe_detail[coord_x,i] = self.labyrinthe_detail[coord_x,i-1]
-                self.labyrinthe_detail[coord_x,i].position_D = (coord_x,i-1)
-                self.labyrinthe_detail[coord_x,i].position_G = self.node_pos.index((coord_x,i-1))
+                self.labyrinthe_detail[coord_x,i].position_D = (coord_x,i)
+                self.labyrinthe_detail[coord_x,i].position_G = self.node_pos.index((coord_x,i))
             self.labyrinthe_detail[coord_x,0] = self.carte_en_dehors#on insère la carte dans la matrice
             self.labyrinthe_detail[coord_x,0].position_D = (coord_x,0)#on donne sa position dans la matrice à la carte
             self.labyrinthe_detail[coord_x,0].position_G = self.node_pos.index((coord_x,0))#on sa position dans le graphe à la carte
@@ -225,8 +229,8 @@ class Plateau(object) :
             carte_sortante = self.labyrinthe_detail[coord_x,0]
             for i in range(self.taille-1) :
                 self.labyrinthe_detail[coord_x,i] = self.labyrinthe_detail[coord_x,i+1]
-                self.labyrinthe_detail[coord_x,i].position_D = (coord_x,i+1)
-                self.labyrinthe_detail[coord_x,i].position_G = self.node_pos.index((coord_x,i+1))
+                self.labyrinthe_detail[coord_x,i].position_D = (coord_x,i)
+                self.labyrinthe_detail[coord_x,i].position_G = self.node_pos.index((coord_x,i))
             self.labyrinthe_detail[coord_x,self.taille-1] = self.carte_en_dehors
             self.labyrinthe_detail[coord_x,self.taille-1].position_D = (coord_x,self.taille-1)
             self.labyrinthe_detail[coord_x,self.taille-1].position_G = self.node_pos.index((coord_x,self.taille-1))
@@ -238,8 +242,8 @@ class Plateau(object) :
             carte_sortante = self.labyrinthe_detail[self.taille-1,coord_y]
             for i in range(self.taille-1, 0, -1) :
                 self.labyrinthe_detail[i,coord_y] = self.labyrinthe_detail[i-1,coord_y]
-                self.labyrinthe_detail[i,coord_y].position_D = (i-1,coord_y)
-                self.labyrinthe_detail[i,coord_y].position_G = self.node_pos.index((i-1,coord_y))
+                self.labyrinthe_detail[i,coord_y].position_D = (i,coord_y)
+                self.labyrinthe_detail[i,coord_y].position_G = self.node_pos.index((i,coord_y))
             self.labyrinthe_detail[0,coord_y] = self.carte_en_dehors
             self.labyrinthe_detail[0,coord_y].position_D = (0,coord_y)
             self.labyrinthe_detail[0,coord_y].position_G = self.node_pos.index((0,coord_y))
@@ -250,8 +254,8 @@ class Plateau(object) :
             carte_sortante = self.labyrinthe_detail[0,coord_y]
             for i in range(self.taille-1) :
                 self.labyrinthe_detail[i,coord_y] = self.labyrinthe_detail[i+1,coord_y]
-                self.labyrinthe_detail[i,coord_y].position_D = (i+1,coord_y)
-                self.labyrinthe_detail[i,coord_y].position_G = self.node_pos.index((i+1,coord_y))
+                self.labyrinthe_detail[i,coord_y].position_D = (i,coord_y)
+                self.labyrinthe_detail[i,coord_y].position_G = self.node_pos.index((i,coord_y))
             self.labyrinthe_detail[self.taille-1,coord_y] = self.carte_en_dehors
             self.labyrinthe_detail[self.taille-1,coord_y].position_D = (self.taille-1,coord_y)
             self.labyrinthe_detail[self.taille-1,coord_y].position_G = self.node_pos.index((self.taille-1,coord_y))
@@ -278,12 +282,9 @@ class Plateau(object) :
         self.coulisser_detail(coord_x, coord_y)#on opère les chgmts dans la matrice
         self.SaC.log_plateau(self)#on contruit le log de la matrice
         self.graph.remove_edges_from(self.graph.edges())#on enlève toutes les connexions
-        self.ax_graph2.clear()
-        nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph2)#vérifier que les arrêtes ont été enlevées
         for i in range (self.taille):
             for j in range(self.taille):
                 self.etablir_connexion(self.labyrinthe_detail[i,j])#on refait les connexions
-        
         #on dessine
         self.ax_graph.clear()
         nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph)

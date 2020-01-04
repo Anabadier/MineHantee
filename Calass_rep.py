@@ -32,11 +32,12 @@ class Joueur(object):
     
     """ Initilialisation de la classe """
       
-    def __init__(self,joueur = "none"):
-        if joueur == "none" :
+    def __init__(self, _identifiant = "none"):
+        if _identifiant == "none" :
             print("Veuillez indentifier le joueur")
         else :
-            self.identifiant = joueur 
+            print(_identifiant)
+            self.identifiant = _identifiant 
             self.nb_points = 0
             self.ordre_de_mission = []
             self.ref_plateau = "null"
@@ -85,14 +86,16 @@ class Joueur(object):
 
 class Joueur_IA(Joueur):
     
-    def __init__(self, _niv):
+    def __init__(self, _identifiant = "none", _niv ="Normale"):
+        Joueur.__init__(self, _identifiant = _identifiant)
         self.niv = _niv
         
         self.liste_row_col = [] #liste des lignes et colonnes que l'on peut faire coulisser
+        
+    def generate_liste_row_col(self):
         for i in range(1, self.ref_plateau.taille, 2):
             for _char in ["G", "D", "H", "B"]:
                 self.liste_row_col += [_char + str(i)]
-    
     def coup_alea(self, _plateau):
         """
         joue un coup complet aléatoirement (rotation de la carte libre, choix
@@ -155,3 +158,4 @@ class Joueur_IA(Joueur):
                                          self.position_graphe, _node)
         
         path = rd.choice(paths)
+        
