@@ -84,9 +84,11 @@ def afficher(plat,plateau,fenetre,id_joueur=None):
         for case in ligne:
             x=num_case*taille_case
             y=num_ligne*taille_case
+            
             #cartes immobiles 
 #            if num_case%2==0 and num_ligne%2==0:
 #                plateau.fill(RED, (x,y,int(taille_case),int(taille_case)))
+            
             num_case+=1
             print(case.nom)
             carte=genere_carte(case.nom,(int(taille_case),int(taille_case)))
