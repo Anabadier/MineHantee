@@ -57,12 +57,13 @@ class Save_and_Charge(object):
             try:
                 file.write("dim_plateau," + str(values[0].strip())+ "\n" +
                            "nb_joueur," + str(values[1])+ "\n" +
-                           "nb_fantome," + str(values[2])+ "\n" +
-                           "nb_fantome_OdM," + str(values[3])+ "\n" +
-                           "nb_pepite," + str(values[4])+ "\n" +
-                           "pts_pepite," + str(values[5])+ "\n" +
-                           "pts_fantome," + str(values[6])+ "\n" +
-                           "pts_fantome_OdM," + str(values[7]))
+                           "nb_joueur_IA," + str(values[2])+ "\n" +
+                           "nb_fantome," + str(values[3])+ "\n" +
+                           "nb_fantome_OdM," + str(values[4])+ "\n" +
+                           "nb_pepite," + str(values[5])+ "\n" +
+                           "pts_pepite," + str(values[6])+ "\n" +
+                           "pts_fantome," + str(values[7])+ "\n" +
+                           "pts_fantome_OdM," + str(values[8]))
                 file.close()
                 print("Le fichier a bien été sauvegardé")
                 

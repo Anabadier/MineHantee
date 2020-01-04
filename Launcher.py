@@ -40,6 +40,8 @@ class LauncherMineHantee(object):
                                 4:self.rejoindre_serveur,
                                 5:self.creer_configurer_serveur}
         
+        self.SaverCharger = SaC.Save_and_Charge(_ref_launcher=self)
+        
         self.partie_en_ligne = False
         self.server_subprocess = None
         
@@ -98,7 +100,8 @@ class LauncherMineHantee(object):
         
         tk.Label(self.fen, text = "Dimension du plateau:").grid(column=0, 
                                                                 row=_start_row,
-                                                                padx = 15)
+                                                                padx = 15,
+                                                                columnspan = 2)
         self.Scale_DimPlateau = tk.Spinbox(master = self.fen,
                                     format_='%2.0f',
                                     from_ = 7, to = 25, increment = 2,
@@ -108,7 +111,7 @@ class LauncherMineHantee(object):
                                     textvariable = self.taile_plateau,
                                     command = self.update_nb_fantome_max, 
                                     bg = "white")
-        self.Scale_DimPlateau.grid(column=1, row=_start_row)
+        self.Scale_DimPlateau.grid(column=2, row=_start_row, columnspan = 2)
         
         self.Scale_NbJoueur = tk.Scale(master = self.fen,
                                     orient = "horizontal",
@@ -116,9 +119,20 @@ class LauncherMineHantee(object):
                                     from_ = 2, to = 4, resolution = 1,
                                     tickinterval = 2,
                                     width = 20, length = 500,
+                                    command = self.update_nb_joueur_IA_max,
                                     activebackground = "#105105105",
                                     relief = "sunken")
-        self.Scale_NbJoueur.grid(column=2, row=_start_row, columnspan = 2)
+        self.Scale_NbJoueur.grid(column=0, row=_start_row+1, columnspan = 2)
+        
+        self.Scale_NbJoueur_IA = tk.Scale(master = self.fen,
+                                    orient = "horizontal",
+                                    label = "Nombre d'IA parmis les joueurs",
+                                    from_ = 0, to = self.Scale_NbJoueur.get(), resolution = 1,
+                                    tickinterval = self.Scale_NbJoueur.get(),
+                                    width = 20, length = 500,
+                                    activebackground = "#105105105",
+                                    relief = "sunken")
+        self.Scale_NbJoueur_IA.grid(column=2, row=_start_row+1, columnspan = 2)
         
         self.Scale_NbFantome = tk.Scale(master = self.fen,
                                     orient = "horizontal",
@@ -129,7 +143,7 @@ class LauncherMineHantee(object):
                                     command = self.update_nb_fantome_OM_max,
                                     activebackground = "#105105105",
                                     relief = "sunken")
-        self.Scale_NbFantome.grid(column=0, row=_start_row+1, columnspan = 2)
+        self.Scale_NbFantome.grid(column=0, row=_start_row+2, columnspan = 2)
         
         self.Scale_NbFantomeOdM = tk.Scale(master = self.fen,
                                     orient = "horizontal",
@@ -139,7 +153,7 @@ class LauncherMineHantee(object):
                                     width = 20, length = 500,
                                     activebackground = "#105105105",
                                     relief = "sunken")
-        self.Scale_NbFantomeOdM.grid(column=2, row=_start_row+1, columnspan = 2)
+        self.Scale_NbFantomeOdM.grid(column=2, row=_start_row+2, columnspan = 2)
         
         self.Scale_NbPepite = tk.Scale(master = self.fen,
                                     orient = "horizontal",
@@ -149,7 +163,7 @@ class LauncherMineHantee(object):
                                     width = 20, length = 500,
                                     activebackground = "#105105105",
                                     relief = "sunken")
-        self.Scale_NbPepite.grid(column=0, row=_start_row+2, columnspan = 2)
+        self.Scale_NbPepite.grid(column=0, row=_start_row+3, columnspan = 2)
         
         self.Scale_PtsPepite = tk.Scale(master = self.fen,
                                     orient = "horizontal",
@@ -159,7 +173,7 @@ class LauncherMineHantee(object):
                                     width = 20, length = 500,
                                     activebackground = "#105105105",
                                     relief = "sunken")
-        self.Scale_PtsPepite.grid(column=2, row=_start_row+2, columnspan = 2)
+        self.Scale_PtsPepite.grid(column=2, row=_start_row+3, columnspan = 2)
         
         self.Scale_PtsFantome = tk.Scale(master = self.fen,
                                     orient = "horizontal",
@@ -169,7 +183,7 @@ class LauncherMineHantee(object):
                                     width = 20, length = 500,
                                     activebackground = "#105105105",
                                     relief = "sunken")
-        self.Scale_PtsFantome.grid(column=0, row=_start_row+3, columnspan = 4)
+        self.Scale_PtsFantome.grid(column=0, row=_start_row+4, columnspan = 4)
         
         self.Scale_PtsFantomeOdM = tk.Scale(master = self.fen,
                                     orient = "horizontal",
@@ -179,13 +193,13 @@ class LauncherMineHantee(object):
                                     width = 20, length = 500,
                                     activebackground = "#105105105",
                                     relief = "sunken")
-        self.Scale_PtsFantomeOdM.grid(column=0, row=_start_row+4, columnspan = 4)
+        self.Scale_PtsFantomeOdM.grid(column=0, row=_start_row+5, columnspan = 4)
         
         
-        scalers = [self.Scale_DimPlateau, self.Scale_NbJoueur,
+        scalers = [self.Scale_DimPlateau, self.Scale_NbJoueur, self.Scale_NbJoueur_IA,
                    self.Scale_NbFantome, self.Scale_NbFantomeOdM, self.Scale_NbPepite,
                    self.Scale_PtsPepite, self.Scale_PtsFantome, self.Scale_PtsFantomeOdM]
-        self.SaverCharger = SaC.Save_and_Charge(scalers, self)
+        self.SaverCharger.scalers = scalers
         values = self.SaverCharger.read_file(_file_path = os.getcwd()+"/config.csv")
         values = [val.split(",")[1] for val in values]
         self.SaverCharger.setScalersValues(values)
@@ -237,6 +251,11 @@ class LauncherMineHantee(object):
     def update_nb_fantome_OM_max(self, N):
         self.Scale_NbFantomeOdM.config(to = int(N),
                                        tickinterval = int(N)-1)
+    
+    def update_nb_joueur_IA_max(self, N):
+        self.Scale_NbJoueur_IA.config(to = int(N),
+                                       tickinterval = int(N))
+        
     
     def jouer_ligne(self):
         self.fen.title("Jouer en ligne - Mine Hantée")
@@ -356,10 +375,29 @@ class LauncherMineHantee(object):
         for widget in self.fen.winfo_children():
             widget.destroy()
         
-        tk.Label(self.fen, text = "Pseudonyme:").grid(column=0, row=0, padx = 15)
-        self.PSEUDO = tk.Entry(self.fen)
-        self.PSEUDO.grid(column = 1, row = 0, padx = 15)
-        self.PSEUDO.insert(0,"Joueur_1")
+        if (self.partie_en_ligne):
+            tk.Label(self.fen, text = "Pseudonyme:").grid(column=0, row=0, padx = 15)
+            self.PSEUDO = tk.Entry(self.fen)
+            self.PSEUDO.grid(column = 1, row = 0, padx = 15)
+            self.PSEUDO.insert(0,"Joueur_1")
+        
+        else:
+            for i in range (self.value_NbJoueur-self.value_NbJoueur_IA):
+                tk.Label(self.fen, text = "Pseudonyme Joueur "+str(i)+":").grid(
+                                                    column=0, row=i, padx = 15)
+                self.PSEUDO = tk.Entry(self.fen)
+                self.PSEUDO.grid(column = 1, row = i, padx = 15)
+                self.PSEUDO.insert(0,"Joueur_"+str(i))
+        
+        for i in range (self.value_NbJoueur_IA):
+            k = i+self.value_NbJoueur-self.value_NbJoueur_IA
+            tk.Label(self.fen, text = "Difficulté IA "+str(i)+":").grid(
+                                                column=0, row=k, padx = 15)
+            self.IA_NIV = ttk.Combobox(self.fen,
+                                       state = "readonly",
+                                       values = ["facile", "normale", "difficile"])
+            self.IA_NIV.grid(column = 1, row = k, padx = 15)
+            self.IA_NIV.set("normale")
         
         self.message_space = tk.Label(self.fen)
         self.message_space.grid(column=0, row=1, columnspan = 2)
@@ -367,18 +405,19 @@ class LauncherMineHantee(object):
         Creer_serveur = ttk.Button(self.fen,
                                    text = "Rejoindre la partie",
                                    command = self.rejoindre_partie)
-        Creer_serveur.grid(column = 0, row = 2, padx = 15)
+        Creer_serveur.grid(column = 0, row = 5, padx = 15)
         
         Retour = ttk.Button(self.fen,
                                  text = "Retour",
                                  command = self.retour)
-        Retour.grid(column = 1, row = 2, padx = 15)
+        Retour.grid(column = 1, row = 5, padx = 15)
     
     def get_plateau_options(self):
         
         try :
             self.value_DimPlateau = int(self.Scale_DimPlateau.get())
             self.value_NbJoueur = int(self.Scale_NbJoueur.get())
+            self.value_NbJoueur_IA = int(self.Scale_NbJoueur_IA.get())
             self.value_NbFantome = int(self.Scale_NbFantome.get())
             self.value_NbFantomeOdM = int(self.Scale_NbFantomeOdM.get())
             self.value_NbPepite = int(self.Scale_NbPepite.get())
@@ -388,6 +427,7 @@ class LauncherMineHantee(object):
         except:
             self.value_DimPlateau = 7
             self.value_NbJoueur = 2
+            self.value_NbJoueur_IA = 1
             self.value_NbFantome = 21
             self.value_NbFantomeOdM = 3
             self.value_NbPepite = 49
@@ -397,6 +437,7 @@ class LauncherMineHantee(object):
             
         print(self.value_DimPlateau,
             self.value_NbJoueur,
+            self.value_NbJoueur_IA,
             self.value_NbFantome,
             self.value_NbFantomeOdM,
             self.value_NbPepite,
@@ -415,6 +456,7 @@ class LauncherMineHantee(object):
             self.fen.destroy()
             plateau = Jm.JEU(dimension = self.value_DimPlateau,
                               nombre_joueur = self.value_NbJoueur,
+                              nombre_joueur_IA = self.value_NbJoueur_IA,
                               nombre_ghost = self.value_NbFantome,
                               nombre_ordre_mission = self.value_NbFantomeOdM,
                               nombre_pepite = self.value_NbPepite,

@@ -43,6 +43,9 @@ class Plateau(object) :
         
         self.taille = dim_plateau #int(self.config.dim_plateau)
         self.SaC = _SaC
+        self.Liste_Joueur = []
+        self.Liste_Joueur_H = []
+        self.Liste_Joueur_IA = []
         self.labyrinthe_detail = np.array([[object]*self.taille]*self.taille)
         entrees = []
         for i in [0,self.taille-1]:
