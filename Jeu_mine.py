@@ -134,11 +134,10 @@ def JEU(dimension = 7,
         plateau.Liste_Joueur_H.append(new_joueur)
     
     plateau.Liste_Joueur = plateau.Liste_Joueur_IA+plateau.Liste_Joueur_H
-    
-    print(len(plateau.Liste_Joueur), len(plateau.Liste_Joueur_H), len(plateau.Liste_Joueur_IA))
         
     for joueur in plateau.Liste_Joueur:
         joueur.generer_odre_mission(nombre_ordre_mission,nombre_ghost)# Attribution des ordres de missions 
+        joueur.determiner_joueur_suivant()
         
     plateau.placer_joueurs(plateau.Liste_Joueur)# Placement des joueurs sur les cases qui lerus sont attribués 
     

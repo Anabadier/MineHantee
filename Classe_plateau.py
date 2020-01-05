@@ -288,6 +288,9 @@ class Plateau(object) :
         #on dessine
         self.ax_graph.clear()
         nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph)
+    
+    def deplacer_joueur(self, _path):
+        
         
     def chemin_possible(self,id_joueur):
     #        for i in self.labyrinthe_detail:
