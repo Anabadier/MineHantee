@@ -6,7 +6,7 @@ Created on Wed Nov 13 05:18:23 2019
 """
 
 class carte():
-    def __init__(self,type_carte,dict_elements=None,\
+    def __init__(self,type_carte,dict_elements={'fantome':[],'pepite':[],'joueur':[]},\
                  position_graph=None,position_detail=None,orientation=0,mobilite=True):
         """
         type_carte:
@@ -38,8 +38,6 @@ class carte():
         self.orientation=orientation
         self.nom=self.connectivite[orientation] #nom, ref de l'image et orientation de la carte
         self.mobilite=mobilite
-        
-        
     
     def pivoter(self,sens):
         if sens=='droit' :

@@ -9,6 +9,7 @@ import random as rd
 import networkx as nx
 import copy as cp
 import numpy as np
+from time import time
 #from classe_carte import carte
 #from Classe_plateau import Plateau
 
@@ -47,33 +48,6 @@ class Joueur(object):
             self.position_graphe = "Non placé"
             self.position_detail = ("xcarte" , "ycarte")
     
-    def generer_odre_mission(self,nb_ordre,nb_ghost):
-        ordre_mission = []
-        for i in range(nb_ordre):
-            fantome = rd.randint(1,nb_ghost)
-            while fantome in ordre_mission:
-                fantome = rd.randint(1,nb_ghost)
-            ordre_mission.append(fantome)
-        self.ordre_de_mission = ordre_mission
-       
-    def maj_points(self, points):
-        if type(points) != str :
-            print("Mauvaix format de points, doit être un string")
-        else :
-            point_transfo = int(points)
-            self.nb_points = self.nb_points + point_transfo
-    
-    def maj_position(self, _carte, noeud):
-         self.position_graphe = _carte.position_G
-         self.position_detail = _carte.position_D
-   
-    def oriente_carte_libre(self, carte_libre, sens):
-        test = ["horaire","anti-horaire"]
-        if sens not in test:
-            print("Mauvaises instructions de sens")
-        else:
-            carte_libre.pivoter(sens)
-    
     def determiner_joueur_voisins_ordre(self):
         index = self.ref_plateau.Liste_Joueur.index(self)
         if (index == len(self.ref_plateau.Liste_Joueur)-1):
@@ -85,15 +59,89 @@ class Joueur(object):
             self.joueur_precedant = self.ref_plateau.Liste_Joueur[len(self.ref_plateau.Liste_Joueur)-1]
         else:
             self.joueur_precedant = self.ref_plateau.Liste_Joueur[index-1]
+            
+    def generer_odre_mission(self,nb_ordre,nb_ghost):
+        ordre_mission = []
+        for i in range(nb_ordre):
+            fantome = rd.randint(1,nb_ghost)
+            while fantome in ordre_mission:
+                fantome = rd.randint(1,nb_ghost)
+            ordre_mission.append(fantome)
+        self.ordre_de_mission = ordre_mission
     
-    def modifier_plateau(self, coord_x, coord_y):
-        """
-        Fait coulisser une ligne ou une colonne
+    def maj_points(self, points):
+# =============================================================================
+#         if type(points) != str :
+#             print("Mauvaix format de points, doit être un string")
+#         else :
+#             point_transfo = int(points)
+# =============================================================================
+        self.nb_points = self.nb_points + points
+    
+    def compter_pts_carte(self, _card, _reset_value = True):
+        if (_card.elements["pepite"]):
+                self.maj_points(self.ref_plateau.pts_pepite)
+                if _reset_value:
+                    _card.elements["pepite"] = False
+            
+        if (_card.elements["fantome"] != []):
+            if (_card.elements["fantome"] in self.ordre_de_mission):
+                self.maj_points(self.ref_plateau.pts_ordre_mission)
+            else:
+                self.maj_points(self.ref_plateau.pts_fantome)
+            if _reset_value:
+                    _card.elements["fantome"] = []
         
-        :param coord_x: abscisse du lieu où l'on souhaite faire coulisser la carte
-        :param coord_y: ordonnée du lieu où l'on souhaite faire coulisser la carte
+        #print(self.nb_points)
+    
+    def maj_position(self, _carte):
+         self.position_graphe = _carte.position_G
+         self.position_detail = _carte.position_D
+   
+    def oriente_carte_libre(self, carte_libre, sens):
+        test = ["horaire","anti-horaire"]
+        if sens not in test:
+            print("Mauvaises instructions de sens")
+        else:
+            carte_libre.pivoter(sens)    
+    
+    def modifier_plateau(self, _plateau, _fleche):
         """
-        self.ref_plateau.coulisser(coord_x, coord_y)
+        introduit la carte libre dans une colonne ou une ligne qui correspond à
+        _fleche
+        
+        _plateau(instance de la classe Plateau): facultatif
+            référence du plateau sur lequel on joue. Important car on utiisera
+            cette fonction dans le "RollOut" de l'UCT sur des copies du plateau
+            d'origine.
+        
+        _fleche(str):
+            identifiant du type 'H1' pour la flèche en haut du plateau à gauche
+            dans la visualisation PyGame
+        """
+        
+        coord_x, coord_y = _plateau.convertir_Fleche2Coord(_fleche)
+        _plateau.coulisser(coord_x, coord_y)
+    
+    def effectuer_chemin(self, _plateau,  _path):
+        """
+        Opère les modifications sur le plateau et la comptabilisation des points
+        une fois que le joueur a décidé d'un chemin
+        
+        _plateau(instance de la classe Plateau):
+            référence du plateau sur lequel on joue. Important car on utiisera
+            cette fonction dans le "RollOut" de l'UCT sur des copies du plateau
+            d'origine.
+        
+        _path(list):
+            liste des sommets du graphe que le joueur choisi de suivre
+        """
+        card_path = _plateau.translate_GraphPath2CardsPath(_path)
+        for _card in card_path:
+            self.maj_position(_card)
+            self.compter_pts_carte(_card)
+        _plateau.maj_classement()#on met a jour le classement à la fin du tour d'un joueur
+        print(_plateau.Liste_Classement)
         
     def heuristique():
         "Un peu tôt"
@@ -103,6 +151,8 @@ class Joueur_IA(Joueur):
     def __init__(self, _identifiant = "none", _niv ="Normale"):
         Joueur.__init__(self, _identifiant = _identifiant)
         self.niv = _niv
+        
+        self.UCT_solver = None
         
         self.liste_row_col = [] #liste des lignes et colonnes que l'on peut faire coulisser
         self.liste_paths = [] #liste des chemins accessibles au joueur. Utile après rot card et coullissage
@@ -115,9 +165,26 @@ class Joueur_IA(Joueur):
     
     def generate_list_paths(self, _plateau):
         self.liste_paths = []
-        for _node in list(_plateau.nodes()):
+        for _node in list(_plateau.graph.nodes()):
             self.liste_paths += nx.all_simple_paths(_plateau.graph,
                                                     self.position_graphe, _node)
+    
+    def jouer(self):
+        """
+        faire jouer une IA en fonction de son niveau
+        """
+        if (self.niv == "Facile"):
+            self.coup_alea(self.ref_plateau)#a changer pour une approche greedy
+            
+        elif (self.niv == "Normale"):
+            #Mettre AlphaBeta ici
+            pass
+            
+        elif (self.niv == "Difficile"):
+            description_coup = self.UCT_solver.jouer_UCT()
+            self.rotation_carte(self.ref_plateau, description_coup[0])
+            self.modifier_plateau(self.ref_plateau, description_coup[1])
+            self.effectuer_chemin(self.ref_plateau, description_coup[2])
     
     def coup_alea(self, _plateau):
         """
@@ -129,60 +196,36 @@ class Joueur_IA(Joueur):
             cette fonction dans le "RollOut" de l'UCT sur des copies du plateau
             d'origine.
         """
-        self.rotation_carte_alea(_plateau)
-        self.coulisser_alea(_plateau)
-        self.deplacement_alea(_plateau)
-        
-    def rotation_carte_alea(self, _plateau):
-        """
-        tourne la carte libre aléatoirement
-        
-        _plateau(instance de la classe Plateau):
-            référence du plateau sur lequel on joue. Important car on utiisera
-            cette fonction dans le "RollOut" de l'UCT sur des copies du plateau
-            d'origine.
-        """
         nb_rotation = rd.choice([1,2,3,4])
+        self.rotation_carte(_plateau, nb_rotation)
         
-        for i in range(nb_rotation):
-            self.oriente_carte_libre(_plateau.carte_en_dehors, "horaire")
-    
-    def coulisser_alea(self, _plateau):
-        """
-        introduit la carte libre dans une colonne ou une ligne aléatoirement
-        
-        _plateau(instance de la classe Plateau): facultatif
-            référence du plateau sur lequel on joue. Important car on utiisera
-            cette fonction dans le "RollOut" de l'UCT sur des copies du plateau
-            d'origine.
-        """
         fleche = rd.choice(self.liste_row_col)
+        self.modifier_plateau(_plateau, fleche)
         
-        convertFlecheCoord={'G':[int(fleche[1:]),-1],'D':[int(fleche[1:]),_plateau.taille],
-                            'H':[-1,int(fleche[1:])],'B':[_plateau.taille,int(fleche[1:])]}
-        coord_x=convertFlecheCoord[fleche[0]][0]
-        coord_y=convertFlecheCoord[fleche[0]][1]
+        self.generate_list_paths(_plateau)
+        if (self.liste_paths != []):
+            path = rd.choice(self.liste_paths)
+            self.effectuer_chemin(_plateau, path)
         
-        _plateau.coulisser(coord_x, coord_y)
-    
-    def deplacement_alea(self, _plateau):
+    def rotation_carte(self, _plateau, _nb_rotation):
         """
-        déplacment aléatoire sur le plateau parmis les chemins accessible
-        sur le graphe correspondant
+        tourne la carte libre autant de fois que _nb_rotation
         
         _plateau(instance de la classe Plateau):
             référence du plateau sur lequel on joue. Important car on utiisera
             cette fonction dans le "RollOut" de l'UCT sur des copies du plateau
             d'origine.
-        """
-        self.generate_list_paths(plateau)
-        path = rd.choice(self.liste_paths)
         
+        _nb_rotation(int):
+            nombre de fois que l'on doit tourner la carte dans le sens horaire
+        """
+        for i in range(_nb_rotation):
+            self.oriente_carte_libre(_plateau.carte_en_dehors, "horaire")
 
 class UCT_node(object):
     def __init__(self):
         
-        self.parent = []
+        self.parent = None
         self.enfants  = []
         self.nb_visit = 0
         self.nb_gagne = 0
@@ -247,18 +290,43 @@ class UCT(object):
         self.meilleur_noeud = None
         self.noeud_selectionne = None
     
+    def jouer_UCT(self):
+        """
+        Retourne le meilleur coup d'après UCT
+        """
+        temps_debut = time()
+        while(time()-temps_debut < self.temps_ressource):
+            
+            self.recherche_UCT()
+            
+        _max = 0
+        for _enfant in self.racine.enfants:
+            if (_enfant.nb_visit != 0):
+                _enfant.calcul_ucb_score()
+            
+            if (_enfant.ucb_score > _max and _enfant.ucb_score != 10000):#on refuse de choisir un noeud non evalué
+                _max = _enfant.ucb_score
+                self.meilleur_noeud = _enfant
+        
+        return self.meilleur_noeud.description_coup
+        
+    
     def recherche_UCT(self):
         """
         Réalise les 4 étapes de l'UCT et met à jour le meilleur_noeud
         """
+        #1
         self.selection()
-        
-        if (self.noeud_selectionne.nb_visit != 0):
-            self.extension()
+        #2 si nécessaire
+        if (self.noeud_selectionne.nb_visit != 0 or self.noeud_selectionne ==self.racine):
+            self.extension( self.noeud_selectionne)
             self.noeud_selectionne = self.noeud_selectionne.enfants[0]
         
-        self.rollout()
-        self.retro_propagation()
+        #3
+        compteur_victoires = self.rollout(self.noeud_selectionne, self.nb_rollout)
+        
+        #4
+        self.retro_propagation(self.noeud_selectionne, compteur_victoires)
     
     def selection(self):
         """
@@ -278,14 +346,17 @@ class UCT(object):
             
             self.noeud_selectionne = noeud_max
     
-    def extension(self):
+    def extension(self, _noeud_source):
         """
         ajoute tous les enfants au noeud selectionné quand il a déjà été visité
         (il y a déjà eu rollout).
         Ajouter les enfants d'un noeuds signifie d'ajouter toutes les actions
         accessible au jour suivant.
+        
+        _noeud_source(UCT_node):
+            noeud à partir duquel on étend les choix possibles
         """
-        joueur = self.noeud_selectionne.joueur_createur.joueur_suivant
+        joueur = _noeud_source.joueur_createur.joueur_suivant
         
         for _nb_rot_card in range(1,5):
             for _fleche in joueur.liste_row_col:
@@ -293,35 +364,63 @@ class UCT(object):
                 _plateau = cp.deepcopy(self.noeud_selectionne.plateau_ap_coup)
                 
                 for i in range(_nb_rot_card):
-                    self.oriente_carte_libre(_plateau.carte_en_dehors, "horaire")
+                    joueur.oriente_carte_libre(_plateau.carte_en_dehors, "horaire")
                 
-                convertFlecheCoord={'G':[int(_fleche[1:]),-1],'D':[int(_fleche[1:]),_plateau.taille],
-                            'H':[-1,int(_fleche[1:])],'B':[_plateau.taille,int(_fleche[1:])]}
-                coord_x=convertFlecheCoord[_fleche[0]][0]
-                coord_y=convertFlecheCoord[_fleche[0]][1]
-                
-                _plateau.coulisser(coord_x, coord_y)
+                joueur.modifier_plateau(_plateau, _fleche)
                 
                 joueur.generate_list_paths(_plateau)
-                
                 for _path in joueur.liste_paths:
-                    
-                
-                
+                    joueur.effectuer_chemin(_plateau, _path)
+                    _enfant = UCT_node()
+                    _noeud_source.enfants += [_enfant]
+                    _enfant.parent = _noeud_source
+                    _enfant.plateau_ap_coup = _plateau
+                    _enfant.description_coup = [_nb_rot_card, _fleche, _path]
+                    _enfant.joueur_createur = joueur
     
-    def rollout(self):
+    def rollout(self, _noeud_source, _nb_parties = 1, _nb_coup_max = 100):
         """
         joue plusieurs parties au hasard en partant de la situation du plateau
         telle que décrite dans le noeud étendu
+        
+        _noeud_source(UCT_node):
+            noeud pour lequel on effectue le roll out
         """
-        pass
-    
-    def retro_propagation(self):
+        
+        compteur_victoires = {}
+        for _j in _noeud_source.plateau_ap_coup.Liste_Joueur:
+            compteur_victoires[_j] = 0
+        j_playing = _noeud_source.joueur_createur 
+        for k in range(_nb_parties):
+            _plateau = cp.deepcopy(self.noeud_selectionne.plateau_ap_coup)
+            c = 0
+            while (not _plateau.check_gagnant() and c < _nb_coup_max):
+                j_playing = j_playing.joueur_suivant
+                j_playing.coup_alea(_plateau)
+                c+=1
+                
+            print(compteur_victoires, _plateau.Liste_Classement)
+            compteur_victoires[_plateau.Liste_Classement[0][1]] += 1#on incrémente le compteur de victoire
+        
+        return compteur_victoires
+        
+    def retro_propagation(self, _feuille, _compteur_victoires):
         """
         met à jour les noeuds traversés lors de la selection (tous les parents
         de la feuille)
+        
+        _feuille(UCT_node):
+            noeud à partir duquel on remonte à la racine
+            
+        _compteur_victoires(dico, key = joueur, value = nombre de vitoire):
+            le compteur de victoire à propager sur le reste des noeuds.
+            Ce dictionnaire est généré par le rollout
         """
-        pass
+        noeud = _feuille
+        while noeud.parent != None:
+            noeud.nb_visit += 1
+            noeud.nb_gagne += _compteur_victoires[noeud.joueur_createur]
+            noeud = noeud.parent
     
     
     
