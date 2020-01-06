@@ -53,6 +53,7 @@ class Plateau(object) :
         self.Liste_Joueur_IA = []
         self.Liste_Joueur = self.Liste_Joueur_IA+self.Liste_Joueur_H
         self.Liste_Classement = []
+        self.dict_ID2J = {}
         
         self.labyrinthe_detail = np.array([[object]*self.taille]*self.taille)
         entrees = []
@@ -71,7 +72,8 @@ class Plateau(object) :
         self.graph = graph
         self.carte_en_dehors=carte(random.choice(['coin','couloir','carrefour']),dict_elements={'fantome':[],'pepite':[],'joueur':[]})
         self.entrees = entrees
-        
+        self.liste_row_col = [] #liste des lignes et colonnes que l'on peut faire coulisser
+
         #pour visualiser le graphe
         #self.fig = plt.figure()
         #self.ax_graph = self.fig.add_subplot(111)
@@ -332,20 +334,11 @@ class Plateau(object) :
         trie la liste Liste Classement des joueurs dans l'ordre décroissant de leurs
         nombre de points respectifs.
         """
-        dict_classement = {}
-        for _j in self.Liste_Joueur:
-            try:
-                dict_classement[_j.nb_points] += [_j]
-            except:
-                dict_classement[_j.nb_points] = [_j]
                 
-        liste_Classement = [_j.nb_points for _j in self.Liste_Joueur]
-        liste_Classement.sort(reverse=True)
-        
-        self.Liste_Classement = []
-        for _nb_point in liste_Classement:
-            for _j in dict_classement[_nb_point]:
-                self.Liste_Classement += [(_nb_point, _j)]
+        liste_Classement = np.array([_j.nb_points for _j in self.Liste_Joueur])
+        rank = liste_Classement.argsort()
+        self.Liste_Classement = [(liste_Classement[_r], self.Liste_Joueur[_r]) for _r in rank]
+        self.Liste_Classement = self.Liste_Classement[::-1]
     
     def check_gagnant(self):
         """
@@ -363,27 +356,31 @@ class Plateau(object) :
                 for k in range (1, nb_joueur):#on ajoute les points de la carte aux joueurs
                     self.Liste_Classement[k][1].compter_pts_carte(self.labyrinthe_detail[i][j],
                                                                   _reset_value = False)
+
         c = 0
         for k in range (1, nb_joueur):#on regarde si le joueur en tête à toujours plus de points que les autres
-            
             if self.Liste_Classement[0][0] > self.Liste_Classement[k][1].nb_points:
                 c+=1
             self.Liste_Classement[k][1].nb_points = save_nb_points[k]#on remet les ancien compte de points
-        
+
         if c == nb_joueur-1:#si le compteur est egal au nb d'adversaires alors le joueur en tête à gagné
             gagnant = True
         
         return gagnant
     
-# =============================================================================
-#     def __deepcopy__(self, memo):
-#         cls = self.__class__
-#         result = cls.__new__(cls)
-#         memo[id(self)] = result
-#         for k, v in self.__dict__.items():
-#             setattr(result, k, cp.deepcopy(v, memo))
-#         return result
-# =============================================================================
+    def generate_liste_row_col(self):
+        self.liste_row_col = []
+        for i in range(1, self.taille, 2):
+            for _char in ["G", "D", "H", "B"]:
+                self.liste_row_col += [_char + str(i)]
+    
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, cp.deepcopy(v, memo))
+        return result
         
     def chemin_possible(self,id_joueur):
     #        for i in self.labyrinthe_detail:

@@ -9,6 +9,7 @@ import random as rd
 import networkx as nx
 import copy as cp
 import numpy as np
+import pickle
 from time import time
 #from classe_carte import carte
 #from Classe_plateau import Plateau
@@ -51,14 +52,14 @@ class Joueur(object):
     def determiner_joueur_voisins_ordre(self):
         index = self.ref_plateau.Liste_Joueur.index(self)
         if (index == len(self.ref_plateau.Liste_Joueur)-1):
-            self.joueur_suivant = self.ref_plateau.Liste_Joueur[0]
+            self.joueur_suivant = self.ref_plateau.Liste_Joueur[0].identifiant
         else:
-            self.joueur_suivant = self.ref_plateau.Liste_Joueur[index+1]
+            self.joueur_suivant = self.ref_plateau.Liste_Joueur[index+1].identifiant
             
         if (index == 0):
-            self.joueur_precedant = self.ref_plateau.Liste_Joueur[len(self.ref_plateau.Liste_Joueur)-1]
+            self.joueur_precedant = self.ref_plateau.Liste_Joueur[len(self.ref_plateau.Liste_Joueur)-1].identifiant
         else:
-            self.joueur_precedant = self.ref_plateau.Liste_Joueur[index-1]
+            self.joueur_precedant = self.ref_plateau.Liste_Joueur[index-1].identifiant
             
     def generer_odre_mission(self,nb_ordre,nb_ghost):
         ordre_mission = []
@@ -141,7 +142,7 @@ class Joueur(object):
             self.maj_position(_card)
             self.compter_pts_carte(_card)
         _plateau.maj_classement()#on met a jour le classement à la fin du tour d'un joueur
-        print(_plateau.Liste_Classement)
+        #print(_plateau.Liste_Classement)
         
     def heuristique():
         "Un peu tôt"
@@ -154,14 +155,7 @@ class Joueur_IA(Joueur):
         
         self.UCT_solver = None
         
-        self.liste_row_col = [] #liste des lignes et colonnes que l'on peut faire coulisser
         self.liste_paths = [] #liste des chemins accessibles au joueur. Utile après rot card et coullissage
-        
-    def generate_liste_row_col(self):
-        self.liste_row_col = []
-        for i in range(1, self.ref_plateau.taille, 2):
-            for _char in ["G", "D", "H", "B"]:
-                self.liste_row_col += [_char + str(i)]
     
     def generate_list_paths(self, _plateau):
         self.liste_paths = []
@@ -181,7 +175,7 @@ class Joueur_IA(Joueur):
             pass
             
         elif (self.niv == "Difficile"):
-            description_coup = self.UCT_solver.jouer_UCT()
+            description_coup = self.UCT_solver.jouer_UCT(self.ref_plateau, self)
             self.rotation_carte(self.ref_plateau, description_coup[0])
             self.modifier_plateau(self.ref_plateau, description_coup[1])
             self.effectuer_chemin(self.ref_plateau, description_coup[2])
@@ -199,7 +193,7 @@ class Joueur_IA(Joueur):
         nb_rotation = rd.choice([1,2,3,4])
         self.rotation_carte(_plateau, nb_rotation)
         
-        fleche = rd.choice(self.liste_row_col)
+        fleche = rd.choice(_plateau.liste_row_col)
         self.modifier_plateau(_plateau, fleche)
         
         self.generate_list_paths(_plateau)
@@ -223,7 +217,7 @@ class Joueur_IA(Joueur):
             self.oriente_carte_libre(_plateau.carte_en_dehors, "horaire")
 
 class UCT_node(object):
-    def __init__(self):
+    def __init__(self, _C = np.sqrt(2)):
         
         self.parent = None
         self.enfants  = []
@@ -235,10 +229,12 @@ class UCT_node(object):
         self.joueur_createur = None
         
         self.ucb_score = 10000
+        
+        self.C = _C
     
     def calcul_ucb_score(self):
         self.ucb_score = self.nb_gagne / self.nb_visit + \
-                         self.C * np.sqrt(np.ln(self.parent.nb_visit)/self.nb_visit)
+                         self.C * np.sqrt(np.log2(self.parent.nb_visit)/self.nb_visit)
   
 class UCT(object):
     """
@@ -276,24 +272,27 @@ class UCT(object):
         4)
             Retropropagation. On fait remonter le nombre de victoires de
     """
-    def __init__(self, _plateau, _joueur_racine, _C = np.sqrt(2),
-                 _nb_rollout = 10, _temps_ressource = 10):
+    def __init__(self,  _nb_rollout = 10,
+                 _temps_ressource = 10):
         
-        self.C = _C
+        
         self.nb_rollout = _nb_rollout
         self.temps_ressource = _temps_ressource
-        
+    
+    def initialise_UCT(self, _plateau, _joueur_UCT):
         self.racine = UCT_node()
-        self.racine.plateau_ap_coup = cp.deepcopy(_plateau)
-        self.racine.joueur_createur = _joueur_racine
+        self.racine.plateau_ap_coup = _plateau.__deepcopy__({})
+        self.racine.joueur_createur = _plateau.dict_ID2J[_joueur_UCT.identifiant].joueur_precedant
         
         self.meilleur_noeud = None
         self.noeud_selectionne = None
     
-    def jouer_UCT(self):
+    def jouer_UCT(self, _plateau, _joueur_UCT):
         """
         Retourne le meilleur coup d'après UCT
         """
+        self.initialise_UCT(_plateau, _joueur_UCT)
+        
         temps_debut = time()
         while(time()-temps_debut < self.temps_ressource):
             
@@ -303,11 +302,13 @@ class UCT(object):
         for _enfant in self.racine.enfants:
             if (_enfant.nb_visit != 0):
                 _enfant.calcul_ucb_score()
+                print(304, _enfant.joueur_createur, _enfant.ucb_score)
             
             if (_enfant.ucb_score > _max and _enfant.ucb_score != 10000):#on refuse de choisir un noeud non evalué
                 _max = _enfant.ucb_score
                 self.meilleur_noeud = _enfant
         
+        print(306, self.meilleur_noeud.nb_gagne, self.meilleur_noeud.description_coup)
         return self.meilleur_noeud.description_coup
         
     
@@ -318,8 +319,9 @@ class UCT(object):
         #1
         self.selection()
         #2 si nécessaire
-        if (self.noeud_selectionne.nb_visit != 0 or self.noeud_selectionne ==self.racine):
-            self.extension( self.noeud_selectionne)
+        if (self.noeud_selectionne.nb_visit != 0 or self.noeud_selectionne == self.racine):
+            print(self.noeud_selectionne.joueur_createur, self.noeud_selectionne.nb_visit, self.noeud_selectionne == self.racine)
+            self.extension(self.noeud_selectionne)
             self.noeud_selectionne = self.noeud_selectionne.enfants[0]
         
         #3
@@ -339,6 +341,7 @@ class UCT(object):
             for _enfant in self.noeud_selectionne.enfants:
                 if (_enfant.nb_visit != 0):
                     _enfant.calcul_ucb_score()
+                    #print(_enfant.ucb_score)
                 
                 if (_enfant.ucb_score > _max):
                     _max = _enfant.ucb_score
@@ -356,27 +359,51 @@ class UCT(object):
         _noeud_source(UCT_node):
             noeud à partir duquel on étend les choix possibles
         """
-        joueur = _noeud_source.joueur_createur.joueur_suivant
-        
+        c = 0
         for _nb_rot_card in range(1,5):
-            for _fleche in joueur.liste_row_col:
+            for _fleche in _noeud_source.plateau_ap_coup.liste_row_col:
+                #print('in', c)
+                tps_d1 = time()
+                _plateau = pickle.loads(pickle.dumps(_noeud_source.plateau_ap_coup, -1))#cp.deepcopy(self.noeud_selectionne.plateau_ap_coup)
+                tps_d1 = time()-tps_d1
                 
-                _plateau = cp.deepcopy(self.noeud_selectionne.plateau_ap_coup)
+                joueur = _plateau.dict_ID2J[
+                            _plateau.dict_ID2J[_noeud_source.joueur_createur].joueur_suivant]
                 
                 for i in range(_nb_rot_card):
                     joueur.oriente_carte_libre(_plateau.carte_en_dehors, "horaire")
                 
+                tps_d2 = time()
                 joueur.modifier_plateau(_plateau, _fleche)
+                tps_d2 = time()-tps_d2
+                print(378, 'tps1=', tps_d1/(tps_d1+tps_d2), 'tps2=', tps_d2/(tps_d1+tps_d2) )
                 
                 joueur.generate_list_paths(_plateau)
-                for _path in joueur.liste_paths:
-                    joueur.effectuer_chemin(_plateau, _path)
-                    _enfant = UCT_node()
-                    _noeud_source.enfants += [_enfant]
-                    _enfant.parent = _noeud_source
-                    _enfant.plateau_ap_coup = _plateau
-                    _enfant.description_coup = [_nb_rot_card, _fleche, _path]
-                    _enfant.joueur_createur = joueur
+                print(len(joueur.liste_paths))
+                if (joueur.liste_paths != []):
+                    for _path in joueur.liste_paths:
+                        joueur.effectuer_chemin(_plateau, _path)
+                        _enfant = UCT_node()
+                        _noeud_source.enfants += [_enfant]
+                        _enfant.parent = _noeud_source
+                        _enfant.plateau_ap_coup = _plateau
+                        _enfant.description_coup = [_nb_rot_card, _fleche, _path]
+                        _enfant.joueur_createur = joueur.identifiant
+                        c+=1
+# =============================================================================
+#                 
+#                 else:
+#                     joueur.effectuer_chemin(_plateau, [])
+#                     _enfant = UCT_node()
+#                     _noeud_source.enfants += [_enfant]
+#                     _enfant.parent = _noeud_source
+#                     _enfant.plateau_ap_coup = _plateau
+#                     _enfant.description_coup = [_nb_rot_card, _fleche, []]
+#                     _enfant.joueur_createur = joueur.identifiant
+# =============================================================================
+                c+= 1
+        print(c, "enfants ont été générés")
+                    
     
     def rollout(self, _noeud_source, _nb_parties = 1, _nb_coup_max = 100):
         """
@@ -389,18 +416,17 @@ class UCT(object):
         
         compteur_victoires = {}
         for _j in _noeud_source.plateau_ap_coup.Liste_Joueur:
-            compteur_victoires[_j] = 0
-        j_playing = _noeud_source.joueur_createur 
+            compteur_victoires[_j.identifiant] = 0
+            
         for k in range(_nb_parties):
-            _plateau = cp.deepcopy(self.noeud_selectionne.plateau_ap_coup)
+            _plateau = self.noeud_selectionne.plateau_ap_coup.__deepcopy__({})
+            j_playing = _plateau.dict_ID2J[_noeud_source.joueur_createur]
             c = 0
             while (not _plateau.check_gagnant() and c < _nb_coup_max):
-                j_playing = j_playing.joueur_suivant
+                j_playing = _plateau.dict_ID2J[j_playing.joueur_suivant]
                 j_playing.coup_alea(_plateau)
                 c+=1
-                
-            print(compteur_victoires, _plateau.Liste_Classement)
-            compteur_victoires[_plateau.Liste_Classement[0][1]] += 1#on incrémente le compteur de victoire
+            compteur_victoires[_plateau.Liste_Classement[0][1].identifiant] += 1#on incrémente le compteur de victoire
         
         return compteur_victoires
         
@@ -420,7 +446,13 @@ class UCT(object):
         while noeud.parent != None:
             noeud.nb_visit += 1
             noeud.nb_gagne += _compteur_victoires[noeud.joueur_createur]
+            print(436,noeud.joueur_createur, noeud.nb_visit, noeud.nb_gagne)
             noeud = noeud.parent
+            
+        noeud.nb_visit += 1
+        noeud.nb_gagne += _compteur_victoires[noeud.joueur_createur]
+        print(441,noeud.joueur_createur, noeud.nb_visit, noeud.nb_gagne)
+            
     
     
     

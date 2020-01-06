@@ -129,7 +129,9 @@ def JEU(dimension = 7,
     for i in range(nombre_joueur_IA):#génération des joueurs IA
         new_joueur = Joueur_IA(_identifiant = IA_niv[i]+"_"+str(i), _niv = IA_niv[i])
         new_joueur.ref_plateau = plateau
-        new_joueur.generate_liste_row_col()
+        if (new_joueur.niv == "Difficile"):
+            new_joueur.UCT_solver = UCT()
+        #new_joueur.generate_liste_row_col()
         plateau.Liste_Joueur_IA.append(new_joueur)
     
     for i in range(nombre_joueur-nombre_joueur_IA):#génération des joueurs
@@ -142,14 +144,14 @@ def JEU(dimension = 7,
     for joueur in plateau.Liste_Joueur:
         joueur.generer_odre_mission(nombre_ordre_mission,nombre_ghost)# Attribution des ordres de missions 
         joueur.determiner_joueur_voisins_ordre()
+        plateau.dict_ID2J[joueur.identifiant] = joueur
         
     plateau.placer_joueurs(plateau.Liste_Joueur)# Placement des joueurs sur les cases qui lerus sont attribués 
     
     plateau.maj_classement()
     
-    for _j in plateau.Liste_Joueur_IA:
-        if (_j.niv == "Difficile"):
-            _j.UCT_solver = UCT(plateau, _j)
+    plateau.generate_liste_row_col()
+
     ################################################################################
     # Déroulement du jeu
     ################################################################################
@@ -161,7 +163,9 @@ def JEU(dimension = 7,
 if __name__=="__main__":
     plateau = JEU()
     c = 0
-    while (not plateau.check_gagnant() and c<150):
+    while (c<10):#not plateau.check_gagnant() ):
+        print(167, c)
         for _j in plateau.Liste_Joueur_IA:
             _j.jouer()
+            print(_j.identifiant, _j.nb_points)
         c+=1
