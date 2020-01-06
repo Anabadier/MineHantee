@@ -140,6 +140,7 @@ class Plateau(object) :
             j = random.randint(0,self.taille-1)
             if self.labyrinthe_detail[i][j].elements['pepite']==[]:
                 self.labyrinthe_detail[i][j].elements['pepite'] = True
+                self.labyrinthe_detail[i][j].element_virtuels['pepite'] = True
                 compteur+=1
     
     def placer_joueurs(self, liste_joueur) :
@@ -153,6 +154,7 @@ class Plateau(object) :
                 a = random.choice([2,self.taille-3])
                 b = random.choice([2,self.taille-3])
             self.labyrinthe_detail[a][b].elements['joueur'] = joueur.identifiant
+            self.labyrinthe_detail[a][b].element_virtuels['joueur'] = joueur.identifiant
             joueur.position_detail=(a,b)
             joueur.position_graphe=self.node_pos.index((a,b))
     
@@ -164,6 +166,7 @@ class Plateau(object) :
             j = random.randint(1,self.taille-1)
             if self.labyrinthe_detail[i][j].mobilite == True and self.labyrinthe_detail[i][j].elements['fantome']==[]:
                 self.labyrinthe_detail[i][j].elements['fantome']=liste_ghost[0].id
+                self.labyrinthe_detail[i][j].element_virtuels['fantome']=liste_ghost[0].id
                 del liste_ghost[0]
                 compteur+=1
 
@@ -227,7 +230,7 @@ class Plateau(object) :
         :param coord_y: ordonnée du lieu où l'on souhaite faire coulisser la carte
         :return:
         """
-        dict_vide = {'fantome' : False , 'pepite' : False, 'joueur': False}
+        dict_vide = {'fantome' : [] , 'pepite' : [], 'joueur': []}
         ## on modifie la ligne
         # en coulissant de gauche à droite
         if coord_y == -1:
@@ -313,7 +316,7 @@ class Plateau(object) :
             cards_path += [self.labyrinthe_detail[coords[0]][coords[1]]]
         return cards_path
     
-    def convertir_Fleche2Coord(self, _fleche):
+    def convertir_Fleche2Coord(self, _fleche, _backward = False):
         """
         Convertit l'identifiant du bouton fleche en les coordonnées de la ligne
         ou de la colonne à déplacer dans *labyrinthe_detail*
@@ -321,9 +324,16 @@ class Plateau(object) :
         _fleche(str):
             identifiant du type 'H1' pour la flèche en haut du plateau à gauche
             dans la visualisation PyGame
+        
+        _backward(bool):
+            Si True, renvoie la fleche oppposée. Utile dans UCT
         """
         convertFlecheCoord={'G':[int(_fleche[1:]),-1],'D':[int(_fleche[1:]),self.taille],
                             'H':[-1,int(_fleche[1:])],'B':[self.taille,int(_fleche[1:])]}
+        if (_backward):
+            opposit_dict={'G':'D', 'D':'G', 'H':'B', 'B':'H'}
+            _fleche = opposit_dict[_fleche[0]] + _fleche[1:]
+            
         coord_x=convertFlecheCoord[_fleche[0]][0]
         coord_y=convertFlecheCoord[_fleche[0]][1]
         
