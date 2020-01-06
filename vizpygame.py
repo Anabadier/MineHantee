@@ -17,23 +17,12 @@ import Jeu_mine
 # =============================================================================
 #Paramètres de la fenêtre
 
-#nombre_case_cote = 7
-#taille_case = 350/nombre_case_cote
-#cote_fenetre = nombre_case_cote * taille_case
+
 
 dic_case_img={'0110':'NXXO_3.png','1010':'XSXO_3.png','1001':'XSEX_3.png','0101':'NXEX_3.png',\
               '1100':'XXEO_3.png','0011':'NSXX_3.png',\
               '1110':'XXXO_3.png','1011':'XSXX_3.png','1101':'XXEX_3.png','0111':'NXXX_3.png'}
 
-##On génère une matrice aléatoire
-#def genere_mat():
-#    Mat_plat=[[[] for i in range(nombre_case_cote)] for i in range(nombre_case_cote)]
-#    for i in range(len(Mat_plat)):
-#        for j in range(len(Mat_plat[i])):
-#            Mat_plat[i][j]=random.choice(list(dic_case_img.keys()))
-#    print(Mat_plat)
-#    return(Mat_plat)
-    
 
 BLACK = 0, 0, 0
 WHITE = 255, 255, 255
@@ -42,6 +31,7 @@ CIEL = 0, 200, 255
 RED = 255, 0, 0
 ORANGE = 255, 100, 0
 GREEN = 0, 255, 0
+
 
 
 # =============================================================================
@@ -58,7 +48,7 @@ def genere_carte(carte,size):
 
 def afficher(plat,plateau,fenetre,id_joueur=None):
     """afficher les cartes sur le plateau"""
-    global pepite, fantome
+    global img_pepite,img_fantome,img_perso
     
     Mat_plat=plat.labyrinthe_detail
     
@@ -275,7 +265,7 @@ def ecran(plat):
     
     
     #Fenetre Score
-    fenetreScore(plat.Liste_Joueur[0])
+    fenetreScore(plat.Liste_Joueur[0],plat)
     
     
     #BOUCLE INFINIE
@@ -353,30 +343,83 @@ def IA():
     print("help needed")
     
     
-def fenetreScore(joueur):
-    '''joueur : objet de la classe joueur'''
-    scoreframe=pygame.Surface((400,350))
+def fenetreScore(joueur,plat):
+    '''joueur : objet de la classe joueur
+    plat : objet plateau'''
+    pepite=pygame.transform.scale(img_pepite,(25,25))
+    fantome=pygame.transform.scale(img_fantome,(25,25))
+    perso=pygame.transform.scale(img_perso,(25,25))
+    
+    
+    scoreframe=pygame.Surface((400,400))
     scoreframe.fill(CIEL)
+    
+    valscore=0
+    pepitescore=0
+    ecrire('Score : '+str(valscore),scoreframe,(50,50))
+    scoreframe.blit(pepite,(250,50))
+    ecrire(pepitescore,scoreframe,(280,50))
     
     ordreMission=pygame.Surface((380,100))
     ordreMission.fill(WHITE)
-    ecrire('Ordre de mission : ',ordreMission,(5,5),fontsize=20)
+    ecrire('Ordre de mission : ',
+           ordreMission,
+           (5,5),
+           fontsize=20)
     print(ordreMission.get_rect().center)
     
     nombre_fantomes=len(joueur.ordre_de_mission)
-    
     taille_espace=(360-50*nombre_fantomes)/(nombre_fantomes-1)
     print(taille_espace)
     for i in range (nombre_fantomes):
         ordreMission.blit(fantome,(10+i*(50+taille_espace),50))
-        ecrire(joueur.ordre_de_mission[i],ordreMission,(20+i*(50+taille_espace),80),RED,20)
+        ecrire(joueur.ordre_de_mission[i],
+               ordreMission,
+               (20+i*(50+taille_espace),80),
+               RED,
+               20)
         
     scoreframe.blit(ordreMission,(10,100))
         
-    valscore=0
-    ecrire('Score : '+str(valscore),scoreframe,(50,50))
+    scoreAdverse=pygame.Surface((380,180))
+    scoreAdverse.fill(WHITE)
+    ecrire('Scores des pinguins ennemis : ',
+           scoreAdverse,
+           (5,5),
+           fontsize=20)
     
-    fenetre.blit(scoreframe,(550,200))
+    
+    Ladverse=plat.Liste_Joueur #suppression du joueur concerné
+    for i in range(len(Ladverse)):
+        if Ladverse[i]==joueur:
+            idj=i          
+    del Ladverse[idj]
+    
+    for i in range(len(Ladverse)):
+        frameJoueur=pygame.Surface((360,50))
+        frameJoueur.fill(WHITE)
+        adv=Ladverse[i]
+        frameJoueur.blit(perso,(0,0))
+        ecrire(Ladverse[i].nb_points,
+               frameJoueur,
+               (30,5),
+               fontsize=25)
+            
+        nombre_fantomes=len(adv.ordre_de_mission)
+        print(adv.ordre_de_mission)
+        taille_espace=(300-50*nombre_fantomes)/(nombre_fantomes-1)
+        for j in range (nombre_fantomes):
+            frameJoueur.blit(fantome,(50+j*(50+taille_espace),0))
+            ecrire(adv.ordre_de_mission[j],
+                   frameJoueur,
+                   (50+j*(50+taille_espace),0),
+                   RED,
+                   20)
+            
+        scoreAdverse.blit(frameJoueur,(10,30+i*50)) 
+        
+    scoreframe.blit(scoreAdverse,(10,200))
+    fenetre.blit(scoreframe,(550,150))
     
 if __name__=="__main__":
     ecran(Jeu_mine.JEU())
