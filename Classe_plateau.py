@@ -14,7 +14,7 @@ import random
 import networkx as nx
 import matplotlib.pyplot as plt
 #import math
-
+import copy as cp
 from classe_carte import carte
 import SaC
 
@@ -42,10 +42,18 @@ class Plateau(object) :
         
         
         self.taille = dim_plateau #int(self.config.dim_plateau)
+        self.pts_pepite = 1
+        self.pts_fantome = 5
+        self.pts_ordre_mission = 15
+        
         self.SaC = _SaC
-        self.Liste_Joueur = []
+        
+        
         self.Liste_Joueur_H = []
         self.Liste_Joueur_IA = []
+        self.Liste_Joueur = self.Liste_Joueur_IA+self.Liste_Joueur_H
+        self.Liste_Classement = []
+        
         self.labyrinthe_detail = np.array([[object]*self.taille]*self.taille)
         entrees = []
         for i in [0,self.taille-1]:
@@ -65,8 +73,9 @@ class Plateau(object) :
         self.entrees = entrees
         
         #pour visualiser le graphe
-        self.fig = plt.figure()
-        self.ax_graph = self.fig.add_subplot(111)
+        #self.fig = plt.figure()
+        #self.ax_graph = self.fig.add_subplot(111)
+        
         
         
     def placer_carte_libre(self,liste_carte):
@@ -81,6 +90,7 @@ class Plateau(object) :
                     
                     liste_carte.remove(new_carte)
     
+
     def etablir_connexion(self,carte):
         """
         carte(instance de carte):
@@ -111,7 +121,13 @@ class Plateau(object) :
                 self.graph.add_edge(self.labyrinthe_detail[i+1][j].position_G,
                                     carte.position_G)
  
-    
+
+    def set_objects_points(self, _pts_pepite = 1, _pts_fantome = 5,
+                           _pts_ordre_mission = 15):
+        self.pts_pepite = _pts_pepite
+        self.pts_fantome = _pts_fantome
+        self.pts_ordre_mission = _pts_ordre_mission
+
     def placer_pepites(self, nb_pepites) :
         '''
         place les pepites sur le plateau
@@ -136,7 +152,7 @@ class Plateau(object) :
                 b = random.choice([2,self.taille-3])
             self.labyrinthe_detail[a][b].elements['joueur'] = joueur.identifiant
             joueur.position_detail=(a,b)
-        
+            joueur.position_graphe=self.node_pos.index((a,b))
     
     def placer_fantomes(self,liste_ghost):
         compteur=0
@@ -148,7 +164,6 @@ class Plateau(object) :
                 self.labyrinthe_detail[i][j].elements['fantome']=liste_ghost[0].id
                 del liste_ghost[0]
                 compteur+=1
-                
 
     def generer_carte_fixe(self,nb_fantome,nb_pepites) :
         '''
@@ -286,8 +301,89 @@ class Plateau(object) :
             for j in range(self.taille):
                 self.etablir_connexion(self.labyrinthe_detail[i,j])#on refait les connexions
         #on dessine
-        self.ax_graph.clear()
-        nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph)
+        #self.ax_graph.clear()
+        #nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph)
+
+    def translate_GraphPath2CardsPath(self, _graph_path):
+        cards_path = []
+        for _node_number in _graph_path:
+            coords = self.node_pos[_node_number]
+            cards_path += [self.labyrinthe_detail[coords[0]][coords[1]]]
+        return cards_path
+    
+    def convertir_Fleche2Coord(self, _fleche):
+        """
+        Convertit l'identifiant du bouton fleche en les coordonnées de la ligne
+        ou de la colonne à déplacer dans *labyrinthe_detail*
+        
+        _fleche(str):
+            identifiant du type 'H1' pour la flèche en haut du plateau à gauche
+            dans la visualisation PyGame
+        """
+        convertFlecheCoord={'G':[int(_fleche[1:]),-1],'D':[int(_fleche[1:]),self.taille],
+                            'H':[-1,int(_fleche[1:])],'B':[self.taille,int(_fleche[1:])]}
+        coord_x=convertFlecheCoord[_fleche[0]][0]
+        coord_y=convertFlecheCoord[_fleche[0]][1]
+        
+        return coord_x, coord_y
+    
+    def maj_classement(self):
+        """
+        trie la liste Liste Classement des joueurs dans l'ordre décroissant de leurs
+        nombre de points respectifs.
+        """
+        dict_classement = {}
+        for _j in self.Liste_Joueur:
+            try:
+                dict_classement[_j.nb_points] += [_j]
+            except:
+                dict_classement[_j.nb_points] = [_j]
+                
+        liste_Classement = [_j.nb_points for _j in self.Liste_Joueur]
+        liste_Classement.sort(reverse=True)
+        
+        self.Liste_Classement = []
+        for _nb_point in liste_Classement:
+            for _j in dict_classement[_nb_point]:
+                self.Liste_Classement += [(_nb_point, _j)]
+    
+    def check_gagnant(self):
+        """
+        regarde si l'un des joueurs peut rattraper le joueur en tête.
+        Return True s'il y a un gagnat (i.e. aucun des adversaire ne peut dépasser
+        le joueur en tête)        
+        """
+        gagnant = False
+        
+        nb_joueur = len(self.Liste_Joueur)
+        save_nb_points = [self.Liste_Classement[i][0] for i in range(nb_joueur)]
+        
+        for i in range(self.taille):#on traverse toutes les cartes
+            for j in range(self.taille):
+                for k in range (1, nb_joueur):#on ajoute les points de la carte aux joueurs
+                    self.Liste_Classement[k][1].compter_pts_carte(self.labyrinthe_detail[i][j],
+                                                                  _reset_value = False)
+        c = 0
+        for k in range (1, nb_joueur):#on regarde si le joueur en tête à toujours plus de points que les autres
+            
+            if self.Liste_Classement[0][0] > self.Liste_Classement[k][1].nb_points:
+                c+=1
+            self.Liste_Classement[k][1].nb_points = save_nb_points[k]#on remet les ancien compte de points
+        
+        if c == nb_joueur-1:#si le compteur est egal au nb d'adversaires alors le joueur en tête à gagné
+            gagnant = True
+        
+        return gagnant
+    
+# =============================================================================
+#     def __deepcopy__(self, memo):
+#         cls = self.__class__
+#         result = cls.__new__(cls)
+#         memo[id(self)] = result
+#         for k, v in self.__dict__.items():
+#             setattr(result, k, cp.deepcopy(v, memo))
+#         return result
+# =============================================================================
         
     def chemin_possible(self,id_joueur):
     #        for i in self.labyrinthe_detail:

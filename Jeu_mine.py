@@ -11,13 +11,14 @@ import networkx as nx
 
 from Calass_rep import *
 from Classe_plateau import Plateau
+from classe_carte import carte
 
 import SaC
 
 
 def JEU(dimension = 7,
         nombre_joueur = 2, pseudos_joueurs = ["Joueur_1"],
-        nombre_joueur_IA = 1, IA_niv = ["Normale"],
+        nombre_joueur_IA = 2, IA_niv = ["Facile", "Difficile"],#Difficile
         nombre_ghost = 21, nombre_ordre_mission = 3,
         nombre_pepite = 49, pts_pepite = 1, pts_fantome = 5, pts_ordre_mission = 15,
         _SaC = SaC.Save_and_Charge()):    
@@ -87,10 +88,10 @@ def JEU(dimension = 7,
     
     """
     
-    
-    plateau=Plateau(dimension, _SaC)                                             
-    
-    
+    plateau=Plateau(dimension, _SaC)
+    """
+    Génération des cartes
+    """
     plateau.generer_carte_fixe(nombre_ghost,nombre_pepite)
     plateau.placer_carte_libre(Liste_carte)
     
@@ -107,6 +108,10 @@ def JEU(dimension = 7,
     
     plateau.placer_pepites(nombre_pepite)
     
+    """
+    Gestion des points
+    """
+    plateau.set_objects_points(pts_pepite, pts_fantome, pts_ordre_mission)
     
     """
     Etablissement des connexions du réseau entre les cartes
@@ -115,7 +120,7 @@ def JEU(dimension = 7,
     for i in range (dimension):
         for j in range(dimension):
             plateau.etablir_connexion(plateau.labyrinthe_detail[i,j])
-    nx.draw_networkx(plateau.graph, pos = plateau.node_pos, ax = plateau.ax_graph)
+    #nx.draw_networkx(plateau.graph, pos = plateau.node_pos, ax = plateau.ax_graph)
     
     """ 
     Génération des jouers et placement sur le plateau
@@ -130,19 +135,21 @@ def JEU(dimension = 7,
     for i in range(nombre_joueur-nombre_joueur_IA):#génération des joueurs
         new_joueur = Joueur(_identifiant = pseudos_joueurs[i])
         new_joueur.ref_plateau = plateau
-        
         plateau.Liste_Joueur_H.append(new_joueur)
     
     plateau.Liste_Joueur = plateau.Liste_Joueur_IA+plateau.Liste_Joueur_H
     
-    print(len(plateau.Liste_Joueur), len(plateau.Liste_Joueur_H), len(plateau.Liste_Joueur_IA))
-        
     for joueur in plateau.Liste_Joueur:
         joueur.generer_odre_mission(nombre_ordre_mission,nombre_ghost)# Attribution des ordres de missions 
+        joueur.determiner_joueur_voisins_ordre()
         
     plateau.placer_joueurs(plateau.Liste_Joueur)# Placement des joueurs sur les cases qui lerus sont attribués 
     
+    plateau.maj_classement()
     
+    for _j in plateau.Liste_Joueur_IA:
+        if (_j.niv == "Difficile"):
+            _j.UCT_solver = UCT(plateau, _j)
     ################################################################################
     # Déroulement du jeu
     ################################################################################
@@ -152,4 +159,9 @@ def JEU(dimension = 7,
     return(plateau)
 
 if __name__=="__main__":
-    JEU()
+    plateau = JEU()
+    c = 0
+    while (not plateau.check_gagnant() and c<150):
+        for _j in plateau.Liste_Joueur_IA:
+            _j.jouer()
+        c+=1
