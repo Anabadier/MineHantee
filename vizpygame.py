@@ -101,11 +101,13 @@ def afficher(plat,plateau,fenetre,id_joueur=None):
                 plateau.blit(cache,(x,y))
                 
             #Si pépite/fantome sur la carte, voir condition avec la matrice des instances de cartes
+            print(case.elements['fantome'])
             if case.elements['pepite'] == True:
                 plateau.blit(pepite,(x,y))
-            if case.elements['fantome'] == True:
+            if case.elements['fantome'] != []:
                 plateau.blit(fantome,(x+taille_case/5,y+taille_case/5))
-            if case.elements['joueur']==True:
+                ecrire(case.elements['fantome'],plateau,(x+taille_case/5,y+taille_case/5),RED,20)
+            if case.elements['joueur']!=[]:
                 plateau.blit(perso,(x+taille_case/6,y+taille_case/6))
             
             #Si paire : peut coulisser : insérer bouton de chaque côté
@@ -210,7 +212,7 @@ def ecrire(texte,frame,pos,fontcolor=pygame.Color("#000000"),fontsize=36):
     texte = police.render(str(texte),True,fontcolor)
     rectTexte = texte.get_rect() #surface rectangle autour du texte
     rectTexte.topleft=pos #ancrage du texte
-    print(rectTexte)
+
     frame.blit(texte,rectTexte)
 		
 #Création de la fenêtre
@@ -223,7 +225,7 @@ def ecran(plat):
     
     fenetre = pygame.display.set_mode((1000,600))
     fenetre.fill((255,255,255)) #remplissage fond blanc
-    
+  
     plateau=pygame.Surface((cote_fenetre,cote_fenetre))
     #si on veut importer une image de fond
     #fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()     
@@ -273,7 +275,7 @@ def ecran(plat):
     
     
     #Fenetre Score
-    fenetreScore()
+    fenetreScore(plat.Liste_Joueur[0])
     
     
     #BOUCLE INFINIE
@@ -351,14 +353,24 @@ def IA():
     print("help needed")
     
     
-def fenetreScore(idjoueur=1):
+def fenetreScore(joueur):
+    '''joueur : objet de la classe joueur'''
     scoreframe=pygame.Surface((400,350))
     scoreframe.fill(CIEL)
     
     ordreMission=pygame.Surface((380,100))
     ordreMission.fill(WHITE)
     ecrire('Ordre de mission : ',ordreMission,(5,5),fontsize=20)
- 
+    print(ordreMission.get_rect().center)
+    
+    nombre_fantomes=len(joueur.ordre_de_mission)
+    
+    taille_espace=(360-50*nombre_fantomes)/(nombre_fantomes-1)
+    print(taille_espace)
+    for i in range (nombre_fantomes):
+        ordreMission.blit(fantome,(10+i*(50+taille_espace),50))
+        ecrire(joueur.ordre_de_mission[i],ordreMission,(20+i*(50+taille_espace),80),RED,20)
+        
     scoreframe.blit(ordreMission,(10,100))
         
     valscore=0
