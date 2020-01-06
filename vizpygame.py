@@ -200,6 +200,18 @@ class Button_img:
         self.fond = fond
         self.rect = pygame.draw.rect(self.fond, self.color, self.textpos)
         self.fond.blit(self.img, self.textpos)
+        
+        
+def ecrire(texte,frame,pos,fontcolor=pygame.Color("#000000"),fontsize=36):
+    """texte : str
+    frame : surface
+    pos : (tuple)"""
+    police = pygame.font.Font(None,fontsize)
+    texte = police.render(str(texte),True,fontcolor)
+    rectTexte = texte.get_rect() #surface rectangle autour du texte
+    rectTexte.topleft=pos #ancrage du texte
+    print(rectTexte)
+    frame.blit(texte,rectTexte)
 		
 #Création de la fenêtre
 def ecran(plat):
@@ -209,7 +221,7 @@ def ecran(plat):
     taille_case = 350/nombre_case_cote
     cote_fenetre = nombre_case_cote * taille_case
     
-    fenetre = pygame.display.set_mode((800,600))
+    fenetre = pygame.display.set_mode((1000,600))
     fenetre.fill((255,255,255)) #remplissage fond blanc
     
     plateau=pygame.Surface((cote_fenetre,cote_fenetre))
@@ -222,28 +234,47 @@ def ecran(plat):
     fenetre.blit(plateau,(100,100))
     
     #Boutons menus
-    bouton_pause=Button(fenetre, " Pause ", GREY, pygame.font.SysFont('freesans', 18), -300, 550) #création boutton
+    bouton_pause=Button(fenetre, " Pause ", GREY, pygame.font.SysFont('freesans', 18), -350, 550) #création boutton
     bouton_pause.display_button(fenetre) #affichage
     
-    bouton_save=Button(fenetre, " Sauvegarder ",GREY,pygame.font.SysFont('freesans', 18), -200, 550)
+    bouton_save=Button(fenetre, 
+                       " Sauvegarder ",
+                       GREY,
+                       pygame.font.SysFont('freesans', 18), 
+                       -250, 
+                       550)
     bouton_save.display_button(fenetre)
     
-    bouton_quit=Button(fenetre, " Quitter ",GREY,pygame.font.SysFont('freesans', 18), -100, 550)
+    bouton_quit=Button(fenetre, " Quitter ",GREY,pygame.font.SysFont('freesans', 18), -150, 550)
     bouton_quit.display_button(fenetre)
     
     #Carte éjectée
     pivotgauche=pygame.image.load(os.path.abspath(os.path.join('img_cartes','pivotgauche.png'))).convert_alpha()
-    bouton_pivot_gauche=Button_img(fenetre,pivotgauche,(550,80),(50,50))
+    bouton_pivot_gauche=Button_img(fenetre,
+                                   pivotgauche,
+                                   (550,80),
+                                   (50,50))
     pivotdroit=pygame.image.load(os.path.abspath(os.path.join('img_cartes','pivotdroit.png'))).convert_alpha()
-    bouton_pivot_droit=Button_img(fenetre,pivotdroit,(700,80),(50,50))
+    bouton_pivot_droit=Button_img(fenetre,
+                                  pivotdroit,
+                                  (700,80),
+                                  (50,50))
     carte_ej=plat.carte_en_dehors
     carte_eject=genere_carte(carte_ej.nom,(50,50))
     fenetre.fill((250,250,250) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
     fenetre.blit(carte_eject,(625,80))
     
-    #Affichage du score
-    valscore=0
-    score(valscore)
+    #Joker
+    joker=pygame.image.load(os.path.abspath(os.path.join('img_cartes','joker.png'))).convert_alpha()
+    boutonJoker=Button_img(fenetre,
+                           joker,
+                           (800,75),
+                           (50,50))
+    
+    
+    #Fenetre Score
+    fenetreScore()
+    
     
     #BOUCLE INFINIE
     continuer = 1
@@ -256,8 +287,14 @@ def ecran(plat):
                 bouton_quit.update_button(fenetre, action=gamequit)
                 for i in dic_boutons_fleches:
                     dic_boutons_fleches[i].update_button(fenetre,action=deplacement,arg=[i,plat])
-                bouton_pivot_gauche.update_button(fenetre,action=chgmt_orientation,arg={'carte':plat.carte_en_dehors,'sens':'gauche'})
-                bouton_pivot_droit.update_button(fenetre,action=chgmt_orientation,arg={'carte':plat.carte_en_dehors,'sens':'droit'})
+                bouton_pivot_gauche.update_button(fenetre,
+                                                  action=chgmt_orientation,
+                                                  arg={'carte':plat.carte_en_dehors,'sens':'gauche'})
+                bouton_pivot_droit.update_button(fenetre,
+                                                 action=chgmt_orientation,
+                                                 arg={'carte':plat.carte_en_dehors,'sens':'droit'})
+                boutonJoker.update_button(fenetre,
+                                          action=IA)
             elif event.type == QUIT:
                 continuer=0
                 pygame.quit()
@@ -308,14 +345,26 @@ def chgmt_orientation(arg):
         fenetre.blit(fantome,(625+taille_case/5,80+taille_case/5))
     pygame.display.flip()
     
-def score(valscore):
-    police = pygame.font.Font(None,36)
-    texte = police.render("Score "+str(valscore),True,pygame.Color("#000000"))
-    rectTexte = texte.get_rect() #surface rectangle autour du texte
-    rectTexte.topleft=(600,300)
-    fenetre.fill(WHITE,rectTexte)  #efface précédent score
-    print(rectTexte)
-    fenetre.blit(texte,rectTexte)
+
+
+def IA():
+    print("help needed")
+    
+    
+def fenetreScore(idjoueur=1):
+    scoreframe=pygame.Surface((400,350))
+    scoreframe.fill(CIEL)
+    
+    ordreMission=pygame.Surface((380,100))
+    ordreMission.fill(WHITE)
+    ecrire('Ordre de mission : ',ordreMission,(5,5),fontsize=20)
+ 
+    scoreframe.blit(ordreMission,(10,100))
+        
+    valscore=0
+    ecrire('Score : '+str(valscore),scoreframe,(50,50))
+    
+    fenetre.blit(scoreframe,(550,200))
     
 if __name__=="__main__":
     ecran(Jeu_mine.JEU())
