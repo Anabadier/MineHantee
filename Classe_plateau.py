@@ -393,9 +393,9 @@ class Plateau(object) :
         return result
         
     def chemin_possible(self,id_joueur):
-    #        for i in self.labyrinthe_detail:
-    #            if i.dict_elements["joueur"]==id_joueur:
-    #                pos_joueur = i
+        for i in self.labyrinthe_detail:
+            if i.dict_elements["joueur"]==id_joueur:
+                pos_joueur = i
         compteur=0
         for v in self.graph.node : 
             if self.graph.node[compteur]['pos']==(1,0):# pos_joueur 
