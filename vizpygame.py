@@ -67,11 +67,19 @@ def afficher(plat,plateau,fenetre,id_joueur=None):
     img_perso=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"pinguin.png"))).convert_alpha()
     perso=pygame.transform.scale(img_perso,(int((taille_case-1)/1.5),int((taille_case-1)/1.5)))
 
+    chemins=plat.chemin_possible(plat.Liste_Joueur[0].identifiant).values()
+    path=[]
+    for coord in chemins:
+        for elem in coord :
+            path.append(elem)
+    path=set(path)
+    print(path)
     
     num_ligne=0
     for ligne in Mat_plat:
         num_case=0
         for case in ligne:
+            coord=(num_ligne,num_case)
             x=num_case*taille_case
             y=num_ligne*taille_case
             
@@ -84,16 +92,14 @@ def afficher(plat,plateau,fenetre,id_joueur=None):
             plateau.blit(carte,(x,y))
             
             #case transparente si accessible
-            chemins=plat.chemin_possible(plat.Liste_Joueur[0].identifiant)
-            print(type(chemins))
-            if case.nom=='1001':
+            
+            if coord in path:
                 cache= pygame.Surface((int(taille_case),int(taille_case))) #case à surligner
                 cache.set_alpha(70)  #transparence
                 cache.fill((255,255,0))   #jaune
                 plateau.blit(cache,(x,y))
                 
             #Si pépite/fantome sur la carte, voir condition avec la matrice des instances de cartes
-            print(case.elements['fantome'])
             if case.elements['pepite'] == True:
                 plateau.blit(pepite,(x,y))
             if case.elements['fantome'] != []:
@@ -326,10 +332,9 @@ def deplacement(i):
     
     
 def chgmt_orientation(arg):
-    print('bouton '+str(arg['sens'])+' cliqué')
-    print(arg['carte'].elements)
+
     arg['carte'].pivoter(arg['sens'])
-    print(arg['carte'].elements)
+   
     fenetre.fill((250,250,250) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
     carte_ej=genere_carte(arg['carte'].nom,(50,50)) 
     fenetre.blit(carte_ej,(625,80))
@@ -368,11 +373,11 @@ def fenetreScore(joueur,plat):
            ordreMission,
            (5,5),
            fontsize=20)
-    print(ordreMission.get_rect().center)
+ 
     
     nombre_fantomes=len(joueur.ordre_de_mission)
     taille_espace=(360-50*nombre_fantomes)/(nombre_fantomes-1)
-    print(taille_espace)
+
     for i in range (nombre_fantomes):
         ordreMission.blit(fantome,(10+i*(50+taille_espace),50))
         ecrire(joueur.ordre_de_mission[i],
@@ -408,7 +413,6 @@ def fenetreScore(joueur,plat):
                fontsize=25)
             
         nombre_fantomes=len(adv.ordre_de_mission)
-        print(adv.ordre_de_mission)
         taille_espace=(300-50*nombre_fantomes)/(nombre_fantomes-1)
         for j in range (nombre_fantomes):
             frameJoueur.blit(fantome,(50+j*(50+taille_espace),0))
