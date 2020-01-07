@@ -32,6 +32,7 @@ class carte():
               'carrefour':['1110','1011','1101','0111']}
         self.type=type_carte
         self.elements=dict_elements
+        self.element_virtuels = {'fantome':[],'pepite':[],'joueur':[]}#utilisé pour UCT
         self.position_G=position_graph
         self.position_D=position_detail
         self.connectivite=dict_connectivité[type_carte]
@@ -40,7 +41,7 @@ class carte():
         self.mobilite=mobilite
     
     def pivoter(self,sens):
-        if sens=='droit' :
+        if sens=='horaire' :
             if self.orientation < len(self.connectivite)-1:
                 self.orientation=self.orientation+1
                 self.nom=self.connectivite[self.orientation]
