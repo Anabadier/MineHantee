@@ -48,6 +48,7 @@ class Plateau(object) :
         
         self.SaC = _SaC
         
+        self.compteur_coup = 0
         
         self.Liste_Joueur_H = []
         self.Liste_Joueur_IA = []
@@ -230,7 +231,7 @@ class Plateau(object) :
         :param coord_y: ordonnée du lieu où l'on souhaite faire coulisser la carte
         :return:
         """
-        dict_vide = {'fantome' : [] , 'pepite' : [], 'joueur': []}
+        dict_vide = {'fantome' : "f" , 'pepite' : "f-", 'joueur': "f"}
         ## on modifie la ligne
         # en coulissant de gauche à droite
         if coord_y == -1:
@@ -280,8 +281,8 @@ class Plateau(object) :
             self.labyrinthe_detail[self.taille-1,coord_y].position_D = (self.taille-1,coord_y)
             self.labyrinthe_detail[self.taille-1,coord_y].position_G = self.node_pos.index((self.taille-1,coord_y))
         
-        self.carte_en_dehors.elements = carte_sortante.elements
-        carte_sortante.elements = dict_vide
+        #self.carte_en_dehors.elements = carte_sortante.elements
+        #carte_sortante.elements = dict_vide
         self.carte_en_dehors = carte_sortante
         # actualiser network graph
 
@@ -384,13 +385,15 @@ class Plateau(object) :
             for _char in ["G", "D", "H", "B"]:
                 self.liste_row_col += [_char + str(i)]
     
-    def __deepcopy__(self, memo):
-        cls = self.__class__
-        result = cls.__new__(cls)
-        memo[id(self)] = result
-        for k, v in self.__dict__.items():
-            setattr(result, k, cp.deepcopy(v, memo))
-        return result
+# =============================================================================
+#     def __deepcopy__(self, memo):
+#         cls = self.__class__
+#         result = cls.__new__(cls)
+#         memo[id(self)] = result
+#         for k, v in self.__dict__.items():
+#             setattr(result, k, cp.deepcopy(v, memo))
+#         return result
+# =============================================================================
         
     def chemin_possible(self,id_joueur):
         for i in self.labyrinthe_detail: #recherche de la position du joueur

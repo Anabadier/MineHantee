@@ -32,7 +32,7 @@ class carte():
               'carrefour':['1110','1011','1101','0111']}
         self.type=type_carte
         self.elements=dict_elements
-        self.element_virtuels = {'fantome':[],'pepite':[],'joueur':[]}#utilisé pour UCT
+        self.element_virtuels = {'fantome':[],'pepite':[],'joueur':[], 'coup_capture':[]}#utilisé pour UCT
         self.position_G=position_graph
         self.position_D=position_detail
         self.connectivite=dict_connectivité[type_carte]

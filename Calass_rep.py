@@ -86,20 +86,35 @@ class Joueur(object):
         """
         ajoute les points contenu dans _card
         """
-        print("add, ", self.nb_points)
+# =============================================================================
+#         print("add, ", self.nb_points, _card.position_D, _card.position_G, _card.elements,
+#               _card.element_virtuels)
+# =============================================================================
         if (_card.elements["pepite"]):
                 self.maj_points(self.ref_plateau.pts_pepite)
-                print('add, ', _card.nom, _card.position_D, self.ref_plateau.pts_pepite, self.nb_points)
+                _card.element_virtuels['coup_capture'] = self.ref_plateau.compteur_coup
+# =============================================================================
+#                 print('add, ', _card.nom, _card.position_D, _card.position_G,
+#                       self.ref_plateau.pts_pepite, self.nb_points)
+# =============================================================================
                 if _reset_value:
                     _card.elements["pepite"] = False
             
         if (_card.elements["fantome"] != []):
             if (_card.elements["fantome"] in self.ordre_de_mission):
                 self.maj_points(self.ref_plateau.pts_ordre_mission)
-                print('add, ', _card.nom, _card.position_D, self.ref_plateau.pts_ordre_mission, self.nb_points)
+                _card.element_virtuels['coup_capture'] = self.ref_plateau.compteur_coup
+# =============================================================================
+#                 print('add, ', _card.nom, _card.position_D, _card.position_G,
+#                       self.ref_plateau.pts_ordre_mission, self.nb_points)
+# =============================================================================
             else:
                 self.maj_points(self.ref_plateau.pts_fantome)
-                print('add, ', _card.nom, _card.position_D, self.ref_plateau.pts_fantome, self.nb_points)
+                _card.element_virtuels['coup_capture'] = self.ref_plateau.compteur_coup
+# =============================================================================
+#                 print('add, ', _card.nom, _card.position_D, _card.position_G,
+#                       self.ref_plateau.pts_fantome, self.nb_points)
+# =============================================================================
             if _reset_value:
                     _card.elements["fantome"] = []
     
@@ -108,22 +123,35 @@ class Joueur(object):
         retranche les points qui était contenus dans _card en se basant sur les
         souvenir de _card.element_virtuels
         """
-        print("ret, ", self.nb_points)
-        if (_card.element_virtuels["pepite"]):
-                self.maj_points(self.ref_plateau.pts_pepite, -1)
-                print('ret, ',_card.nom, _card.position_D, self.ref_plateau.pts_pepite, self.nb_points)
+# =============================================================================
+#         print("ret, ", self.nb_points, _card.position_D, _card.position_G,
+#               _card.element_virtuels, self.ref_plateau.compteur_coup, _card.element_virtuels['coup_capture'])
+# =============================================================================
+        if (_card.element_virtuels['coup_capture'] == self.ref_plateau.compteur_coup):
+            if (_card.element_virtuels["pepite"]):
+                    self.maj_points(self.ref_plateau.pts_pepite, -1)
+# =============================================================================
+#                     print('ret, ',_card.nom, _card.position_D, _card.position_G,
+#                           self.ref_plateau.pts_pepite, self.nb_points)
+# =============================================================================
+                    if _reset_value:
+                        _card.elements["pepite"] = True
+                
+            if (_card.element_virtuels["fantome"] != []):
+                if (_card.element_virtuels["fantome"] in self.ordre_de_mission):
+                    self.maj_points(self.ref_plateau.pts_ordre_mission, -1)
+# =============================================================================
+#                     print('ret, ',_card.nom, _card.position_D, _card.position_G,
+#                           self.ref_plateau.pts_ordre_mission, self.nb_points)
+# =============================================================================
+                else:
+                    self.maj_points(self.ref_plateau.pts_fantome, -1)
+# =============================================================================
+#                     print('ret, ',_card.nom, _card.position_D, _card.position_G,
+#                           self.ref_plateau.pts_fantome, self.nb_points)
+# =============================================================================
                 if _reset_value:
-                    _card.elements["pepite"] = True
-            
-        if (_card.element_virtuels["fantome"] != []):
-            if (_card.element_virtuels["fantome"] in self.ordre_de_mission):
-                self.maj_points(self.ref_plateau.pts_ordre_mission, -1)
-                print('ret, ',_card.nom, _card.position_D, self.ref_plateau.pts_ordre_mission)
-            else:
-                self.maj_points(self.ref_plateau.pts_fantome, -1)
-                print('ret, ',_card.nom, _card.position_D, self.ref_plateau.pts_fantome)
-            if _reset_value:
-                    _card.elements["fantome"] = _card.element_virtuels["fantome"]
+                        _card.elements["fantome"] = _card.element_virtuels["fantome"]
     
     def maj_position(self, _carte):
          self.position_graphe = _carte.position_G
@@ -178,14 +206,18 @@ class Joueur(object):
             _path = _path[::-1]
         
         card_path = _plateau.translate_GraphPath2CardsPath(_path)
+        #print(187,_path, card_path)
         for _card in card_path:
             self.maj_position(_card)
             if (_backward):
                 self.retrancher_pts_carte(_card)
+                self.ref_plateau.compteur_coup -= 1
             else:
+                self.ref_plateau.compteur_coup += 1
                 self.compter_pts_carte(_card)
         _plateau.maj_classement()#on met a jour le classement à la fin du tour d'un joueur
         #print(_plateau.Liste_Classement)
+        
         
     def heuristique(self,chemin,plateau):
         """
@@ -230,10 +262,9 @@ class Joueur_IA(Joueur):
         self.liste_paths = [] #liste des chemins accessibles au joueur. Utile après rot card et coullissage
     
     def generate_list_paths(self, _plateau):
-        self.liste_paths = []
-        for _node in list(_plateau.graph.nodes()):
-            self.liste_paths += nx.all_simple_paths(_plateau.graph,
-                                                    self.position_graphe, _node)
+        self.liste_paths = list(nx.single_source_shortest_path(_plateau.graph,
+                                                    self.position_graphe).values())
+        self.liste_paths = self.liste_paths[1:]
     
     def greedy(self, plateau):
         best_coup = (0,[])
@@ -255,11 +286,22 @@ class Joueur_IA(Joueur):
         """
         if (self.niv == "Facile"):
             
+            #p_d, p_g = self.position_detail, self.position_graphe
             coup_alea = self.coup_alea(self.ref_plateau)#a changer pour une approche greedy
             #self.greedy(self.ref_plateau)
+            #self.coup_cible(self.ref_plateau, coup_alea)
+            #print(268, "===================")
+            #self.coup_cible(self.ref_plateau, coup_alea, True)
             
-            self.coup_cible(self.ref_plateau, coup_alea)
-            self.coup_cible(self.ref_plateau, coup_alea, True)
+# =============================================================================
+#             if (p_d != self.position_detail and p_g != self.position_graphe):
+#                 print("Position avant de jouer backward", p_d, p_g)
+#                 print("Position après forward+backward", self.position_detail, self.position_graphe)
+# # =============================================================================
+# =============================================================================
+#             if (self.nb_points != 0):
+#                 print('Le coup était:',coup_alea)
+# =============================================================================
                 
         elif (self.niv == "Normale"):
             #Mettre AlphaBeta ici
@@ -285,13 +327,21 @@ class Joueur_IA(Joueur):
             _description_coup. Utile dans UCT
         """
         if (_backward):
+            #print(298, 'going backward')
             self.effectuer_chemin(_plateau, _description_coup[2], _backward)
+            #print(298, 'going backward', "après chemin")
             self.modifier_plateau(_plateau, _description_coup[1], _backward)
+            #print(298, 'going backward', "après modifier plateau")
             self.rotation_carte(_plateau, _description_coup[0], _backward)
+            #print(298, 'going backward', "après rotation carte")
         else:
+            #print(303, 'going forward')
             self.rotation_carte(_plateau, _description_coup[0])
+            #print(303, 'going forward', "après rotation carte")
             self.modifier_plateau(_plateau, _description_coup[1])
+            #print(303, 'going forward', "après modifier plateau")
             self.effectuer_chemin(_plateau, _description_coup[2])
+            #print(303, 'going forward', "après chemin")
     
     def coup_alea(self, _plateau):
         """
@@ -421,14 +471,16 @@ class UCT_2(object):
             self.recherche_UCT()
             
         _max = 0
+        print(self.racine.enfants[0].nb_visit, self.racine.enfants[0].nb_gagne)
         for _enfant in self.racine.enfants:
             if (_enfant.nb_visit != 0):
                 _enfant.calcul_ucb_score()
             
-            if (_enfant.ucb_score > _max and _enfant.ucb_score != 10000):#on refuse de choisir un noeud non evalué
+            if (_enfant.ucb_score > _max):# and _enfant.ucb_score != 10000):#on refuse de choisir un noeud non evalué
                 _max = _enfant.ucb_score
                 self.meilleur_noeud = _enfant
-                
+        
+        print("UCB score du meilleur noeud :", self.meilleur_noeud.ucb_score)        
         return self.meilleur_noeud.description_coup
         
     
@@ -528,8 +580,11 @@ class UCT_2(object):
         j_playing.coup_cible(_plateau, _noeud_source.description_coup)
         self.action_list += [_noeud_source.description_coup]
         
-        print(478, j_playing.nb_points,
-              _plateau.dict_ID2J[j_playing.joueur_suivant].nb_points, end = " ; ")
+        print("===============================")
+        pts1 = j_playing.nb_points
+        pts2 = _plateau.dict_ID2J[j_playing.joueur_suivant].nb_points
+        print(j_playing.identifiant, pts1, end = " ")
+        print(j_playing.joueur_suivant, pts2)
         
         #on initilise la comptabilisation des victoires
         compteur_victoires = {}
@@ -538,17 +593,20 @@ class UCT_2(object):
         
         #ROLLOUT en tant que tel
         for k in range(_nb_parties):
+            print("Rollout, {0}/{1}".format(k, self.nb_rollout))
             nb_coup_rollout = 0
             rollout_action_list = []
             #joue aleatoirement jusqu'a une victoire ou un nb_coup_rollout >= _nb_coup_max
-            while (not _plateau.check_gagnant() and nb_coup_rollout < 2):
+            while (not _plateau.check_gagnant() and nb_coup_rollout < _nb_coup_max):
                 j_playing = _plateau.dict_ID2J[j_playing.joueur_suivant]
-                
+                #print(j_playing.identifiant, "is playing")
                 coup_alea = j_playing.coup_alea(_plateau)
+                #print(coup_alea)
                 rollout_action_list += [[j_playing]+coup_alea]
-                j_playing.coup_cible(_plateau, coup_alea)
+                #print([j_playing.identifiant]+coup_alea)
+                #j_playing.coup_cible(_plateau, coup_alea)
                 
-                print(495, j_playing.identifiant, j_playing.nb_points, end = " ; ")
+                #print(596, j_playing.identifiant, j_playing.nb_points)
                 
                 nb_coup_rollout+=1
                 
@@ -557,11 +615,19 @@ class UCT_2(object):
             
             #remet le plateau dans l'etat AVANT ROLLOUT
             for i in range(nb_coup_rollout-1, -1, -1):
+                #print(605,rollout_action_list[i])
                 j_retro_playing = rollout_action_list[i][0]
+                #print(606, j_retro_playing.identifiant, j_retro_playing.nb_points)
                 j_retro_playing.coup_cible(_plateau, rollout_action_list[i][1:], True)
-                print(508, j_retro_playing.identifiant, j_retro_playing.nb_points, end = " ; ")
-        print()
-        print(compteur_victoires)
+                #print(608, j_retro_playing.identifiant, j_retro_playing.nb_points)
+        
+        pts3 = j_retro_playing.nb_points
+        pts4 = _plateau.dict_ID2J[j_retro_playing.joueur_suivant].nb_points
+        print(j_retro_playing.identifiant, pts3, pts2, pts3 == pts2)
+        print(j_retro_playing.joueur_suivant, pts4, pts1, pts4 == pts1)
+                
+        #print()
+        #print(compteur_victoires)
         return compteur_victoires
         
     def retro_propagation(self, _feuille, _compteur_victoires):
@@ -583,226 +649,228 @@ class UCT_2(object):
             
             j_retro_playing = self.racine.plateau.dict_ID2J[noeud.joueur_createur]
             j_retro_playing.coup_cible(self.racine.plateau, noeud.description_coup, True)
-            
+            print(j_retro_playing.identifiant, j_retro_playing.nb_points)
             noeud = noeud.parent
-            
+        
         noeud.nb_visit += 1
         noeud.nb_gagne += _compteur_victoires[noeud.joueur_createur]
 
 
-class UCT(object):
-    """
-    Application de l'IA Monte Carlo Tree Search-Upper Confidence Bound pour
-    le jeu de la mine hantée.
-    
-    Le principe de MCTS UCB est d'explorer progressivement l'arbre des coups
-    possible pour une IA. On part de la situation actuelle du plateau et on
-    simule les coups suivant. On accorde plus de temps de recherche
-    (simulation de Monte Carlo) aux noeuds de l'arbre (coup) qui semblent 
-    apporter la victoire : on guide l'exploration de l'arbre.
-    
-    L'exploration des possiblités (i.e. la construction de l'arbre) se fait
-    en 4 étapes :
-        1)
-            Selection. On parcours l'arbre de manière récursive en
-            choisissant toujours le noeud qui maximise un score (UCB
-            appliqué aux arbres)
-                v_i = s_i / n_i + C * sqrt(ln(n_p)/n_i)
-            *s_i est le nombre de victoires du joureur qui joue le coup
-            associé au noeud
-            *n_i est le nombre de fois que le noeud a été visité
-            *n_p est le nombre de fois que le noeud parent a été visité
-            *C une constante
-        
-        2)
-            Extension. On ajoute tous les enfants possible du noeud selection
-            à l'étape 1.
-        
-        3)
-            Rollout. Après avoir simulé le coup joué en 1, on joue le reste
-            de la simulation au hasard ou en stratégie "greedie" jusqu'à ce
-            qu'un ou plusieurs gagnants soient déclarés.
-        
-        4)
-            Retropropagation. On fait remonter le nombre de victoires de
-    """
-    def __init__(self,  _nb_rollout = 10,
-                 _temps_ressource = 10):
-        
-        
-        self.nb_rollout = _nb_rollout
-        self.temps_ressource = _temps_ressource
-    
-    def initialise_UCT(self, _plateau, _joueur_UCT):
-        self.racine = UCT_node()
-        self.racine.plateau = _plateau.__deepcopy__({})
-        self.racine.joueur_createur = _plateau.dict_ID2J[_joueur_UCT.identifiant].joueur_precedant
-        
-        self.meilleur_noeud = None
-        self.noeud_selectionne = None
-    
-    def jouer_UCT(self, _plateau, _joueur_UCT):
-        """
-        Retourne le meilleur coup d'après UCT
-        """
-        self.initialise_UCT(_plateau, _joueur_UCT)
-        
-        temps_debut = time()
-        while(time()-temps_debut < self.temps_ressource):
-            
-            self.recherche_UCT()
-            
-        _max = 0
-        for _enfant in self.racine.enfants:
-            if (_enfant.nb_visit != 0):
-                _enfant.calcul_ucb_score()
-                print(304, _enfant.joueur_createur, _enfant.ucb_score)
-            
-            if (_enfant.ucb_score > _max and _enfant.ucb_score != 10000):#on refuse de choisir un noeud non evalué
-                _max = _enfant.ucb_score
-                self.meilleur_noeud = _enfant
-        
-        print(306, self.meilleur_noeud.nb_gagne, self.meilleur_noeud.description_coup)
-        return self.meilleur_noeud.description_coup
-        
-    
-    def recherche_UCT(self):
-        """
-        Réalise les 4 étapes de l'UCT et met à jour le meilleur_noeud
-        """
-        #1
-        self.selection()
-        #2 si nécessaire
-        if (self.noeud_selectionne.nb_visit != 0 or self.noeud_selectionne == self.racine):
-            self.extension(self.noeud_selectionne)
-            self.noeud_selectionne = self.noeud_selectionne.enfants[0]
-        
-        #3
-        compteur_victoires = self.rollout(self.noeud_selectionne, self.nb_rollout)
-        
-        #4
-        self.retro_propagation(self.noeud_selectionne, compteur_victoires)
-    
-    def selection(self):
-        """
-        avance dans l'arbre en choisissant le noeud qui maximise UCB
-        """
-        self.noeud_selectionne = self.racine
-        while len(self.noeud_selectionne.enfants) != 0:
-            _max = 0
-            noeud_max = None
-            for _enfant in self.noeud_selectionne.enfants:
-                if (_enfant.nb_visit != 0):
-                    _enfant.calcul_ucb_score()
-                    #print(_enfant.ucb_score)
-                
-                if (_enfant.ucb_score > _max):
-                    _max = _enfant.ucb_score
-                    noeud_max = _enfant
-            
-            self.noeud_selectionne = noeud_max
-    
-    def extension(self, _noeud_source):
-        """
-        ajoute tous les enfants au noeud selectionné quand il a déjà été visité
-        (il y a déjà eu rollout).
-        Ajouter les enfants d'un noeuds signifie d'ajouter toutes les actions
-        accessible au jour suivant.
-        
-        _noeud_source(UCT_node):
-            noeud à partir duquel on étend les choix possibles
-        """
-        c = 0
-        print(self.racine.enfants)
-        for _nb_rot_card in range(1,5):
-            for _fleche in _noeud_source.plateau_ap_coup.liste_row_col:
-                #print('in', c)
-                #tps_d1 = time()
-                #_plateau = cp.deepcopy(self.noeud_selectionne.plateau_ap_coup)
-                #tps_d1 = time()-tps_d1                
-                
-                joueur = self.racine.plateau.dict_ID2J[
-                            self.racine.plateau.dict_ID2J[_noeud_source.joueur_createur].joueur_suivant]
-                
-                for i in range(_nb_rot_card):
-                    joueur.oriente_carte_libre(_plateau.carte_en_dehors, "horaire")
-                
-                tps_d2 = time()
-                joueur.modifier_plateau(_plateau, _fleche)
-                tps_d2 = time()-tps_d2
-                print(378, 'tps1=', tps_d1/(tps_d1+tps_d2), 'tps2=', tps_d2/(tps_d1+tps_d2) )
-                
-                joueur.generate_list_paths(_plateau)
-                if (joueur.liste_paths != []):
-                    for _path in joueur.liste_paths:
-                        joueur.effectuer_chemin(_plateau, _path)
-                        _enfant = UCT_node()
-                        _noeud_source.enfants += [_enfant]
-                        _enfant.parent = _noeud_source
-                        _enfant.description_coup = [_nb_rot_card, _fleche, _path]
-                        _enfant.joueur_createur = joueur.identifiant
-                        c+=1
 # =============================================================================
+# class UCT(object):
+#     """
+#     Application de l'IA Monte Carlo Tree Search-Upper Confidence Bound pour
+#     le jeu de la mine hantée.
+#     
+#     Le principe de MCTS UCB est d'explorer progressivement l'arbre des coups
+#     possible pour une IA. On part de la situation actuelle du plateau et on
+#     simule les coups suivant. On accorde plus de temps de recherche
+#     (simulation de Monte Carlo) aux noeuds de l'arbre (coup) qui semblent 
+#     apporter la victoire : on guide l'exploration de l'arbre.
+#     
+#     L'exploration des possiblités (i.e. la construction de l'arbre) se fait
+#     en 4 étapes :
+#         1)
+#             Selection. On parcours l'arbre de manière récursive en
+#             choisissant toujours le noeud qui maximise un score (UCB
+#             appliqué aux arbres)
+#                 v_i = s_i / n_i + C * sqrt(ln(n_p)/n_i)
+#             *s_i est le nombre de victoires du joureur qui joue le coup
+#             associé au noeud
+#             *n_i est le nombre de fois que le noeud a été visité
+#             *n_p est le nombre de fois que le noeud parent a été visité
+#             *C une constante
+#         
+#         2)
+#             Extension. On ajoute tous les enfants possible du noeud selection
+#             à l'étape 1.
+#         
+#         3)
+#             Rollout. Après avoir simulé le coup joué en 1, on joue le reste
+#             de la simulation au hasard ou en stratégie "greedie" jusqu'à ce
+#             qu'un ou plusieurs gagnants soient déclarés.
+#         
+#         4)
+#             Retropropagation. On fait remonter le nombre de victoires de
+#     """
+#     def __init__(self,  _nb_rollout = 10,
+#                  _temps_ressource = 10):
+#         
+#         
+#         self.nb_rollout = _nb_rollout
+#         self.temps_ressource = _temps_ressource
+#     
+#     def initialise_UCT(self, _plateau, _joueur_UCT):
+#         self.racine = UCT_node()
+#         self.racine.plateau = _plateau.__deepcopy__({})
+#         self.racine.joueur_createur = _plateau.dict_ID2J[_joueur_UCT.identifiant].joueur_precedant
+#         
+#         self.meilleur_noeud = None
+#         self.noeud_selectionne = None
+#     
+#     def jouer_UCT(self, _plateau, _joueur_UCT):
+#         """
+#         Retourne le meilleur coup d'après UCT
+#         """
+#         self.initialise_UCT(_plateau, _joueur_UCT)
+#         
+#         temps_debut = time()
+#         while(time()-temps_debut < self.temps_ressource):
+#             
+#             self.recherche_UCT()
+#             
+#         _max = 0
+#         for _enfant in self.racine.enfants:
+#             if (_enfant.nb_visit != 0):
+#                 _enfant.calcul_ucb_score()
+#                 print(304, _enfant.joueur_createur, _enfant.ucb_score)
+#             
+#             if (_enfant.ucb_score > _max and _enfant.ucb_score != 10000):#on refuse de choisir un noeud non evalué
+#                 _max = _enfant.ucb_score
+#                 self.meilleur_noeud = _enfant
+#         
+#         print(306, self.meilleur_noeud.nb_gagne, self.meilleur_noeud.description_coup)
+#         return self.meilleur_noeud.description_coup
+#         
+#     
+#     def recherche_UCT(self):
+#         """
+#         Réalise les 4 étapes de l'UCT et met à jour le meilleur_noeud
+#         """
+#         #1
+#         self.selection()
+#         #2 si nécessaire
+#         if (self.noeud_selectionne.nb_visit != 0 or self.noeud_selectionne == self.racine):
+#             self.extension(self.noeud_selectionne)
+#             self.noeud_selectionne = self.noeud_selectionne.enfants[0]
+#         
+#         #3
+#         compteur_victoires = self.rollout(self.noeud_selectionne, self.nb_rollout)
+#         
+#         #4
+#         self.retro_propagation(self.noeud_selectionne, compteur_victoires)
+#     
+#     def selection(self):
+#         """
+#         avance dans l'arbre en choisissant le noeud qui maximise UCB
+#         """
+#         self.noeud_selectionne = self.racine
+#         while len(self.noeud_selectionne.enfants) != 0:
+#             _max = 0
+#             noeud_max = None
+#             for _enfant in self.noeud_selectionne.enfants:
+#                 if (_enfant.nb_visit != 0):
+#                     _enfant.calcul_ucb_score()
+#                     #print(_enfant.ucb_score)
 #                 
-#                 else:
-#                     joueur.effectuer_chemin(_plateau, [])
-#                     _enfant = UCT_node()
-#                     _noeud_source.enfants += [_enfant]
-#                     _enfant.parent = _noeud_source
-#                     _enfant.plateau_ap_coup = _plateau
-#                     _enfant.description_coup = [_nb_rot_card, _fleche, []]
-#                     _enfant.joueur_createur = joueur.identifiant
+#                 if (_enfant.ucb_score > _max):
+#                     _max = _enfant.ucb_score
+#                     noeud_max = _enfant
+#             
+#             self.noeud_selectionne = noeud_max
+#     
+#     def extension(self, _noeud_source):
+#         """
+#         ajoute tous les enfants au noeud selectionné quand il a déjà été visité
+#         (il y a déjà eu rollout).
+#         Ajouter les enfants d'un noeuds signifie d'ajouter toutes les actions
+#         accessible au jour suivant.
+#         
+#         _noeud_source(UCT_node):
+#             noeud à partir duquel on étend les choix possibles
+#         """
+#         c = 0
+#         print(self.racine.enfants)
+#         for _nb_rot_card in range(1,5):
+#             for _fleche in _noeud_source.plateau_ap_coup.liste_row_col:
+#                 #print('in', c)
+#                 #tps_d1 = time()
+#                 #_plateau = cp.deepcopy(self.noeud_selectionne.plateau_ap_coup)
+#                 #tps_d1 = time()-tps_d1                
+#                 
+#                 joueur = self.racine.plateau.dict_ID2J[
+#                             self.racine.plateau.dict_ID2J[_noeud_source.joueur_createur].joueur_suivant]
+#                 
+#                 for i in range(_nb_rot_card):
+#                     joueur.oriente_carte_libre(_plateau.carte_en_dehors, "horaire")
+#                 
+#                 tps_d2 = time()
+#                 joueur.modifier_plateau(_plateau, _fleche)
+#                 tps_d2 = time()-tps_d2
+#                 print(378, 'tps1=', tps_d1/(tps_d1+tps_d2), 'tps2=', tps_d2/(tps_d1+tps_d2) )
+#                 
+#                 joueur.generate_list_paths(_plateau)
+#                 if (joueur.liste_paths != []):
+#                     for _path in joueur.liste_paths:
+#                         joueur.effectuer_chemin(_plateau, _path)
+#                         _enfant = UCT_node()
+#                         _noeud_source.enfants += [_enfant]
+#                         _enfant.parent = _noeud_source
+#                         _enfant.description_coup = [_nb_rot_card, _fleche, _path]
+#                         _enfant.joueur_createur = joueur.identifiant
+#                         c+=1
+# # =============================================================================
+# #                 
+# #                 else:
+# #                     joueur.effectuer_chemin(_plateau, [])
+# #                     _enfant = UCT_node()
+# #                     _noeud_source.enfants += [_enfant]
+# #                     _enfant.parent = _noeud_source
+# #                     _enfant.plateau_ap_coup = _plateau
+# #                     _enfant.description_coup = [_nb_rot_card, _fleche, []]
+# #                     _enfant.joueur_createur = joueur.identifiant
+# # =============================================================================
+#                 c+= 1
+#         print(c, "enfants ont été générés")
+#                     
+#     
+#     def rollout(self, _noeud_source, _nb_parties = 1, _nb_coup_max = 1):
+#         """
+#         joue plusieurs parties au hasard en partant de la situation du plateau
+#         telle que décrite dans le noeud étendu
+#         
+#         _noeud_source(UCT_node):
+#             noeud pour lequel on effectue le roll out
+#         """
+#         
+#         compteur_victoires = {}
+#         for _j in _noeud_source.plateau_ap_coup.Liste_Joueur:
+#             compteur_victoires[_j.identifiant] = 0
+#             
+#         for k in range(_nb_parties):
+#             _plateau = self.noeud_selectionne.plateau_ap_coup.__deepcopy__({})
+#             j_playing = _plateau.dict_ID2J[_noeud_source.joueur_createur]
+#             c = 0
+#             while (not _plateau.check_gagnant() and c < _nb_coup_max):
+#                 j_playing = _plateau.dict_ID2J[j_playing.joueur_suivant]
+#                 j_playing.coup_alea(_plateau)
+#                 c+=1
+#             compteur_victoires[_plateau.Liste_Classement[0][1].identifiant] += 1#on incrémente le compteur de victoire
+#         
+#         return compteur_victoires
+#         
+#     def retro_propagation(self, _feuille, _compteur_victoires):
+#         """
+#         met à jour les noeuds traversés lors de la selection (tous les parents
+#         de la feuille)
+#         
+#         _feuille(UCT_node):
+#             noeud à partir duquel on remonte à la racine
+#             
+#         _compteur_victoires(dico, key = joueur, value = nombre de vitoire):
+#             le compteur de victoire à propager sur le reste des noeuds.
+#             Ce dictionnaire est généré par le rollout
+#         """
+#         noeud = _feuille
+#         while noeud.parent != None:
+#             noeud.nb_visit += 1
+#             noeud.nb_gagne += _compteur_victoires[noeud.joueur_createur]
+#             noeud = noeud.parent
+#             
+#         noeud.nb_visit += 1
+#         noeud.nb_gagne += _compteur_victoires[noeud.joueur_createur]
+#             
 # =============================================================================
-                c+= 1
-        print(c, "enfants ont été générés")
-                    
-    
-    def rollout(self, _noeud_source, _nb_parties = 1, _nb_coup_max = 100):
-        """
-        joue plusieurs parties au hasard en partant de la situation du plateau
-        telle que décrite dans le noeud étendu
-        
-        _noeud_source(UCT_node):
-            noeud pour lequel on effectue le roll out
-        """
-        
-        compteur_victoires = {}
-        for _j in _noeud_source.plateau_ap_coup.Liste_Joueur:
-            compteur_victoires[_j.identifiant] = 0
-            
-        for k in range(_nb_parties):
-            _plateau = self.noeud_selectionne.plateau_ap_coup.__deepcopy__({})
-            j_playing = _plateau.dict_ID2J[_noeud_source.joueur_createur]
-            c = 0
-            while (not _plateau.check_gagnant() and c < _nb_coup_max):
-                j_playing = _plateau.dict_ID2J[j_playing.joueur_suivant]
-                j_playing.coup_alea(_plateau)
-                c+=1
-            compteur_victoires[_plateau.Liste_Classement[0][1].identifiant] += 1#on incrémente le compteur de victoire
-        
-        return compteur_victoires
-        
-    def retro_propagation(self, _feuille, _compteur_victoires):
-        """
-        met à jour les noeuds traversés lors de la selection (tous les parents
-        de la feuille)
-        
-        _feuille(UCT_node):
-            noeud à partir duquel on remonte à la racine
-            
-        _compteur_victoires(dico, key = joueur, value = nombre de vitoire):
-            le compteur de victoire à propager sur le reste des noeuds.
-            Ce dictionnaire est généré par le rollout
-        """
-        noeud = _feuille
-        while noeud.parent != None:
-            noeud.nb_visit += 1
-            noeud.nb_gagne += _compteur_victoires[noeud.joueur_createur]
-            noeud = noeud.parent
-            
-        noeud.nb_visit += 1
-        noeud.nb_gagne += _compteur_victoires[noeud.joueur_createur]
-            
     
     
     

@@ -18,7 +18,7 @@ import SaC
 
 def JEU(dimension = 7,
         nombre_joueur = 2, pseudos_joueurs = ["Joueur_1"],
-        nombre_joueur_IA = 2, IA_niv = ["Facile", "Facile"],#Difficile
+        nombre_joueur_IA = 2, IA_niv = ["Facile", "Difficile"],#Difficile
         nombre_ghost = 21, nombre_ordre_mission = 3,
         nombre_pepite = 49, pts_pepite = 1, pts_fantome = 5, pts_ordre_mission = 15,
         _SaC = SaC.Save_and_Charge()):    
@@ -163,11 +163,9 @@ def JEU(dimension = 7,
 if __name__=="__main__":
     plateau = JEU()
     c = 0
-    while (c<100):#not plateau.check_gagnant() ):
-        print(167, c)
+    while (c<10):#not plateau.check_gagnant() ):
+        print("Coup numéro:", c)
         for _j in plateau.Liste_Joueur_IA:
             _j.jouer()
             print(_j.identifiant, _j.nb_points)
-            if (_j.nb_points !=0):
-                c = 200
         c+=1
