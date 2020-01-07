@@ -383,21 +383,19 @@ class Plateau(object) :
         return result
         
     def chemin_possible(self,id_joueur):
-        for i in self.labyrinthe_detail:
-            if i.dict_elements["joueur"]==id_joueur:
-                pos_joueur = i
+        for i in self.labyrinthe_detail: #recherche de la position du joueur
+            for j in i:
+                if j.elements["joueur"]==id_joueur:
+                    pos_joueur = j.position_D
         compteur=0
-        for v in self.graph.node : 
-            if self.graph.node[compteur]['pos']==(1,0):# pos_joueur 
+        for v in self.graph.nodes : 
+            if self.graph.nodes[compteur]['pos']==pos_joueur: 
                 nodi=v
             compteur +=1
-        #for v in self.graph.node:
         spl = nx.single_source_shortest_path(self.graph,source = nodi)
         dico={}
         for keys in spl.keys():
-            #print(keys)
             z =  spl[keys]
-            #print(spl[keys])
             inter=[]
             for i in z:
                 inter.append(self.node_pos[i])

@@ -84,7 +84,8 @@ def afficher(plat,plateau,fenetre,id_joueur=None):
             plateau.blit(carte,(x,y))
             
             #case transparente si accessible
-            print('identifiant',plat.Liste_Joueur[1].identifiant)
+            chemins=plat.chemin_possible(plat.Liste_Joueur[0].identifiant)
+            print(type(chemins))
             if case.nom=='1001':
                 cache= pygame.Surface((int(taille_case),int(taille_case))) #case à surligner
                 cache.set_alpha(70)  #transparence
