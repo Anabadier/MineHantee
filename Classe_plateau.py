@@ -412,3 +412,14 @@ class Plateau(object) :
             dico[self.node_pos[keys]]=inter
         return(dico)
         
+    def deplacement_joueur(self,joueur,move):
+        """
+        joueur : 
+            objet joueur
+        move :
+            code touche du clavier
+        """
+        
+        pos_init=joueur.position_detail #ancienne position
+        move_dict={275:(pos_init[0])}
+        pos_target=pos_init #position de la carte visée par le déplacement

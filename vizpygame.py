@@ -279,7 +279,7 @@ def ecran(plat):
     #BOUCLE INFINIE
     continuer = 1
     pygame.key.set_repeat(400, 30) #maintenir déplacement quand touche enfoncée
-    while continuer:       
+    while continuer:            
     	for event in pygame.event.get():	#Attente des événements
             if event.type == pygame.MOUSEBUTTONDOWN:
                 bouton_pause.update_button(fenetre, action=pause)
@@ -295,6 +295,11 @@ def ecran(plat):
                                                  arg={'carte':plat.carte_en_dehors,'sens':'droit'})
                 boutonJoker.update_button(fenetre,
                                           action=IA)
+                
+            elif event.type==KEYDOWN: #evenement clavier
+                print(event.key)
+                if event.key==275:
+                    print("ouaip")
             elif event.type == QUIT:
                 continuer=0
                 pygame.quit()
