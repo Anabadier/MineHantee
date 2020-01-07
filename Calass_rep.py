@@ -187,8 +187,37 @@ class Joueur(object):
         _plateau.maj_classement()#on met a jour le classement à la fin du tour d'un joueur
         #print(_plateau.Liste_Classement)
         
-    def heuristique():
-        "Un peu tôt"
+    def heuristique(self,chemin,plateau):
+        """
+        La fonction d'evaluation permet de calculer le gain total si on suit un
+        chemin donné.
+        Fonction simple qui somme la valeur en point des entités recueillies sur
+        le chemin.
+        Le calcul se fait en fonction du nombre de pépites recueillies ainsi que du
+        nombre de fantomes recueillis.
+        
+        :param un_chemin: chemin a evaluer
+        
+        :param labyrinthe_detail: matrice avec les cartes que l'on va traverser
+        pour savoir s'il y a une pépite/fantome dessus
+        
+        :param chemin_fichier_config: chemin vers le fichier de configuration pour
+        connaitre la valeur d'une pepite, fantome, fantome dans mission
+        
+        :returns gain: gain que l'on peut obtenir si on suit un chelin
+        """
+        gain = 0
+        for coord in chemin :
+            carte = plateau.labyrinthe_detail[coord]
+        for carte in chemin :
+            if carte.elements['pepite'] is True :
+                gain+= plateau.pts_pepite
+            if carte.elements['fantome'] is not np.nan :
+                if carte.elements['fantome'] in self.ordre_de_mission : 
+                    gain+= plateau.pts_ordre_mission
+                else:
+                    gain+= plateau.pts_fantome
+        return(gain)
 
 class Joueur_IA(Joueur):
     
@@ -206,12 +235,28 @@ class Joueur_IA(Joueur):
             self.liste_paths += nx.all_simple_paths(_plateau.graph,
                                                     self.position_graphe, _node)
     
+    def greedy(self, plateau):
+        best_coup = (0,[])
+        for i in range (1,5):
+            self.rotation_carte(plateau,i)
+            for j in plateau.liste_row_col:
+                fleche = j
+                self.modifier_plateau(plateau,fleche)
+                liste_chemin = plateau.chemin_possible(self.identifiant)
+                for t in liste_chemin:
+                    gain = self.heuristique(t,plateau)
+                    if gain > best_coup[0]:
+                        best_coup[0],best_coup[1]=gain,t
+        self.effectuer_chemin(plateau,best_coup[1])
+    
     def jouer(self):
         """
         faire jouer une IA en fonction de son niveau
         """
         if (self.niv == "Facile"):
+            
             coup_alea = self.coup_alea(self.ref_plateau)#a changer pour une approche greedy
+            #self.greedy(self.ref_plateau)
             
             self.coup_cible(self.ref_plateau, coup_alea)
             self.coup_cible(self.ref_plateau, coup_alea, True)
