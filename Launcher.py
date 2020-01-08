@@ -140,7 +140,6 @@ class LauncherMineHantee(object):
                                     from_ = 1, to = self.nb_fantome_max, resolution = 1,
                                     tickinterval = self.nb_fantome_max-1,
                                     width = 20, length = 500,
-                                    command = self.update_nb_fantome_OM_max,
                                     activebackground = "#105105105",
                                     relief = "sunken")
         self.Scale_NbFantome.grid(column=0, row=_start_row+2, columnspan = 2)
@@ -148,8 +147,8 @@ class LauncherMineHantee(object):
         self.Scale_NbFantomeOdM = tk.Scale(master = self.fen,
                                     orient = "horizontal",
                                     label = "Nombre de Fantômes sur l'OdM",
-                                    from_ = 1, to = 21, resolution = 1,
-                                    tickinterval = self.nb_fantome_max-1,
+                                    from_ = 1, to = 10, resolution = 1,
+                                    tickinterval = 9,
                                     width = 20, length = 500,
                                     activebackground = "#105105105",
                                     relief = "sunken")
@@ -247,10 +246,6 @@ class LauncherMineHantee(object):
                                     tickinterval = self.nb_fantome_max-1)
         self.Scale_NbPepite.config(to = N*N,
                                     tickinterval = N*N-1)
-    
-    def update_nb_fantome_OM_max(self, N):
-        self.Scale_NbFantomeOdM.config(to = int(N),
-                                       tickinterval = int(N)-1)
     
     def update_nb_joueur_IA_max(self, N):
         self.Scale_NbJoueur_IA.config(to = int(N),

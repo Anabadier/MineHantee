@@ -282,8 +282,13 @@ class Plateau(object) :
             self.labyrinthe_detail[self.taille-1,coord_y].position_G = self.node_pos.index((self.taille-1,coord_y))
         
         self.carte_en_dehors.elements = carte_sortante.elements
+        self.carte_en_dehors.element_virtuels = carte_sortante.element_virtuels
+        
+        print(self.carte_en_dehors.elements, self.carte_en_dehors.element_virtuels)
+        print("======================================================")
         #carte_sortante.elements = dict_vide
         self.carte_en_dehors = carte_sortante
+        print(self.carte_en_dehors.elements, self.carte_en_dehors.element_virtuels)
         # actualiser network graph
 
 
