@@ -48,6 +48,7 @@ class Joueur(object):
             self.ref_plateau = "null"
             self.position_graphe = "Non placé"
             self.position_detail = ("xcarte" , "ycarte")
+            self.pepite=0
     
     def determiner_joueur_voisins_ordre(self):
         index = self.ref_plateau.Liste_Joueur.index(self)
@@ -81,6 +82,7 @@ class Joueur(object):
             contrôle si l'on additionne les points ou les retranche
         """
         self.nb_points = self.nb_points + _sign * points
+        self.pepite+=1
     
     def compter_pts_carte(self, _card, _reset_value = True):
         """

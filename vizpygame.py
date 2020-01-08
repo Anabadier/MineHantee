@@ -375,7 +375,7 @@ def fenetreScore(joueur,plat):
     scoreframe.fill(CIEL)
     
     valscore=joueur.nb_points
-    pepitescore=0
+    pepitescore=joueur.pepite
     ecrire('Score : '+str(valscore),scoreframe,(50,50))
     scoreframe.blit(pepite,(250,50))
     ecrire(pepitescore,scoreframe,(280,50))
