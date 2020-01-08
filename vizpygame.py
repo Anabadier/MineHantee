@@ -214,7 +214,7 @@ def ecrire(texte,frame,pos,fontcolor=pygame.Color("#000000"),fontsize=36):
     texte = police.render(str(texte),True,fontcolor)
     rectTexte = texte.get_rect() #surface rectangle autour du texte
     rectTexte.topleft=pos #ancrage du texte
-
+    
     frame.blit(texte,rectTexte)
 		
 #Création de la fenêtre
@@ -358,6 +358,7 @@ def move_player(plat,current_player,move,plateau,fenetre):
     plateau.fill((250,250,250)) #fond blanc
     afficher(plat,plateau,fenetre,current_player)
     fenetre.blit(plateau,(100,100))
+    fenetreScore(current_player,plat)
     
 def IA():
     print("help needed")
@@ -376,6 +377,7 @@ def fenetreScore(joueur,plat):
     
     valscore=joueur.nb_points
     pepitescore=joueur.pepite
+    print(valscore,pepitescore)
     ecrire('Score : '+str(valscore),scoreframe,(50,50))
     scoreframe.blit(pepite,(250,50))
     ecrire(pepitescore,scoreframe,(280,50))
@@ -393,7 +395,7 @@ def fenetreScore(joueur,plat):
 
     for i in range (nombre_fantomes):
         ordreMission.blit(fantome,(10+i*(50+taille_espace),50))
-        ecrire(joueur.ordre_de_mission[i],
+        ecrire(list(joueur.ordre_de_mission.keys())[i],
                ordreMission,
                (20+i*(50+taille_espace),80),
                RED,
@@ -410,32 +412,34 @@ def fenetreScore(joueur,plat):
     
     
     Ladverse=plat.Liste_Joueur #suppression du joueur concerné
-    for i in range(len(Ladverse)):
-        if Ladverse[i]==joueur:
-            idj=i          
-    del Ladverse[idj]
+    idj=Ladverse.index(joueur)        
+
     
     for i in range(len(Ladverse)):
-        frameJoueur=pygame.Surface((360,50))
-        frameJoueur.fill(WHITE)
-        adv=Ladverse[i]
-        frameJoueur.blit(perso,(0,0))
-        ecrire(Ladverse[i].nb_points,
-               frameJoueur,
-               (30,5),
-               fontsize=25)
-            
-        nombre_fantomes=len(adv.ordre_de_mission)
-        taille_espace=(300-50*nombre_fantomes)/(nombre_fantomes-1)
-        for j in range (nombre_fantomes):
-            frameJoueur.blit(fantome,(50+j*(50+taille_espace),0))
-            ecrire(adv.ordre_de_mission[j],
+        if i !=idj:
+            frameJoueur=pygame.Surface((360,50))
+            frameJoueur.fill(WHITE)
+            adv=Ladverse[i]
+            frameJoueur.blit(perso,(0,0))
+            for f in adv.ordre_de_mission:
+                if adv.ordre_de_mission[f]==False : #si fantôme capturé
+                    pass
+            ecrire(Ladverse[i].nb_points,
                    frameJoueur,
-                   (50+j*(50+taille_espace),0),
-                   RED,
-                   20)
-            
-        scoreAdverse.blit(frameJoueur,(10,30+i*50)) 
+                   (30,5),
+                   fontsize=25)
+                
+            nombre_fantomes=len(adv.ordre_de_mission)
+            taille_espace=(300-50*nombre_fantomes)/(nombre_fantomes-1)
+            for j in range (nombre_fantomes):
+                frameJoueur.blit(fantome,(50+j*(50+taille_espace),0))
+                ecrire(list(adv.ordre_de_mission.keys())[j],
+                       frameJoueur,
+                       (50+j*(50+taille_espace),0),
+                       RED,
+                       20)
+                
+            scoreAdverse.blit(frameJoueur,(10,30+i*50)) 
         
     scoreframe.blit(scoreAdverse,(10,200))
     fenetre.blit(scoreframe,(550,150))

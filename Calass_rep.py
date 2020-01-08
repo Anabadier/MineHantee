@@ -44,7 +44,7 @@ class Joueur(object):
             self.joueur_suivant = None
             self.joueur_precedant = None
             self.nb_points = 0
-            self.ordre_de_mission = []
+            self.ordre_de_mission = {}
             self.ref_plateau = "null"
             self.position_graphe = "Non placé"
             self.position_detail = ("xcarte" , "ycarte")
@@ -63,12 +63,12 @@ class Joueur(object):
             self.joueur_precedant = self.ref_plateau.Liste_Joueur[index-1].identifiant
             
     def generer_odre_mission(self,nb_ordre,nb_ghost):
-        ordre_mission = []
+        ordre_mission = {}
         for i in range(nb_ordre):
             fantome = rd.randint(1,nb_ghost)
             while fantome in ordre_mission:
                 fantome = rd.randint(1,nb_ghost)
-            ordre_mission.append(fantome)
+            ordre_mission[fantome]=True
         self.ordre_de_mission = ordre_mission
     
     def maj_points(self, points, _sign = 1):
@@ -105,6 +105,7 @@ class Joueur(object):
         if (_card.elements["fantome"] != []):
             if (_card.elements["fantome"] in self.ordre_de_mission):
                 self.maj_points(self.ref_plateau.pts_ordre_mission)
+                self.ordre_de_mission[_card.elements["fantome"]]=False #maj ordre de mission
                 _card.element_virtuels['coup_capture'] = self.ref_plateau.compteur_coup
 # =============================================================================
 #                 print('add, ', _card.nom, _card.position_D, _card.position_G,
