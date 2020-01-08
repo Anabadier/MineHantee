@@ -432,7 +432,7 @@ class Plateau(object) :
         
         pos_init=joueur.position_detail #ancienne position
         node_init = self.node_pos.index(pos_init)
-        print(pos_init,node_init)
+        
         move_dict={275:(pos_init[0],pos_init[1]+1), #dico des mouvements
                    273:(pos_init[0]-1,pos_init[1]),
                    274:(pos_init[0]+1,pos_init[1]),
@@ -448,7 +448,7 @@ class Plateau(object) :
             move_dict[275]=pos_init
         pos_target=move_dict[move] #position de la carte visée par le déplacement
         node_target=self.node_pos.index(pos_target)
-        print(pos_target,node_target)
+        
         
         chemins=plat.chemin_possible(joueur.identifiant).values()
         path=[]
