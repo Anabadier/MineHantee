@@ -46,10 +46,11 @@ def genere_carte(carte,size):
     carte=pygame.transform.scale(image, size) #forcer la taille de la case
     return(carte)
 
-def afficher(plat,plateau,fenetre,id_joueur=None):
+def afficher(plat,plateau,fenetre,id_joueur):
     """afficher les cartes sur le plateau"""
     global img_pepite,img_fantome,img_perso
-    
+
+    print('actualisation plateau')
     Mat_plat=plat.labyrinthe_detail
     
     dic_boutons_fleches={} #dictionnaire de tous les boutons flèches
@@ -67,13 +68,13 @@ def afficher(plat,plateau,fenetre,id_joueur=None):
     img_perso=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"pinguin.png"))).convert_alpha()
     perso=pygame.transform.scale(img_perso,(int((taille_case-1)/1.5),int((taille_case-1)/1.5)))
 
-    chemins=plat.chemin_possible(plat.Liste_Joueur[0].identifiant).values()
+    chemins=plat.chemin_possible(id_joueur.identifiant).values()
     path=[]
     for coord in chemins:
         for elem in coord :
             path.append(elem)
     path=set(path)
-    print(path)
+
     
     num_ligne=0
     for ligne in Mat_plat:
@@ -217,6 +218,8 @@ def ecrire(texte,frame,pos,fontcolor=pygame.Color("#000000"),fontsize=36):
 def ecran(plat):
     global fenetre,plateau,cote_fenetre,nombre_case,taille_case
     
+    current_player=plat.Liste_Joueur[0]
+    
     nombre_case_cote=plat.taille
     taille_case = 350/nombre_case_cote
     cote_fenetre = nombre_case_cote * taille_case
@@ -230,7 +233,7 @@ def ecran(plat):
     #plateau.blit(fond, (0,0))
     #pour Colorer le fond :
     plateau.fill((250,250,250))
-    dic_boutons_fleches=afficher(plat,plateau,fenetre)
+    dic_boutons_fleches=afficher(plat,plateau,fenetre,id_joueur=current_player)
     fenetre.blit(plateau,(100,100))
     
     #Boutons menus
@@ -273,7 +276,7 @@ def ecran(plat):
     
     
     #Fenetre Score
-    fenetreScore(plat.Liste_Joueur[0],plat)
+    fenetreScore(current_player,plat)
     
     
     #BOUCLE INFINIE
@@ -286,7 +289,7 @@ def ecran(plat):
                 bouton_save.update_button(fenetre, action=save)
                 bouton_quit.update_button(fenetre, action=gamequit)
                 for i in dic_boutons_fleches:
-                    dic_boutons_fleches[i].update_button(fenetre,action=deplacement,arg=[i,plat])
+                    dic_boutons_fleches[i].update_button(fenetre,action=deplacement,arg=[i,plat,current_player])
                 bouton_pivot_gauche.update_button(fenetre,
                                                   action=chgmt_orientation,
                                                   arg={'carte':plat.carte_en_dehors,'sens':'gauche'})
@@ -298,8 +301,8 @@ def ecran(plat):
                 
             elif event.type==KEYDOWN: #evenement clavier
                 print(event.key)
-                if event.key==275:
-                    print("ouaip")
+                if event.key in [273,274,275,276]:
+                    move_player(plat,current_player,event.key,plateau,fenetre)
             elif event.type == QUIT:
                 continuer=0
                 pygame.quit()
@@ -323,34 +326,36 @@ def deplacement(i):
     global carte_ej
     fleche=i[0]
     plat=i[1]
-    print("la flèche "+str(fleche)+" a été cliquée")
+    current_player=i[2]
     coord_x, coord_y = plat.convertir_Fleche2Coord(fleche)
     #print(coord_x,coord_y)
     #régénérer plat
     plat.coulisser(coord_x,coord_y)
-    plateau=pygame.Surface((cote_fenetre,cote_fenetre))
+    plateau=pygame.Surface((cote_fenetre,cote_fenetre)) #vider le plateau
 #    fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()
 #    plateau.blit(fond, (0,0))
     plateau.fill((250,250,250)) #fond blanc
-    afficher(plat,plateau,fenetre)
+    afficher(plat,plateau,fenetre,current_player)
     fenetre.blit(plateau,(100,100))
     
     
 def chgmt_orientation(arg):
-
+    
     arg['carte'].pivoter(arg['sens'])
    
     fenetre.fill((250,250,250) , (625,80,50,50)) #remplit en blanc la position de l'ancienne carte
     carte_ej=genere_carte(arg['carte'].nom,(50,50)) 
     fenetre.blit(carte_ej,(625,80))
-    if arg['carte'].elements['pepite'] == True:
-        fenetre.blit(pepite,(625,80))
-    if arg['carte'].elements['fantome'] == True:
-        fenetre.blit(fantome,(625+taille_case/5,80+taille_case/5))
     pygame.display.flip()
     
 
-
+def move_player(plat,current_player,move,plateau,fenetre):
+    plat.deplacement_joueur(plat,current_player,move)
+    plateau=pygame.Surface((cote_fenetre,cote_fenetre)) #vider le plateau
+    plateau.fill((250,250,250)) #fond blanc
+    afficher(plat,plateau,fenetre,current_player)
+    fenetre.blit(plateau,(100,100))
+    
 def IA():
     print("help needed")
     
@@ -366,7 +371,7 @@ def fenetreScore(joueur,plat):
     scoreframe=pygame.Surface((400,400))
     scoreframe.fill(CIEL)
     
-    valscore=0
+    valscore=joueur.nb_points
     pepitescore=0
     ecrire('Score : '+str(valscore),scoreframe,(50,50))
     scoreframe.blit(pepite,(250,50))

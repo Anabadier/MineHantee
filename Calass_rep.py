@@ -206,9 +206,11 @@ class Joueur(object):
             _path = _path[::-1]
         
         card_path = _plateau.translate_GraphPath2CardsPath(_path)
+        card_path[0].elements["joueur"].remove(self.identifiant)
         #print(187,_path, card_path)
         for _card in card_path:
             self.maj_position(_card)
+            
             if (_backward):
                 self.retrancher_pts_carte(_card)
                 self.ref_plateau.compteur_coup -= 1
@@ -217,7 +219,8 @@ class Joueur(object):
                 self.compter_pts_carte(_card)
         _plateau.maj_classement()#on met a jour le classement à la fin du tour d'un joueur
         #print(_plateau.Liste_Classement)
-        
+        card_path[-1].elements["joueur"].append(self.identifiant)
+        print(card_path[-1].elements)
         
     def heuristique(self,chemin,plateau):
         """

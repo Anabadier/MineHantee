@@ -154,7 +154,7 @@ class Plateau(object) :
             while self.labyrinthe_detail[a][b].elements['joueur'] != []:
                 a = random.choice([2,self.taille-3])
                 b = random.choice([2,self.taille-3])
-            self.labyrinthe_detail[a][b].elements['joueur'] = joueur.identifiant
+            self.labyrinthe_detail[a][b].elements['joueur'].append(joueur.identifiant)
             self.labyrinthe_detail[a][b].element_virtuels['joueur'] = joueur.identifiant
             joueur.position_detail=(a,b)
             joueur.position_graphe=self.node_pos.index((a,b))
@@ -398,7 +398,7 @@ class Plateau(object) :
     def chemin_possible(self,id_joueur):
         for i in self.labyrinthe_detail: #recherche de la position du joueur
             for j in i:
-                if j.elements["joueur"]==id_joueur:
+                if id_joueur in j.elements["joueur"]:
                     pos_joueur = j.position_D
         compteur=0
         for v in self.graph.nodes : 
@@ -415,7 +415,7 @@ class Plateau(object) :
             dico[self.node_pos[keys]]=inter
         return(dico)
         
-    def deplacement_joueur(self,joueur,move):
+    def deplacement_joueur(self,plat,joueur,move):
         """
         joueur : 
             objet joueur
@@ -424,5 +424,33 @@ class Plateau(object) :
         """
         
         pos_init=joueur.position_detail #ancienne position
-        move_dict={275:(pos_init[0])}
-        pos_target=pos_init #position de la carte visée par le déplacement
+        node_init = self.node_pos.index(pos_init)
+        print(pos_init,node_init)
+        move_dict={275:(pos_init[0],pos_init[1]+1), #dico des mouvements
+                   273:(pos_init[0]-1,pos_init[1]),
+                   274:(pos_init[0]+1,pos_init[1]),
+                   276:(pos_init[0],pos_init[1]-1)}
+        #verif contraintes
+        if pos_init[0]==0:
+            move_dict[273]=pos_init
+        elif pos_init[0]==self.taille:
+            move_dict[274]=pos_init
+        elif pos_init[1]==0:
+            move_dict[276]=pos_init
+        elif pos_init[1]==self.taille:
+            move_dict[275]=pos_init
+        pos_target=move_dict[move] #position de la carte visée par le déplacement
+        node_target=self.node_pos.index(pos_target)
+        print(pos_target,node_target)
+        
+        chemins=plat.chemin_possible(joueur.identifiant).values()
+        path=[]
+        for coord in chemins:
+            for elem in coord :
+                path.append(elem)
+        path=set(path)
+        
+        if pos_target in path:
+            joueur.effectuer_chemin(self,[node_init,node_target])
+        
+      
