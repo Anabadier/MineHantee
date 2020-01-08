@@ -231,7 +231,7 @@ class Plateau(object) :
         :param coord_y: ordonnée du lieu où l'on souhaite faire coulisser la carte
         :return:
         """
-        dict_vide = {'fantome' : "f" , 'pepite' : "f-", 'joueur': "f"}
+        #dict_vide = {'fantome' : "f" , 'pepite' : "f-", 'joueur': "f"}
         ## on modifie la ligne
         # en coulissant de gauche à droite
         if coord_y == -1:
@@ -281,7 +281,7 @@ class Plateau(object) :
             self.labyrinthe_detail[self.taille-1,coord_y].position_D = (self.taille-1,coord_y)
             self.labyrinthe_detail[self.taille-1,coord_y].position_G = self.node_pos.index((self.taille-1,coord_y))
         
-        #self.carte_en_dehors.elements = carte_sortante.elements
+        self.carte_en_dehors.elements = carte_sortante.elements
         #carte_sortante.elements = dict_vide
         self.carte_en_dehors = carte_sortante
         # actualiser network graph
@@ -305,10 +305,17 @@ class Plateau(object) :
         self.graph.remove_edges_from(self.graph.edges())#on enlève toutes les connexions
         for i in range (self.taille):
             for j in range(self.taille):
+                
                 self.etablir_connexion(self.labyrinthe_detail[i,j])#on refait les connexions
+                
+                for _jID in (self.labyrinthe_detail[i,j].elements["joueur"]): #mise à jour des positions des joueurs sur la carte
+                    _j = self.dict_ID2J[_jID]
+                    _j.maj_position(self.labyrinthe_detail[i,j])
+                    
         #on dessine
         #self.ax_graph.clear()
         #nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph)
+            
 
     def translate_GraphPath2CardsPath(self, _graph_path):
         cards_path = []
@@ -433,11 +440,11 @@ class Plateau(object) :
         #verif contraintes
         if pos_init[0]==0:
             move_dict[273]=pos_init
-        elif pos_init[0]==self.taille:
+        elif pos_init[0]==self.taille-1:
             move_dict[274]=pos_init
         elif pos_init[1]==0:
             move_dict[276]=pos_init
-        elif pos_init[1]==self.taille:
+        elif pos_init[1]==self.taille-1:
             move_dict[275]=pos_init
         pos_target=move_dict[move] #position de la carte visée par le déplacement
         node_target=self.node_pos.index(pos_target)

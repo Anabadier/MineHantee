@@ -88,26 +88,29 @@ def afficher(plat,plateau,fenetre,id_joueur):
 #            if num_case%2==0 and num_ligne%2==0:
 #                plateau.fill(RED, (x,y,int(taille_case),int(taille_case)))
             
-            num_case+=1
+            
             carte=genere_carte(case.nom,(int(taille_case),int(taille_case)))
             plateau.blit(carte,(x,y))
             
-            #case transparente si accessible
+            #case surlignée si accessible
             
             if coord in path:
                 cache= pygame.Surface((int(taille_case),int(taille_case))) #case à surligner
                 cache.set_alpha(70)  #transparence
                 cache.fill((255,255,0))   #jaune
                 plateau.blit(cache,(x,y))
-                
+            
+            num_case+=1  
             #Si pépite/fantome sur la carte, voir condition avec la matrice des instances de cartes
             if case.elements['pepite'] == True:
                 plateau.blit(pepite,(x,y))
             if case.elements['fantome'] != []:
                 plateau.blit(fantome,(x+taille_case/5,y+taille_case/5))
                 ecrire(case.elements['fantome'],plateau,(x+taille_case/5,y+taille_case/5),RED,20)
-            if case.elements['joueur']!=[]:
+            
+            if case.elements['joueur']!=[]:                
                 plateau.blit(perso,(x+taille_case/6,y+taille_case/6))
+            
             
             #Si paire : peut coulisser : insérer bouton de chaque côté
             if num_case%2==0:
