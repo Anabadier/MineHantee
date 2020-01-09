@@ -372,7 +372,9 @@ class Joueur_IA(Joueur):
                     gain = self.heuristique(t,plateau)
                     if gain > best_coup[0]:
                         best_coup = [gain,i,j,t]
-        print(best_coup[3])
+                self.modifier_plateau(plateau, fleche, True)
+            self.rotation_carte(plateau,i, True)
+        
         self.effectuer_chemin(plateau, best_coup[3])
         return best_coup
     
