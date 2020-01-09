@@ -58,33 +58,35 @@ class SandC2(object):
                     
                     working_plateau.labyrinthe_detail[i][j].position_D = (i,j)
                     working_plateau.labyrinthe_detail[i][j].type = sauv[compteur][1]
+                    working_plateau.labyrinthe_detail[i][j].nom = sauv[compteur][1]
                     working_plateau.labyrinthe_detail[i][j].orientation= int(sauv[compteur][2])
                     working_plateau.labyrinthe_detail[i][j].position_G = int(sauv[compteur][3])
+                    working_dico={}
                     if sauv[compteur][4] == '[]':
-                        working_plateau.labyrinthe_detail[i][j].elements['fantome']=[]
+                        working_dico['fantome']=[]
                     else:
-                        working_plateau.labyrinthe_detail[i][j].elements['fantome'] = int(sauv[compteur][3])
+                        working_dico['fantome'] = int(sauv[compteur][3])
                     if sauv[compteur][5] == 'False':
-                        working_plateau.labyrinthe_detail[i][j].elements['pepite']=False
+                        working_dico['pepite']=False
                     else:
-                        working_plateau.labyrinthe_detail[i][j].elements['pepite']=True
+                        working_dico['pepite']=True
                     if sauv[compteur][6] == '[]':
-                        working_plateau.labyrinthe_detail[i][j].elements['joueur']=[]
+                        working_dico['joueur']=[]
                     else:
                         try:
                             val = sauv[compteur][6][2:-2].split(",")
                         except:
                             val = [sauv[compteur][6][2:-2]]
                         print("===========================", val)
-                        working_plateau.labyrinthe_detail[i][j].elements['joueur']=[i for i in val]
-                        print("done",working_plateau.labyrinthe_detail[i][j].elements)
-                        
+                        working_dico['joueur']=[i for i in val]
+                        print("done",working_dico)
+                    working_plateau.labyrinthe_detail[i][j].elements = working_dico
                     compteur+=1
             #print(sauv[compteur])
             plateau=working_plateau
             for i in range(plateau.taille):
                 for j in range(plateau.taille):
-                    print("testultime",plateau.labyrinthe_detail[i][j].elements)
+                    print("testultime",plateau.labyrinthe_detail[i][j].type)
             
             """ On génère les connexions """
             
