@@ -45,6 +45,7 @@ class Plateau(object) :
         self.pts_pepite = 1
         self.pts_fantome = 5
         self.pts_ordre_mission = 15
+        self.ordre_fantome = 1 #check que les fantômes soient capturés dans l'ordre cardinal
         
         self.SaC = _SaC
         
@@ -431,7 +432,7 @@ class Plateau(object) :
             dico[self.node_pos[keys]]=inter
         return(dico)
         
-    def deplacement_joueur(self,plat,joueur,move):
+    def deplacement_joueur(self,plat,joueur,move=None):
         """
         joueur : 
             objet joueur
@@ -439,6 +440,7 @@ class Plateau(object) :
             code touche du clavier
         """
         print('move detected',move)
+                
         pos_init=joueur.position_detail #ancienne position
         node_init = self.node_pos.index(pos_init)
         carte_init=self.labyrinthe_detail[pos_init].nom
@@ -491,5 +493,5 @@ class Plateau(object) :
             joueur.effectuer_chemin(self,[node_init,node_target])
             joueur.carte_visit.append(pos_init)
             joueur.carte_visit.append(pos_target)
-        
+    
       
