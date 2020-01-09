@@ -100,7 +100,7 @@ class joueur(object):
         return (compteur == taille^2)
     
     #joker #alpha beta
-    def mini_max(self,plateau, id_joueur, depth, alpha, beta, maximizingPlayer, terminal_node):
+    def mini_max(self,plateau, id_joueur, depth, alpha, beta, maximizingPlayer):
         """
         La fonction mini_max permet de calculer le meilleur gain que le joueur peut faire, c'est-à-dire :
             1) maximiser son gain en minimisant, potentiellement, le gain dans les prochains tour du joueur avec le plus de points
@@ -124,7 +124,7 @@ class joueur(object):
                 chemins_coord = [dico_chemins[coord] for coord in dico_chemins.keys()]  # /!\ à revoir
                 points = [self.fonction_evaluation(plateau, i) for i in chemins_coord]
                 le_chemin = chemins_coord[points.index(max(points))]
-                return (None, None, max(points))
+                return (None, None, le_chemin, max(points))
         
         if maximizingPlayer: #joker player #la personne qui utilise le joker
             value = -math.inf
