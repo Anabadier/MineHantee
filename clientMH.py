@@ -8,6 +8,8 @@ Created on Wed Nov 20 11:14:37 2019
 
 import socket, threading
 import Launcher as Lch
+import Jeu_mine as Jm
+import vizpygame as vpyg
 
 
 class Client(object):
@@ -16,9 +18,11 @@ class Client(object):
         self.launcher = _ref_launcher
         self.PORT = int(self.launcher.PORT)
         self.HOST = self.launcher.HOST
-        self.pseudo = self.launcher.pseudo
+        self.pseudo = self.launcher.value_pseudos[0]
         # création ref
         self.ref_socket = {}
+        
+        self.serveur_creator = False
         
         print("Client créé")
         self.ConnexionServeur()
@@ -46,6 +50,27 @@ class Client(object):
             except socket.error:
                 print('Erreur','La connexion au serveur a échoué.')
     
+    def envoyer_parametre_plateau(self):
+        
+        parametres = "PARA_S {0} {1} {2} {3} {4} {5} {6}".format(
+                                              self.launcher.value_DimPlateau,
+                                              self.launcher.value_NbFantome,
+                                              self.launcher.value_NbFantomeOdM,
+                                              self.launcher.value_NbPepite,
+                                              self.launcher.value_PtsPepite,
+                                              self.launcher.value_PtsFantome,
+                                              self.launcher.value_PtsFantomeOdM)
+        parametres = bytes(parametres,"UTF8")
+        self.ref_socket[0].send(parametres)
+        self.launch_game()
+    
+    
+    def envoyer_ordre_set_paramatre_in_client(self):
+        message = "SET PARA CLIENT"
+        message = bytes(message,"UTF8")
+        self.ref_socket[0].send(message)
+        print(68, "sent")
+    
     def envoyer_Pseudo(self):
         if self.CONNEXION == True:
             try:
@@ -63,12 +88,15 @@ class Client(object):
             try:
                 print("Envoie de la touche au serveur...")
                 # émission 
-                self.ref_socket[0].send(bytes(_touche,"UTF8"))
+                self.ref_socket[0].sendall(bytes(_touche,"UTF8"))
                 
             except socket.error:
                 print("Echec de l'envoie de la touche au server")
                 pass
-                
+    
+    def launch_game(self):
+        print("in 98")
+        self.launcher.launch_game()
 
 class ThreadReception(threading.Thread):
     """objet thread gérant la réception des messages"""
@@ -77,6 +105,36 @@ class ThreadReception(threading.Thread):
         self.client = _client
         self.client.ref_socket[0] = conn
         self.connexion = conn  # réf. du socket de connexion
+    
+    def receiver_manager(self, _message):
+        if _message[:4] == "RANK":
+            self.maj_server_creator_bool(int(_message.split()[-1]))
+        
+        if _message[:7] == "PARA_CL":
+            self.set_board_parameter_in_client_launcher(_message)
+        
+    def maj_server_creator_bool(self, _val):
+        print(109, _val)
+        if (_val == 1):
+            self.client.serveur_creator = True
+            self.client.envoyer_parametre_plateau()
+        else:
+            print(113)
+            self.client.envoyer_ordre_set_paramatre_in_client()
+    
+    def set_board_parameter_in_client_launcher(self, _message):
+        _message_split = _message.split()
+        self.client.launcher.value_DimPlateau = int(_message_split[1])
+        self.client.launcher.value_NbJoueur = int(_message_split[2])
+        self.client.launcher.value_NbJoueur_IA = int(_message_split[3])
+        self.client.launcher.value_NbFantome = int(_message_split[4])
+        self.client.launcher.value_NbFantomeOdM = int(_message_split[5])
+        self.client.launcher.value_NbPepite = int(_message_split[6])
+        self.client.launcher.value_PtsPepite = int(_message_split[7])
+        self.client.launcher.value_PtsFantome = int(_message_split[8])
+        self.client.launcher.value_PtsFantomeOdM = int(_message_split[9])
+        
+        self.client.launch_game()
               
     def run(self):
         while True:
@@ -84,9 +142,10 @@ class ThreadReception(threading.Thread):
                 # en attente de réception
                 message_recu = self.connexion.recv(4096)
                 message_recu = message_recu.decode(encoding='UTF-8')
+                print('the client recieved:', message_recu)
                 
                 if (message_recu !=""):
-                    print('the client recieved:', message_recu)
+                    self.receiver_manager(message_recu)
                 
                 if "FIN" in message_recu:
                     self._client.CONNEXION = False
