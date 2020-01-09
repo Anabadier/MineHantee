@@ -123,8 +123,8 @@ class joueur(object):
                 dico_chemins = plateau.chemin_possible(id_joueur)[1]
                 chemins_coord = [dico_chemins[coord] for coord in dico_chemins.keys()]  # /!\ à revoir
                 points = [self.fonction_evaluation(plateau, i) for i in chemins_coord]
-                le_chemin = max(points)
-                return (None, None, self.fonction_evaluation(plateau,le_chemin))
+                le_chemin = chemins_coord[points.index(max(points))]
+                return (None, None, max(points))
         
         if maximizingPlayer: #joker player #la personne qui utilise le joker
             value = -math.inf
