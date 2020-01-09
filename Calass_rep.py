@@ -286,7 +286,6 @@ class Joueur_IA(Joueur):
         self.niv = _niv
         
         self.UCT_solver = None
-        
         self.liste_paths = [] #liste des chemins accessibles au joueur. Utile après rot card et coullissage
     
     def generate_list_paths(self, _plateau):
