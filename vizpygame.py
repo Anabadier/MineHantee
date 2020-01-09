@@ -458,10 +458,7 @@ def fenetreScore(joueur,plat):
             frameJoueur.fill(WHITE)
             adv=Ladverse[i]
             frameJoueur.blit(perso,(0,0))
-            for f in adv.ordre_de_mission:
-                if adv.ordre_de_mission[f]==False : #si fantôme capturé
-                     pass   
-            ecrire(Ladverse[i].nb_points,
+            ecrire(adv.nb_points,
                    frameJoueur,
                    (30,5),
                    fontsize=25)
@@ -469,7 +466,11 @@ def fenetreScore(joueur,plat):
             nombre_fantomes=len(adv.ordre_de_mission)
             taille_espace=(300-50*nombre_fantomes)/(nombre_fantomes-1)
             for j in range (nombre_fantomes):
-                frameJoueur.blit(fantome,(50+j*(50+taille_espace),0))
+                frameJoueur.blit(fantome,(50+j*(50+taille_espace),0))      
+                print(adv.ordre_de_mission[list(adv.ordre_de_mission.keys())[j]])
+                if adv.ordre_de_mission[list(adv.ordre_de_mission.keys())[j]]==False:
+                    frameJoueur.blit(croix,(50+j*(50+taille_espace),0))
+            
                 ecrire(list(adv.ordre_de_mission.keys())[j],
                        frameJoueur,
                        (50+j*(50+taille_espace),0),
