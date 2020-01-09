@@ -12,6 +12,7 @@ import sys
 
 from classe_carte import carte
 import Jeu_mine
+import SaC2
 # =============================================================================
 # Initialisation
 # =============================================================================
@@ -70,7 +71,6 @@ def afficher(plat,plateau,fenetre,joueur):
     
     img_fantome=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"poisson2.gif")))
     fantome=pygame.transform.scale(img_fantome,(int((taille_case-1)/2),int((taille_case-1)/2)))
-    
     
     chemins=plat.chemin_possible(joueur.identifiant).values()
     path=[]
@@ -317,7 +317,7 @@ def ecran(plat):
     while continuer:  
     	for event in pygame.event.get():	#Attente des événements
             if event.type == pygame.MOUSEBUTTONDOWN:
-                bouton_save.update_button(fenetre, action=save)
+                bouton_save.update_button(fenetre, action=save,arg=[plat,current_player])
                 bouton_quit.update_button(fenetre, action=gamequit)
                 bouton_suiv.update_button(fenetre, action=nextplayer,arg=[plat,current_player])
                 for i in dic_boutons_fleches:
@@ -344,8 +344,12 @@ def ecran(plat):
     
 
 
-def save():
+def save(arg):
     print("save")
+    plat=arg[0]
+    current_player=arg[1]
+    sac = SaC2.SandC2()
+    sac.save_game_file(plat, current_player)
 
 def gamequit():
     print("Quit")

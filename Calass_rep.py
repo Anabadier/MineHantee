@@ -52,6 +52,10 @@ class Joueur(object):
             self.pepite=0
             self.deplacement_effectué=False
             self.carte_visit=[]
+            self.joker_used=False
+            self.liste_paths = [] #liste des chemins accessibles au joueur. Utile après rot card et coullissage
+    
+    
     
     def determiner_joueur_voisins_ordre(self):
         index = self.ref_plateau.Liste_Joueur.index(self)
@@ -73,6 +77,10 @@ class Joueur(object):
                 fantome = rd.randint(1,nb_ghost)
             ordre_mission[fantome]=True
         self.ordre_de_mission = ordre_mission
+    
+    def generate_list_paths(self, _plateau):
+        self.liste_paths = list(nx.single_source_shortest_path(_plateau.graph,
+                                                    self.position_graphe).values())
     
     def maj_points(self, points, _sign = 1):
         """
@@ -179,7 +187,30 @@ class Joueur(object):
         if sens not in test:
             print("Mauvaises instructions de sens")
         else:
-            carte_libre.pivoter(sens)    
+            carte_libre.pivoter(sens)
+    
+    def rotation_carte(self, _plateau, _nb_rotation, _backward = False):
+        """
+        tourne la carte libre autant de fois que _nb_rotation
+        
+        _plateau(instance de la classe Plateau):
+            référence du plateau sur lequel on joue. Important car on utiisera
+            cette fonction dans le "RollOut" de l'UCT sur des copies du plateau
+            d'origine.
+        
+        _nb_rotation(int):
+            nombre de fois que l'on doit tourner la carte dans le sens horaire
+        
+        _backward(bool):
+            Si True, joue la carte dans le sens anti horaire. Utile dans UCT
+        """
+        if _backward:
+            _sens = "anti-horaire"
+        else:
+            _sens = "horaire"
+        
+        for i in range(_nb_rotation):
+            self.oriente_carte_libre(_plateau.carte_en_dehors, _sens)
     
     def modifier_plateau(self, _plateau, _fleche, _backward = False):
         """
@@ -248,7 +279,42 @@ class Joueur(object):
         #print(_plateau.Liste_Classement)
         
         #print(card_path[-1].elements)
-        
+    
+    def coup_cible(self, _plateau, _description_coup, _backward = False):
+        """
+        _plateau(instance de la classe Plateau):
+            référence du plateau sur lequel on joue. Important car on utiisera
+            cette fonction dans le "RollOut" de l'UCT sur des copies du plateau
+            d'origine.
+            
+        _description_coup(list):
+            Liste au format [_nb_rotation horaire carte,
+                             fleche identifiant,
+                             chemin]
+        _backward(bool):
+            Si True, joue la séquence inverse pour annuler le coup décrit par
+            _description_coup. Utile dans UCT
+        """
+        if (_backward):
+            self.ref_plateau.compteur_coup -= 1
+            #print(298, 'going backward')
+            self.effectuer_chemin(_plateau, _description_coup[2], _backward)
+            #print(298, 'going backward', "après chemin")
+            self.modifier_plateau(_plateau, _description_coup[1], _backward)
+            #print(298, 'going backward', "après modifier plateau")
+            self.rotation_carte(_plateau, _description_coup[0], _backward)
+            #print(298, 'going backward', "après rotation carte")
+            
+        else:
+            #print(303, 'going forward')
+            self.rotation_carte(_plateau, _description_coup[0])
+            #print(303, 'going forward', "après rotation carte")
+            self.modifier_plateau(_plateau, _description_coup[1])
+            #print(303, 'going forward', "après modifier plateau")
+            self.effectuer_chemin(_plateau, _description_coup[2])
+            #print(303, 'going forward', "après chemin")
+            self.ref_plateau.compteur_coup += 1
+    
     def heuristique(self,chemin,plateau):
         """
         La fonction d'evaluation permet de calculer le gain total si on suit un
@@ -317,11 +383,7 @@ class Joueur_IA(Joueur):
         self.niv = _niv
         
         self.UCT_solver = None
-        self.liste_paths = [] #liste des chemins accessibles au joueur. Utile après rot card et coullissage
     
-    def generate_list_paths(self, _plateau):
-        self.liste_paths = list(nx.single_source_shortest_path(_plateau.graph,
-                                                    self.position_graphe).values())
         #○self.liste_paths = self.liste_paths[1:]
     
     def jouer(self):
@@ -501,28 +563,7 @@ class Joueur_IA(Joueur):
         
         return [nb_rotation, fleche, path]
         
-    def rotation_carte(self, _plateau, _nb_rotation, _backward = False):
-        """
-        tourne la carte libre autant de fois que _nb_rotation
-        
-        _plateau(instance de la classe Plateau):
-            référence du plateau sur lequel on joue. Important car on utiisera
-            cette fonction dans le "RollOut" de l'UCT sur des copies du plateau
-            d'origine.
-        
-        _nb_rotation(int):
-            nombre de fois que l'on doit tourner la carte dans le sens horaire
-        
-        _backward(bool):
-            Si True, joue la carte dans le sens anti horaire. Utile dans UCT
-        """
-        if _backward:
-            _sens = "anti-horaire"
-        else:
-            _sens = "horaire"
-        
-        for i in range(_nb_rotation):
-            self.oriente_carte_libre(_plateau.carte_en_dehors, _sens)
+    
 
 class UCT_node(object):
     def __init__(self, _C = np.sqrt(2)):

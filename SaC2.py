@@ -10,6 +10,8 @@ from Calass_rep import Joueur,Joueur_IA
 from classe_carte import carte
 import os
 from tkinter import filedialog as tkfd
+import vizpygame as vpyg
+
 
 class SandC2(object):
     
@@ -44,40 +46,53 @@ class SandC2(object):
             """ Génération d'un plateau avec les paramètres de sauvegarde """
             
             compteur = 5
-            new_plateau = Plateau(taille)
-            plateau = new_plateau
-            plateau.pts_pepite = pts_pepite
-            plateau.pts_fantome = pts_fantome
-            plateau.pts_ordre_mission = pts_ordre_mission
+            plateau = Plateau(taille)
+            
+            working_plateau = plateau
+            working_plateau.pts_pepite = pts_pepite
+            working_plateau.pts_fantome = pts_fantome
+            working_plateau.pts_ordre_mission = pts_ordre_mission
+            for i in range(working_plateau.taille):
+                for j in range(working_plateau.taille):
+                    working_plateau.labyrinthe_detail[i][j]=carte('couloir')
+                    
+                    working_plateau.labyrinthe_detail[i][j].position_D = (i,j)
+                    working_plateau.labyrinthe_detail[i][j].type = sauv[compteur][1]
+                    working_plateau.labyrinthe_detail[i][j].orientation= int(sauv[compteur][2])
+                    working_plateau.labyrinthe_detail[i][j].position_G = int(sauv[compteur][3])
+                    if sauv[compteur][4] == '[]':
+                        working_plateau.labyrinthe_detail[i][j].elements['fantome']=[]
+                    else:
+                        working_plateau.labyrinthe_detail[i][j].elements['fantome'] = int(sauv[compteur][3])
+                    if sauv[compteur][5] == 'False':
+                        working_plateau.labyrinthe_detail[i][j].elements['pepite']=False
+                    else:
+                        working_plateau.labyrinthe_detail[i][j].elements['pepite']=True
+                    if sauv[compteur][6] == '[]':
+                        working_plateau.labyrinthe_detail[i][j].elements['joueur']=[]
+                    else:
+                        try:
+                            val = sauv[compteur][6][2:-2].split(",")
+                        except:
+                            val = [sauv[compteur][6][2:-2]]
+                        print("===========================", val)
+                        working_plateau.labyrinthe_detail[i][j].elements['joueur']=[i for i in val]
+                        print("done",working_plateau.labyrinthe_detail[i][j].elements)
+                        
+                    compteur+=1
+            #print(sauv[compteur])
+            plateau=working_plateau
             for i in range(plateau.taille):
                 for j in range(plateau.taille):
-                    plateau.labyrinthe_detail[i][j]=carte('couloir')
-                    print(sauv[compteur][1])
-                    plateau.labyrinthe_detail[i][j].position_D = (i,j)
-                    plateau.labyrinthe_detail[i][j].type = sauv[compteur][1]
-                    plateau.labyrinthe_detail[i][j].orientation= int(sauv[compteur][2])
-                    plateau.labyrinthe_detail[i][j].position_G = int(sauv[compteur][3])
-                    if sauv[compteur][4] == '[]':
-                        plateau.labyrinthe_detail[i][j].elements['fantome']=[]
-                    else:
-                        plateau.labyrinthe_detail[i][j].elements['fantome'] = int(sauv[compteur][3])
-                    if sauv[compteur][5] == 'False':
-                        plateau.labyrinthe_detail[i][j].elements['pepite']=False
-                    else:
-                        plateau.labyrinthe_detail[i][j].elements['pepite']=True
-                    if sauv[compteur][6] == '[]':
-                        plateau.labyrinthe_detail[i][j].elements['joueur']=[]
-                    else:
-                        sauv[compteur][6]
-                    compteur+=1
-            print(sauv[compteur])
-            print(plateau.labyrinthe_detail)
+                    print("testultime",plateau.labyrinthe_detail[i][j].elements)
             
             """ On génère les connexions """
             
             for i in range(plateau.taille):
-                for j in range(plateau.taille):
+                for j in range(plateau.taille): 
                     plateau.etablir_connexion(plateau.labyrinthe_detail[i][j])
+                    
+            
             plateau.carte_en_dehors.type = sauv[compteur][1]
             plateau.carte_en_dehors.orientation = sauv[compteur][2]
             compteur+=1
@@ -91,13 +106,13 @@ class SandC2(object):
                 print(nb_ordre_mission)
                 A.ordre_de_mission={}
                 while key < 5 + (nb_ordre_mission)*2:
-                    print(sauv[compteur][key])
-                    print(sauv[compteur][key+1])
+                    #print(sauv[compteur][key])
+                    #print(sauv[compteur][key+1])
                     if sauv[compteur][key+1]=='False':
                         A.ordre_de_mission[int(sauv[compteur][key])]=False
                     else:
                         A.ordre_de_mission[int(sauv[compteur][key])]=True
-                    print(A.ordre_de_mission)
+                    #print(A.ordre_de_mission)
                     key= key +2
                 Liste_joueur.append(A)
                 compteur+=1
@@ -109,38 +124,37 @@ class SandC2(object):
                 A.position_graphe = int(sauv[compteur][3])
                 A.position_detail = (int(sauv[compteur][4]),int(sauv[compteur][5]))
                 key = 7
-                print(nb_ordre_mission)
+                #print(nb_ordre_mission)
                 A.ordre_de_mission={}
                 while key < 6 + (nb_ordre_mission)*2:
-                    print(sauv[compteur][key])
-                    print(sauv[compteur][key+1])
+                    #print(sauv[compteur][key])
+                    #print(sauv[compteur][key+1])
                     if sauv[compteur][key+1]=='False':
                         A.ordre_de_mission[int(sauv[compteur][key])]=False
                     else:
                         A.ordre_de_mission[int(sauv[compteur][key])]=True
-                    print(A.ordre_de_mission)
+                    #print(A.ordre_de_mission)
                     key= key +2
                 Liste_joueur.append(A)
                 compteur+=1
             plateau.Liste_Joueur_IA = Liste_joueur
             plateau.Liste_Joueur = plateau.Liste_Joueur_H + plateau.Liste_Joueur_IA
-            print(plateau.Liste_Joueur[0])
+        #print(plateau.Liste_Joueur[0])
             plateau.maj_classement
             current = sauv[compteur][1]
-            print(current)
+            #print(current)
             for i in plateau.Liste_Joueur:
-                print(i.identifiant)
+                #print(i.identifiant)
                 if i.identifiant == current:
                     current_player = i
  #          
                 
            
         print("in charge_game_file")
-        return((plateau,current_player))
-    
-    
+        vpyg.ecran(plateau)
+        #return((plateau,current_player))
      
-    def save_game_file(self,plateau,current_player):
+    def save_game_file(self, plateau, current_player):
         """ Permet de sauvegarder les fichiers sous forme de texte dans un fichier csv crée, permet d'accéder
         aux informations """
        
@@ -156,7 +170,7 @@ class SandC2(object):
                            "nb_ordre_mission,"+str(len(plateau.Liste_Joueur[0].ordre_de_mission))+"\n")
                 for i in range(len(plateau.labyrinthe_detail)):
                     for j in range(len(plateau.labyrinthe_detail)):
-                        print(plateau.labyrinthe_detail[i][j])
+                        #print(plateau.labyrinthe_detail[i][j])
                         file.write("Carte_position" + "("+ str(plateau.labyrinthe_detail[i][j].position_D[0])+"-"+str(plateau.labyrinthe_detail[i][j].position_D[1])+")"+","
                                    +str(plateau.labyrinthe_detail[i][j].type)+","
                                    +str(plateau.labyrinthe_detail[i][j].orientation)+","+str(plateau.labyrinthe_detail[i][j].position_G)+",")

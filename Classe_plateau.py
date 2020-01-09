@@ -227,7 +227,6 @@ class Plateau(object) :
         self.labyrinthe_detail[0][taille-1].nom = '0101'
         self.labyrinthe_detail[taille-1][0].orientation = 1
         self.labyrinthe_detail[taille-1][0].nom = '1010'
-                
              
     def coulisser_detail (self, coord_x, coord_y):
         """
@@ -415,6 +414,7 @@ class Plateau(object) :
     def chemin_possible(self,id_joueur):
         for i in self.labyrinthe_detail: #recherche de la position du joueur
             for j in i:
+                print(j.elements)
                 if id_joueur in j.elements["joueur"]:
                     pos_joueur = j.position_D
         compteur=0
