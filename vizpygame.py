@@ -34,6 +34,7 @@ CIEL = 0, 200, 255
 RED = 255, 0, 0
 ORANGE = 255, 100, 0
 GREEN = 0, 255, 0
+BLEU = 3,34,76
 
 
 
@@ -64,10 +65,10 @@ def afficher(plat,plateau,fenetre,joueur):
     img_fleche_gauche=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"Fleche_est.png"))).convert_alpha()
     img_fleche_droite=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"Fleche_ouest.png"))).convert_alpha()
     
-    img_pepite=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"triskel.png"))).convert_alpha()
+    img_pepite=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"pépite.gif"))).convert_alpha()
     pepite=pygame.transform.scale(img_pepite,(int((taille_case-1)/2),int((taille_case-1)/2)))
     
-    img_fantome=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"poisson.png"))).convert_alpha()
+    img_fantome=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"poisson2.gif")))
     fantome=pygame.transform.scale(img_fantome,(int((taille_case-1)/2),int((taille_case-1)/2)))
     
     
@@ -109,7 +110,7 @@ def afficher(plat,plateau,fenetre,joueur):
                 plateau.blit(pepite,(x,y))
             if case.elements['fantome'] != []:
                 plateau.blit(fantome,(x+taille_case/5,y+taille_case/5))
-                ecrire(case.elements['fantome'],plateau,(x+taille_case/5,y+taille_case/5),RED,20)
+                ecrire(case.elements['fantome'],plateau,(x+taille_case/5,y+taille_case/5),WHITE,20)
             
             if case.elements['joueur']!=[]:
                 for j in case.elements['joueur']:
@@ -240,7 +241,7 @@ def ecran(plat):
     fenetre = pygame.display.set_mode((1000,600))
     fond = pygame.image.load(os.path.join('img_cartes',"Iceberg.jpg")).convert()    
     fenetre.fill((255,255,255)) #remplissage fond blanc
-    fenetre.blit(fond,(540,0))
+    fenetre.blit(fond,(0,0))
   
     nombre_case_cote=plat.taille
     taille_case = 350/nombre_case_cote
@@ -259,14 +260,13 @@ def ecran(plat):
     fenetre.blit(plateau,(100,100))
     
     #Boutons menus
-    bouton_pause=Button(fenetre, " Pause ", GREY, pygame.font.SysFont('freesans', 18), -350, 550) #création boutton
-    bouton_pause.display_button(fenetre) #affichage
+    
     
     bouton_save=Button(fenetre, 
                        " Sauvegarder ",
                        GREY,
                        pygame.font.SysFont('freesans', 18), 
-                       -250, 
+                       -300, 
                        550)
     bouton_save.display_button(fenetre)
     
@@ -317,7 +317,6 @@ def ecran(plat):
     while continuer:  
     	for event in pygame.event.get():	#Attente des événements
             if event.type == pygame.MOUSEBUTTONDOWN:
-                bouton_pause.update_button(fenetre, action=pause)
                 bouton_save.update_button(fenetre, action=save)
                 bouton_quit.update_button(fenetre, action=gamequit)
                 bouton_suiv.update_button(fenetre, action=nextplayer,arg=[plat,current_player])
@@ -330,7 +329,8 @@ def ecran(plat):
                                                  action=chgmt_orientation,
                                                  arg={'carte':plat.carte_en_dehors,'sens':'droit'})
                 boutonJoker.update_button(fenetre,
-                                          action=IA)
+                                          action=Joker,
+                                          arg=[plat,current_player])
                 
             elif event.type==KEYDOWN: #evenement clavier
                 
@@ -342,8 +342,7 @@ def ecran(plat):
     	#Rafraichissement
     	pygame.display.flip()
     
-def pause():
-    print("pause")
+
 
 def save():
     print("save")
@@ -394,8 +393,7 @@ def move_player(plat,joueur,move,plateau,fenetre):
         fenetre.blit(plateau,(100,100))
         fenetreScore(joueur,plat)
     
-def IA():
-    print("help needed")
+
     
 def nextplayer(arg):
     global current_player
@@ -418,7 +416,16 @@ def nextplayer(arg):
         nextplayer([plat,current_player])
         
     return current_player
-    
+
+def Joker(arg):
+    print("help needed")
+    plat=arg[0]
+    current_player=arg[1]
+    if current_player.joker_used==False:
+        current_player.greedy(plat)
+        nextplayer([plat,current_player])
+        current_player.joker_used=True    
+        
 def fenetreScore(joueur,plat):
     '''joueur : objet de la classe joueur
     plat : objet plateau'''
@@ -429,15 +436,15 @@ def fenetreScore(joueur,plat):
     img_croix=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"croix.png"))).convert_alpha()
     croix=pygame.transform.scale(img_croix,(25,25))
     
-    scoreframe=pygame.Surface((400,400),pygame.SRCALPHA)
+    scoreframe=pygame.Surface((400,400))
     
-    #scoreframe.fill(CIEL)
+    scoreframe.fill(WHITE)
     
-    fenetre.fill(WHITE , (550,20,250,40))
+    fenetre.fill(WHITE , (530,20,250,40))
     ecrire("Au tour de: "+str(joueur.identifiant),
                        fenetre,
                        (550,30),
-                       (0,0,0),
+                       BLEU,
                        30)
     
     
@@ -467,7 +474,7 @@ def fenetreScore(joueur,plat):
         ecrire(list(joueur.ordre_de_mission.keys())[i],
                ordreMission,
                (20+i*(50+taille_espace),80),
-               RED,
+               CIEL,
                20)
         
     scoreframe.blit(ordreMission,(10,100))
@@ -505,7 +512,7 @@ def fenetreScore(joueur,plat):
                 ecrire(list(adv.ordre_de_mission.keys())[j],
                        frameJoueur,
                        (50+j*(50+taille_espace),0),
-                       RED,
+                       CIEL,
                        20)
                 
             scoreAdverse.blit(frameJoueur,(10,30+i*50)) 
