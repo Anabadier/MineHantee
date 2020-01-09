@@ -446,7 +446,7 @@ class Joueur_IA(Joueur):
        
     
     def greedy(self, plateau):
-        best_coup = [0,0,"",[]]
+        best_coup = [-1,0,"",[]]
         for i in range (1,5):
             self.rotation_carte(plateau,i)
             for j in plateau.liste_row_col:
@@ -461,9 +461,12 @@ class Joueur_IA(Joueur):
                     gain = self.heuristique(t,plateau)
                     if gain > best_coup[0]:
                         best_coup = [gain,i,j,t]
-        print(best_coup[3])
-        self.effectuer_chemin(plateau, best_coup[3])
-        return best_coup
+                self.modifier_plateau(plateau, fleche, True)
+            self.rotation_carte(plateau, i, True)
+        print(best_coup)
+        self.coup_cible(plateau, best_coup[1:])
+        #self.effectuer_chemin(plateau, best_coup[3])
+        return best_coup[1:]
     
     def coup_alea(self, _plateau):
         """
@@ -743,11 +746,11 @@ class UCT_2(object):
             while (not _plateau.check_gagnant() and nb_coup_rollout < _nb_coup_max):
                 j_playing = _plateau.dict_ID2J[j_playing.joueur_suivant]
                 #print(j_playing.identifiant, "is playing")
-                coup_alea = j_playing.coup_alea(_plateau)
-                #coup_greedy = j_playing.greedy(_plateau)
+                #coup_alea = j_playing.coup_alea(_plateau)
+                coup_greedy = j_playing.greedy(_plateau)
                 #print(coup_alea)
-                rollout_action_list += [[j_playing]+coup_alea]
-                #rollout_action_list += [[j_playing]+coup_greedy]
+                #rollout_action_list += [[j_playing]+coup_alea]
+                rollout_action_list += [[j_playing]+coup_greedy]
                 #print([j_playing.identifiant]+coup_alea)
                 #j_playing.coup_cible(_plateau, coup_alea)
                 
@@ -755,8 +758,10 @@ class UCT_2(object):
                 
                 nb_coup_rollout+=1
             
-            pts5 = j_playing.nb_points
-            pts6 = _plateau.dict_ID2J[j_playing.joueur_suivant].nb_points
+# =============================================================================
+#             pts5 = j_playing.nb_points
+#             pts6 = _plateau.dict_ID2J[j_playing.joueur_suivant].nb_points
+# =============================================================================
 # =============================================================================
 #             print(j_playing.identifiant, pts5, end = " ")
 #             print(j_playing.joueur_suivant, pts6)
