@@ -8,16 +8,31 @@ Created on Fri Nov 22 10:04:21 2019
 import socket, sys, threading, time
 
 class Server(object):
-    def __init__(self, _PORT, _HOST):
+    def __init__(self, _PORT, _HOST, _nb_joueurs_tot = 2, _nb_IA = 0):
         #self.launcher = _ref_launcher
         self.PORT = int(_PORT)
         self.HOST = _HOST
-        self.nb_joueur = 1 #self.launcher.Scale_NbJoueur.get()
+        
+        self.serveur_DimPlateau = 0
+        self.serveur_NbJoueur = int(_nb_joueurs_tot)
+        self.serveur_NbJoueur_IA = int(_nb_IA)
+        self.serveur_NbFantome = 0
+        self.serveur_NbFantomeOdM = 0
+        self.serveur_NbPepite = 0
+        self.serveur_PtsPepite = 0
+        self.serveur_PtsFantome = 0
+        self.serveur_PtsFantomeOdM = 0
+# =============================================================================
+#         self.nb_joueur_H = int(_nb_joueurs_tot) - int(_nb_IA)
+#         self.nb_IA
+# =============================================================================
         
         self.dict_clients = {}  # dictionnaire des connexions clients
         self.dict_pseudos = {}  # dictionnaire des pseudos
         #dict_reponses = {}  # dictionnaire des réponses des clients
         self.dict_scores = {} # dictionnaire des scores de la dernière question
+        
+        self.connexion_counter = 0
         
         self.connexion_manager()
     
@@ -35,20 +50,22 @@ class Server(object):
         print("Serveur prêt, en attente de clients...")
         mySocket.listen(5)
         
-        while len(self.dict_clients) < self.nb_joueur:
+        while self.connexion_counter < self.serveur_NbJoueur:
             # Attente connexion nouveau client
             try:
                 connexion, adresse = mySocket.accept()
-                print(connexion)
+                print("Someone is trying to connect with,", connexion)
                 # Créer un nouvel objet thread pour gérer la connexion
+                self.connexion_counter+=1
                 th = ThreadClient(connexion, self)
                 # The entire Python program exits when no alive non-daemon threads are left
                 th.setDaemon(1)
                 th.start()
             except:
                 sys.exit()
-            
         
+        print("Le quota de joueurs est atteints {0}/{1}".format(self.connexion_counter,
+                                                                  self.serveur_NbJoueur))
 
 class ThreadClient(threading.Thread):
     '''dérivation de classe pour gérer la connexion avec un client'''
@@ -66,41 +83,87 @@ class ThreadClient(threading.Thread):
         self.serveur.dict_scores[self.nom] = 0
         
         print("Connexion du client", self.connexion.getpeername(),self.nom, self.connexion)
+    
+    def receiver_manager(self, _message):
+        if _message[:6] == "PARA_S":
+            if (self.serveur.connexion_counter == 1):
+                self.set_board_parameter_in_server(_message)
         
+        if _message == "SET PARA CLIENT":
+            self.set_board_parameter_in_client()
         
-    def run(self):
+    
+    def set_board_parameter_in_server(self, _message):
+        _message_split = _message.split()
+        self.serveur.serveur_DimPlateau = int(_message_split[1])
+        self.serveur.serveur_NbFantome = int(_message_split[2])
+        self.serveur.serveur_NbFantomeOdM = int(_message_split[3])
+        self.serveur.serveur_NbPepite = int(_message_split[4])
+        self.serveur.serveur_PtsPepite = int(_message_split[5])
+        self.serveur.serveur_PtsFantome = int(_message_split[6])
+        self.serveur.serveur_PtsFantomeOdM = int(_message_split[7])
         
-        # Choix du pseudo    
-        message = bytes("Attente des autres clients...\n", "utf-8")
-        self.connexion.send(message)
+        print(106, self.serveur.serveur_DimPlateau,
+        self.serveur.serveur_NbFantome,
+        self.serveur.serveur_NbFantomeOdM,
+        self.serveur.serveur_NbPepite,
+        self.serveur.serveur_PtsPepite,
+        self.serveur.serveur_PtsFantome,
+        self.serveur.serveur_PtsFantomeOdM)
         
-        # Choix du pseudo    
+    def set_board_parameter_in_client(self):
+        parametres = "PARA_CL {0} {1} {2} {3} {4} {5} {6} {7} {8}".format(
+                                              self.serveur.serveur_DimPlateau,
+                                              self.serveur.serveur_NbJoueur,
+                                              self.serveur.serveur_NbJoueur_IA,
+                                              self.serveur.serveur_NbFantome,
+                                              self.serveur.serveur_NbFantomeOdM,
+                                              self.serveur.serveur_NbPepite,
+                                              self.serveur.serveur_PtsPepite,
+                                              self.serveur.serveur_PtsFantome,
+                                              self.serveur.serveur_PtsFantomeOdM)
+        parametres = bytes(parametres,"UTF8")
+        self.serveur.dict_clients[self.nom].send(parametres)
         
-        self.connexion.send(b"Entrer un pseudo :\n")
+    
+    def manage_connexion_client(self):
         # attente réponse client
         pseudo = self.connexion.recv(4096)
         pseudo = pseudo.decode(encoding='UTF-8')
-        
         self.serveur.dict_pseudos[self.nom] = pseudo
+        print("Pseudo du client", self.connexion.getpeername(),"-->", pseudo)
+    
+    def get_creator_status(self):
+        try :
+            message = "RANK {0}".format(self.serveur.connexion_counter)
+            status = bytes(message,"UTF8")
+            self.serveur.dict_clients[self.nom].send(status)
+            print("Le serveur a envoyé", message, "a", self.serveur.dict_clients[self.nom])
+        except:
+            print("creator_status n'a pas pu être envoyé au joueur")
         
-        print("Pseudo du client", self.connexion.getpeername(),">", pseudo)
+    def run(self):
+          
+        if (self.serveur.connexion_counter < self.serveur.serveur_NbJoueur):
+            self.manage_connexion_client()
         
-        message = b"Attente des autres clients...\n"
-        self.connexion.send(message)
-        # Réponse aux questions
-       
+        self.get_creator_status()
+        
         while True:
             try:
                 # attente action du client
                 reponse = self.connexion.recv(4096)
                 reponse = reponse.decode(encoding='UTF-8')
+                print('the server recieved:', reponse)
                 
                 if (reponse != ""):
-                    print('the server recieved:', reponse)
+                    self.receiver_manager(reponse)
+                    
                 
             except:
+                print(reponse)
                 # fin du thread
-                break
+                #break
 
         print("\nFin du thread",self.nom)
         self.connexion.close()
@@ -108,12 +171,16 @@ class ThreadClient(threading.Thread):
 if __name__=="__main__":    
     #valeurs de port et de l'adresse pour fonctionner seul
 # =============================================================================
-#     PORT = 50278
+#     PORT = 50026
 #     HOST = "127.0.0.1"
+#     Server(PORT, HOST,2,0)
 # =============================================================================
     c = 0
     while True:
         if c == 0:
             PORT = sys.argv[1]
             HOST = sys.argv[2]
-            Server(PORT, HOST)
+            nb_J = sys.argv[3]
+            nb_IA = sys.argv[4]
+            Server(PORT, HOST, nb_J, nb_IA)
+            c+=1
