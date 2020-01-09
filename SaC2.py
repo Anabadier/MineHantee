@@ -52,20 +52,24 @@ class SandC2(object):
             working_plateau.pts_pepite = pts_pepite
             working_plateau.pts_fantome = pts_fantome
             working_plateau.pts_ordre_mission = pts_ordre_mission
+            dict_connectivité={'coin':['0110','1010','1001','0101'],
+                                       'couloir':['1100','0011'],
+                                       'carrefour':['1110','1011','1101','0111']}
             for i in range(working_plateau.taille):
                 for j in range(working_plateau.taille):
                     working_plateau.labyrinthe_detail[i][j]=carte('couloir')
-                    
                     working_plateau.labyrinthe_detail[i][j].position_D = (i,j)
                     working_plateau.labyrinthe_detail[i][j].type = sauv[compteur][1]
+                    working_plateau.labyrinthe_detail[i][j].connectivite = dict_connectivité[sauv[compteur][1]]
                     working_plateau.labyrinthe_detail[i][j].nom = sauv[compteur][1]
                     working_plateau.labyrinthe_detail[i][j].orientation= int(sauv[compteur][2])
                     working_plateau.labyrinthe_detail[i][j].position_G = int(sauv[compteur][3])
+                    working_plateau.labyrinthe_detail[i][j].nom = working_plateau.labyrinthe_detail[i][j].connectivite[int(sauv[compteur][2])]
                     working_dico={}
                     if sauv[compteur][4] == '[]':
                         working_dico['fantome']=[]
                     else:
-                        working_dico['fantome'] = int(sauv[compteur][3])
+                        working_dico['fantome'] = int(sauv[compteur][4])
                     if sauv[compteur][5] == 'False':
                         working_dico['pepite']=False
                     else:
@@ -77,16 +81,9 @@ class SandC2(object):
                             val = sauv[compteur][6][2:-2].split(",")
                         except:
                             val = [sauv[compteur][6][2:-2]]
-                        print("===========================", val)
                         working_dico['joueur']=[i for i in val]
-                        print("done",working_dico)
                     working_plateau.labyrinthe_detail[i][j].elements = working_dico
                     compteur+=1
-            #print(sauv[compteur])
-            plateau=working_plateau
-            for i in range(plateau.taille):
-                for j in range(plateau.taille):
-                    print("testultime",plateau.labyrinthe_detail[i][j].type)
             
             """ On génère les connexions """
             
@@ -96,11 +93,13 @@ class SandC2(object):
                     
             
             plateau.carte_en_dehors.type = sauv[compteur][1]
-            plateau.carte_en_dehors.orientation = sauv[compteur][2]
+            plateau.carte_en_dehors.orientation = int(sauv[compteur][2])
             compteur+=1
             Liste_joueur = []
             while sauv[compteur][0]=="Joueur":
                 A = Joueur(sauv[compteur][1])
+                plateau.dict_ID2J[A.identifiant]=A
+                A.ref_plateau = plateau
                 A.nb_points = int(sauv[compteur][2])
                 A.position_graphe = int(sauv[compteur][3])
                 A.position_detail = (int(sauv[compteur][4]),int(sauv[compteur][5]))
@@ -122,6 +121,8 @@ class SandC2(object):
             Liste_joueur = []
             while sauv[compteur][0]=="Joueur_IA":
                 A = Joueur_IA(sauv[compteur][1],sauv[compteur][6])
+                plateau.dict_ID2J[A.identifiant]=A
+                A.ref_plateau = plateau
                 A.nb_points = int(sauv[compteur][2])
                 A.position_graphe = int(sauv[compteur][3])
                 A.position_detail = (int(sauv[compteur][4]),int(sauv[compteur][5]))
@@ -141,6 +142,9 @@ class SandC2(object):
                 compteur+=1
             plateau.Liste_Joueur_IA = Liste_joueur
             plateau.Liste_Joueur = plateau.Liste_Joueur_H + plateau.Liste_Joueur_IA
+            
+            for _j in plateau.Liste_Joueur:
+                _j.determiner_joueur_voisins_ordre()
         #print(plateau.Liste_Joueur[0])
             plateau.maj_classement
             current = sauv[compteur][1]
@@ -149,11 +153,10 @@ class SandC2(object):
                 #print(i.identifiant)
                 if i.identifiant == current:
                     current_player = i
- #          
-                
-           
-        print("in charge_game_file")
-        vpyg.ecran(plateau)
+                    
+            plateau.generate_liste_row_col()
+            print("in charge_game_file")
+            vpyg.ecran(plateau)
         #return((plateau,current_player))
      
     def save_game_file(self, plateau, current_player):

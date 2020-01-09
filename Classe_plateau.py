@@ -414,7 +414,6 @@ class Plateau(object) :
     def chemin_possible(self,id_joueur):
         for i in self.labyrinthe_detail: #recherche de la position du joueur
             for j in i:
-                print(j.elements)
                 if id_joueur in j.elements["joueur"]:
                     pos_joueur = j.position_D
         compteur=0
