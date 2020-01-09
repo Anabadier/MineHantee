@@ -417,7 +417,7 @@ def nextplayer(arg):
         
     fenetreScore(current_player,plat)
     
-    while current_player in plat.Liste_Joueur_IA and plat.check_gagnant==False: #si le joueur est une IA 
+    while current_player in plat.Liste_Joueur_IA and plat.check_gagnant: #si le joueur est une IA 
         current_player.jouer()
         nextplayer([plat,current_player])
         
@@ -427,7 +427,7 @@ def Joker(arg):
     print("help needed")
     plat=arg[0]
     current_player=arg[1]
-    if current_player.joker_used==False:
+    if current_player.joker_used==False and current_player.deplacement_effectué==False :
         current_player.greedy(plat)
         nextplayer([plat,current_player])
         current_player.joker_used=True
