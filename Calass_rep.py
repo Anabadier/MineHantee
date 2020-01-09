@@ -49,6 +49,10 @@ class Joueur(object):
             self.position_graphe = "Non placé"
             self.position_detail = ("xcarte" , "ycarte")
             self.pepite=0
+            self.deplacement_effectué=False
+            self.carte_visit=[]
+            
+            
     
     def determiner_joueur_voisins_ordre(self):
         index = self.ref_plateau.Liste_Joueur.index(self)
@@ -164,6 +168,8 @@ class Joueur(object):
     def maj_position(self, _carte):
          self.position_graphe = _carte.position_G
          self.position_detail = _carte.position_D
+         self.carte_visit.append(self.position_detail)
+         
    
     def oriente_carte_libre(self, carte_libre, sens):
         test = ["horaire","anti-horaire"]
@@ -282,7 +288,6 @@ class Joueur_IA(Joueur):
         self.niv = _niv
         
         self.UCT_solver = None
-        
         self.liste_paths = [] #liste des chemins accessibles au joueur. Utile après rot card et coullissage
     
     def generate_list_paths(self, _plateau):
