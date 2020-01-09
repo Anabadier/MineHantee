@@ -6,7 +6,7 @@ Created on Wed Jan  8 14:21:37 2020
 """
 
 from Classe_plateau import Plateau
-from Calass_rep import Joueur
+from Calass_rep import Joueur,Joueur_IA
 from classe_carte import carte
 import os
 from tkinter import filedialog as tkfd
@@ -102,20 +102,46 @@ class SandC2(object):
                     key= key +2
                 Liste_joueur.append(A)
                 compteur+=1
-            plateau.Liste_Joueur = Liste_joueur
+            plateau.Liste_Joueur_H = Liste_joueur
+            Liste_joueur = []
+            while sauv[compteur][0]=="Joueur_IA":
+                A = Joueur_IA(sauv[compteur][1],sauv[compteur][6])
+                A.nb_points = int(sauv[compteur][2])
+                A.position_graphe = int(sauv[compteur][3])
+                A.position_detail = (int(sauv[compteur][4]),int(sauv[compteur][5]))
+                key = 7
+                print(nb_ordre_mission)
+                A.ordre_de_mission={}
+                while key < 6 + (nb_ordre_mission)*2:
+                    print(sauv[compteur][key])
+                    print(sauv[compteur][key+1])
+                    if sauv[compteur][key+1]=='False':
+                        A.ordre_de_mission[int(sauv[compteur][key])]=False
+                    else:
+                        A.ordre_de_mission[int(sauv[compteur][key])]=True
+                    print(A.ordre_de_mission)
+                    key= key +2
+                Liste_joueur.append(A)
+                compteur+=1
+            plateau.Liste_Joueur_IA = Liste_joueur
+            plateau.Liste_Joueur = plateau.Liste_Joueur_H + plateau.Liste_Joueur_IA
             print(plateau.Liste_Joueur[0])
             plateau.maj_classement
-            
- #joueur
-                    
+            current = sauv[compteur][1]
+            print(current)
+            for i in plateau.Liste_Joueur:
+                print(i.identifiant)
+                if i.identifiant == current:
+                    current_player = i
+ #          
                 
            
         print("in charge_game_file")
-        return(plateau)
+        return((plateau,current_player))
     
     
      
-    def save_game_file(self,plateau):
+    def save_game_file(self,plateau,current_player):
         """ Permet de sauvegarder les fichiers sous forme de texte dans un fichier csv crée, permet d'accéder
         aux informations """
        
@@ -141,14 +167,21 @@ class SandC2(object):
                 file.write("Carte_en_dehors,"
                                +str(plateau.carte_en_dehors.type)+","
                                +str(plateau.carte_en_dehors.orientation)+","+"\n")
-                for i in plateau.Liste_Joueur:
+                for i in plateau.Liste_Joueur_H:
                     file.write("Joueur,"+str(i.identifiant)+","+str(i.nb_points)+","+str(i.position_graphe)+","+str(i.position_detail[0])+","+str(i.position_detail[1])+",")
                     for key,value in i.ordre_de_mission.items():
                         file.write(str(key)+","+str(value)+",")
                     file.write("\n")
-
-                
-                
+                    if i.identifiant == current_player.identifiant:
+                        current = str(current_player.identifiant)
+                for i in plateau.Liste_Joueur_IA:
+                    file.write("Joueur_IA,"+str(i.identifiant)+","+str(i.nb_points)+","+str(i.position_graphe)+","+str(i.position_detail[0])+","+str(i.position_detail[1])+","+str(i.niv)+",")
+                    for key,value in i.ordre_de_mission.items():
+                        file.write(str(key)+","+str(value)+",")
+                    file.write("\n")
+                    if i.identifiant == current_player.identifiant:
+                        current = str(current_player.identifiant)
+                file.write("current,"+current +","+"\n")
                 file.write("fin"+"\n")          
                 file.close()
                 print("Le fichier a bien été sauvegardé")
