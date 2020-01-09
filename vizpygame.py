@@ -220,7 +220,7 @@ def ecrire(texte,frame,pos,fontcolor=pygame.Color("#000000"),fontsize=36):
 		
 #Création de la fenêtre
 def ecran(plat):
-    global fenetre,plateau,cote_fenetre,nombre_case,taille_case
+    global fenetre,plateau,cote_fenetre,nombre_case,taille_case,current_player
     
     fenetre = pygame.display.set_mode((1000,600))
     fenetre.fill((255,255,255)) #remplissage fond blanc
@@ -231,8 +231,8 @@ def ecran(plat):
     
     plateau=pygame.Surface((cote_fenetre,cote_fenetre))
     
-    current_player=plat.Liste_Joueur[-1]
-    current_player=nextplayer([plat,current_player])
+    current_player=plat.Liste_Joueur[0]
+    #current_player=nextplayer([plat,current_player])
     
     #si on veut importer une image de fond
     #fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()     
@@ -341,6 +341,7 @@ def deplacement(i):
     fleche=i[0]
     plat=i[1]
     current_player=i[2]
+    print(current_player)
     coord_x, coord_y = plat.convertir_Fleche2Coord(fleche)
     #print(coord_x,coord_y)
     #régénérer plat
@@ -381,7 +382,10 @@ def nextplayer(arg):
     current_player=arg[1]
     current_player=plat.dict_ID2J[current_player.joueur_suivant]
     
+    plateau=pygame.Surface((cote_fenetre,cote_fenetre)) #vider le plateau
+    plateau.fill((250,250,250)) #fond blanc
     afficher(plat,plateau,fenetre,current_player)
+    fenetre.blit(plateau,(100,100))
     fenetreScore(current_player,plat)
     return current_player
     
