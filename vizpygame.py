@@ -307,7 +307,7 @@ def ecran(plat):
     #Fenetre Score
     fenetreScore(current_player,plat)
     
-    while current_player in plat.Liste_Joueur_IA and plat.check_gagnant: #si le joueur est une IA 
+    while current_player in plat.Liste_Joueur_IA and plat.check_gagnant()==False: #si le joueur est une IA 
         current_player.jouer()
         nextplayer([plat,current_player])
         
@@ -417,7 +417,7 @@ def nextplayer(arg):
         
     fenetreScore(current_player,plat)
     
-    while current_player in plat.Liste_Joueur_IA and plat.check_gagnant: #si le joueur est une IA 
+    while current_player in plat.Liste_Joueur_IA and plat.check_gagnant()==False: #si le joueur est une IA 
         current_player.jouer()
         nextplayer([plat,current_player])
         
@@ -464,7 +464,7 @@ def fenetreScore(joueur,plat):
     perso=pygame.transform.scale(img_perso,(25,25))
     scoreframe.blit(perso,(50,50))
     ecrire('Score : '+str(valscore),scoreframe,(100,50),BLEU,fontname="chiller")
-    scoreframe.blit(pepite,(300,60))
+    scoreframe.blit(pepite,(350,60))
     ecrire(pepitescore,scoreframe,(280,60))
     
     ordreMission=pygame.Surface((380,100),pygame.SRCALPHA)
@@ -482,6 +482,7 @@ def fenetreScore(joueur,plat):
 
     for i in range (nombre_fantomes):
         ordreMission.blit(fantome,(10+i*(50+taille_espace),50))
+        print(joueur.ordre_de_mission[list(joueur.ordre_de_mission.keys())[i]])
         if joueur.ordre_de_mission[list(joueur.ordre_de_mission.keys())[i]]==False:
             ordreMission.blit(croix,(10+i*(50+taille_espace),50))
         ecrire(list(joueur.ordre_de_mission.keys())[i],
@@ -522,7 +523,8 @@ def fenetreScore(joueur,plat):
             nombre_fantomes=len(adv.ordre_de_mission)
             taille_espace=(300-50*nombre_fantomes)/(nombre_fantomes-1)
             for j in range (nombre_fantomes):
-                frameJoueur.blit(fantome,(50+j*(50+taille_espace),0))      
+                frameJoueur.blit(fantome,(50+j*(50+taille_espace),0))  
+                print(adv.ordre_de_mission[list(adv.ordre_de_mission.keys())[j]])
                 if adv.ordre_de_mission[list(adv.ordre_de_mission.keys())[j]]==False:
                     frameJoueur.blit(croix,(50+j*(50+taille_espace),0))
             
@@ -546,17 +548,25 @@ def fenetreScore(joueur,plat):
                        25,
                        fontname="chiller") 
     
-    if plat.check_gagnant==True:
-        newfenetre = pygame.display.set_mode((1000,600))
-        fond = pygame.image.load(os.path.join('img_cartes',"Iceberg.jpg")).convert()    
-        newfenetre.blit(fond,(0,0))
+    print("==========================",plat.check_gagnant())
+    if plat.check_gagnant()==True:
+        winner(plat)
         
-        winframe=pygame.Surface((700,400))
-        winframe.fill(WHITE)
-        newfenetre.blit(winframe,(170,100))
-        bouton_quit=Button(fenetre, " Quitter ",BLEU,pygame.font.SysFont('chiller', 30), -150, 550,fontcol=WHITE)
-        bouton_quit.display_button(fenetre)
         
+def winner(plat):
+    newfenetre = pygame.display.set_mode((1000,600))
+    fond = pygame.image.load(os.path.join('img_cartes',"Iceberg.jpg")).convert()    
+    newfenetre.blit(fond,(0,0))
+    
+    winframe=pygame.Surface((700,400))
+    winframe.fill(WHITE)
+    
+    print(plat.Liste_Classement)
+    gagnant=plat.Liste_Classement[0][1].identifiant
+    ecrire(gagnant+" a gagné !",winframe,(150,150),BLEU,50,'chiller')
+    bouton_quit=Button(fenetre, " Quitter ",BLEU,pygame.font.SysFont('chiller', 30), -150, 550,fontcol=WHITE)
+    bouton_quit.display_button(fenetre)
+    newfenetre.blit(winframe,(170,100))
     
 if __name__=="__main__":
     ecran(Jeu_mine.JEU())
