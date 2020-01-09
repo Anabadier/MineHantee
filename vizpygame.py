@@ -23,6 +23,9 @@ dic_case_img={'0110':'NXXO_3.png','1010':'XSXO_3.png','1001':'XSEX_3.png','0101'
               '1100':'XXEO_3.png','0011':'NSXX_3.png',\
               '1110':'XXXO_3.png','1011':'XSXX_3.png','1101':'XXEX_3.png','0111':'NXXX_3.png'}
 
+img_pinguin=['pinguin.png','pinguin_1.png','pinguin_2.png','pinguin_3.png']
+    
+
 
 BLACK = 0, 0, 0
 WHITE = 255, 255, 255
@@ -66,9 +69,7 @@ def afficher(plat,plateau,fenetre,id_joueur):
     img_fantome=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"fantome.png"))).convert_alpha()
     fantome=pygame.transform.scale(img_fantome,(int((taille_case-1)/2),int((taille_case-1)/2)))
     
-    img_perso=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"pinguin.png"))).convert_alpha()
-    perso=pygame.transform.scale(img_perso,(int((taille_case-1)/1.5),int((taille_case-1)/1.5)))
-
+    
     chemins=plat.chemin_possible(id_joueur.identifiant).values()
     path=[]
     for coord in chemins:
@@ -109,8 +110,11 @@ def afficher(plat,plateau,fenetre,id_joueur):
                 plateau.blit(fantome,(x+taille_case/5,y+taille_case/5))
                 ecrire(case.elements['fantome'],plateau,(x+taille_case/5,y+taille_case/5),RED,20)
             
-            if case.elements['joueur']!=[]:                
-                plateau.blit(perso,(x+taille_case/6,y+taille_case/6))
+            if case.elements['joueur']!=[]:
+                for j in case.elements['joueur']:
+                    img_perso=pygame.image.load(os.path.abspath(os.path.join('img_cartes',dict_pinguin_img[j]))).convert_alpha()
+                    perso=pygame.transform.scale(img_perso,(int((taille_case-1)/1.5),int((taille_case-1)/1.5)))
+                    plateau.blit(perso,(x+taille_case/6,y+taille_case/6))
             
             
             #Si paire : peut coulisser : insérer bouton de chaque côté
@@ -220,7 +224,15 @@ def ecrire(texte,frame,pos,fontcolor=pygame.Color("#000000"),fontsize=36):
 		
 #Création de la fenêtre
 def ecran(plat):
-    global fenetre,plateau,cote_fenetre,nombre_case,taille_case
+    global fenetre,plateau,cote_fenetre,nombre_case,taille_case,current_player,dict_pinguin_img
+    
+    
+    dict_pinguin_img={}
+    c=0
+    for j in plat.Liste_Joueur:
+        dict_pinguin_img[j.identifiant]=img_pinguin[c]
+        c+=1
+    print(dict_pinguin_img)
     
     fenetre = pygame.display.set_mode((1000,600))
     fenetre.fill((255,255,255)) #remplissage fond blanc
@@ -231,8 +243,8 @@ def ecran(plat):
     
     plateau=pygame.Surface((cote_fenetre,cote_fenetre))
     
-    current_player=plat.Liste_Joueur[-1]
-    current_player=nextplayer([plat,current_player])
+    current_player=plat.Liste_Joueur[0]
+    #current_player=nextplayer([plat,current_player])
     
     #si on veut importer une image de fond
     #fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()     
@@ -341,6 +353,7 @@ def deplacement(i):
     fleche=i[0]
     plat=i[1]
     current_player=i[2]
+    print(current_player)
     coord_x, coord_y = plat.convertir_Fleche2Coord(fleche)
     #print(coord_x,coord_y)
     #régénérer plat
@@ -381,7 +394,10 @@ def nextplayer(arg):
     current_player=arg[1]
     current_player=plat.dict_ID2J[current_player.joueur_suivant]
     
+    plateau=pygame.Surface((cote_fenetre,cote_fenetre)) #vider le plateau
+    plateau.fill((250,250,250)) #fond blanc
     afficher(plat,plateau,fenetre,current_player)
+    fenetre.blit(plateau,(100,100))
     fenetreScore(current_player,plat)
     return current_player
     
@@ -454,10 +470,7 @@ def fenetreScore(joueur,plat):
             frameJoueur.fill(WHITE)
             adv=Ladverse[i]
             frameJoueur.blit(perso,(0,0))
-            for f in adv.ordre_de_mission:
-                if adv.ordre_de_mission[f]==False : #si fantôme capturé
-                     pass   
-            ecrire(Ladverse[i].nb_points,
+            ecrire(adv.nb_points,
                    frameJoueur,
                    (30,5),
                    fontsize=25)
@@ -465,7 +478,11 @@ def fenetreScore(joueur,plat):
             nombre_fantomes=len(adv.ordre_de_mission)
             taille_espace=(300-50*nombre_fantomes)/(nombre_fantomes-1)
             for j in range (nombre_fantomes):
-                frameJoueur.blit(fantome,(50+j*(50+taille_espace),0))
+                frameJoueur.blit(fantome,(50+j*(50+taille_espace),0))      
+                print(adv.ordre_de_mission[list(adv.ordre_de_mission.keys())[j]])
+                if adv.ordre_de_mission[list(adv.ordre_de_mission.keys())[j]]==False:
+                    frameJoueur.blit(croix,(50+j*(50+taille_espace),0))
+            
                 ecrire(list(adv.ordre_de_mission.keys())[j],
                        frameJoueur,
                        (50+j*(50+taille_espace),0),
