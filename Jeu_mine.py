@@ -131,7 +131,6 @@ def JEU(dimension = 7,
         new_joueur.ref_plateau = plateau
         if (new_joueur.niv == "Difficile"):
             new_joueur.UCT_solver = UCT_2()
-        #new_joueur.generate_liste_row_col()
         plateau.Liste_Joueur_IA.append(new_joueur)
     
     for i in range(nombre_joueur-nombre_joueur_IA):#génération des joueurs
