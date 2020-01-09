@@ -54,7 +54,7 @@ def genere_carte(carte,size):
     
 def afficher(plat,plateau,fenetre,joueur):
     """afficher les cartes sur le plateau"""
-    global img_pepite,img_fantome,img_perso
+    global img_pepite,img_fantome
 
     print('actualisation plateau')
     
@@ -155,14 +155,14 @@ class Button:
     Source : https://wiki.labomedia.org/index.php/Pygame:_des_exemples_pour_d%C3%A9buter.html#Des_rectangles_comme_boutons
     '''
 
-    def __init__(self, fond, text, color, font, dx, dy):
+    def __init__(self, fond, text, color, font, dx, dy,fontcol=BLACK):
         self.fond = fond
         self.text = text
         self.color = color
         self.font = font
         self.dec = dx, dy
         self.state = False  # enable or not
-        self.title = self.font.render(self.text, True, BLACK)
+        self.title = self.font.render(self.text, True, fontcol )
         textpos = self.title.get_rect()
         textpos.centerx = self.fond.get_rect().centerx + self.dec[0]
         textpos.centery = self.dec[1]
@@ -213,11 +213,11 @@ class Button_img:
         self.fond.blit(self.img, self.textpos)
         
         
-def ecrire(texte,frame,pos,fontcolor=pygame.Color("#000000"),fontsize=36):
+def ecrire(texte,frame,pos,fontcolor=pygame.Color("#000000"),fontsize=36,fontname=None):
     """texte : str
     frame : surface
     pos : (tuple)"""
-    police = pygame.font.Font(None,fontsize)
+    police = pygame.font.SysFont(fontname,fontsize)
     texte = police.render(str(texte),True,fontcolor)
     rectTexte = texte.get_rect() #surface rectangle autour du texte
     rectTexte.topleft=pos #ancrage du texte
@@ -264,16 +264,17 @@ def ecran(plat):
     
     bouton_save=Button(fenetre, 
                        " Sauvegarder ",
-                       GREY,
-                       pygame.font.SysFont('freesans', 18), 
+                       BLEU,
+                       pygame.font.SysFont('chiller', 24), 
                        -300, 
-                       550)
+                       550,
+                       fontcol=WHITE)
     bouton_save.display_button(fenetre)
     
-    bouton_quit=Button(fenetre, " Quitter ",GREY,pygame.font.SysFont('freesans', 18), -150, 550)
+    bouton_quit=Button(fenetre, " Quitter ",BLEU,pygame.font.SysFont('chiller', 24), -150, 550,fontcol=WHITE)
     bouton_quit.display_button(fenetre)
     
-    bouton_suiv=Button(fenetre, " Suivant ",GREY,pygame.font.SysFont('freesans', 18), 350,40)
+    bouton_suiv=Button(fenetre, " Suivant ",BLEU,pygame.font.SysFont('chiller', 24), 350,40,fontcol=WHITE)
     bouton_suiv.display_button(fenetre)
     
     
@@ -413,9 +414,10 @@ def nextplayer(arg):
     plateau.fill((250,250,250)) #fond blanc
     afficher(plat,plateau,fenetre,current_player)
     fenetre.blit(plateau,(100,100))
+        
     fenetreScore(current_player,plat)
     
-    while current_player in plat.Liste_Joueur_IA and plat.check_gagnant: #si le joueur est une IA 
+    while current_player in plat.Liste_Joueur_IA and plat.check_gagnant==False: #si le joueur est une IA 
         current_player.jouer()
         nextplayer([plat,current_player])
         
@@ -428,44 +430,51 @@ def Joker(arg):
     if current_player.joker_used==False:
         current_player.greedy(plat)
         nextplayer([plat,current_player])
-        current_player.joker_used=True    
+        current_player.joker_used=True
+
         
 def fenetreScore(joueur,plat):
     '''joueur : objet de la classe joueur
     plat : objet plateau'''
     pepite=pygame.transform.scale(img_pepite,(25,25))
     fantome=pygame.transform.scale(img_fantome,(25,25))
-    perso=pygame.transform.scale(img_perso,(25,25))
+    
     
     img_croix=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"croix.png"))).convert_alpha()
     croix=pygame.transform.scale(img_croix,(25,25))
+    
     
     scoreframe=pygame.Surface((400,400))
     
     scoreframe.fill(WHITE)
     
-    fenetre.fill(WHITE , (530,20,250,40))
+    fenetre.fill(WHITE , (530,30,250,40))
     ecrire("Au tour de: "+str(joueur.identifiant),
                        fenetre,
                        (550,30),
                        BLEU,
-                       30)
-    
+                       30,
+                       fontname="chiller")
     
     
     valscore=joueur.nb_points
     pepitescore=joueur.pepite
     
-    ecrire('Score : '+str(valscore),scoreframe,(50,50))
-    scoreframe.blit(pepite,(250,50))
-    ecrire(pepitescore,scoreframe,(280,50))
+    img_perso=pygame.image.load(os.path.abspath(os.path.join('img_cartes',dict_pinguin_img[joueur.identifiant]))).convert_alpha()
+    perso=pygame.transform.scale(img_perso,(25,25))
+    scoreframe.blit(perso,(50,50))
+    ecrire('Score : '+str(valscore),scoreframe,(100,50),BLEU,fontname="chiller")
+    scoreframe.blit(pepite,(300,60))
+    ecrire(pepitescore,scoreframe,(280,60))
     
     ordreMission=pygame.Surface((380,100),pygame.SRCALPHA)
     ordreMission.fill(WHITE)
     ecrire('Ordre de mission : ',
            ordreMission,
            (5,5),
-           fontsize=20)
+           BLEU,
+           fontsize=30,
+           fontname="chiller")
  
     
     nombre_fantomes=len(joueur.ordre_de_mission)
@@ -488,7 +497,9 @@ def fenetreScore(joueur,plat):
     ecrire('Scores des pinguins ennemis : ',
            scoreAdverse,
            (5,5),
-           fontsize=20)
+           BLEU,
+           fontsize=30,
+           fontname="chiller")
     
     
     Ladverse=plat.Liste_Joueur #suppression du joueur concerné
@@ -500,6 +511,8 @@ def fenetreScore(joueur,plat):
             frameJoueur=pygame.Surface((360,50))
             frameJoueur.fill(WHITE)
             adv=Ladverse[i]
+            img_perso=pygame.image.load(os.path.abspath(os.path.join('img_cartes',dict_pinguin_img[adv.identifiant]))).convert_alpha()
+            perso=pygame.transform.scale(img_perso,(25,25))
             frameJoueur.blit(perso,(0,0))
             ecrire(adv.nb_points,
                    frameJoueur,
@@ -519,10 +532,31 @@ def fenetreScore(joueur,plat):
                        CIEL,
                        20)
                 
-            scoreAdverse.blit(frameJoueur,(10,30+i*50)) 
+            scoreAdverse.blit(frameJoueur,(10,40+i*50)) 
         
     scoreframe.blit(scoreAdverse,(10,200))
     fenetre.blit(scoreframe,(550,150))
+    
+    fenetre.fill(WHITE , (550,170,250,30))
+    if current_player.joker_used==True:
+       ecrire("Joker déjà utilisé ",
+                       fenetre,
+                       (600,170),
+                       RED,
+                       25,
+                       fontname="chiller") 
+    
+    if plat.check_gagnant==True:
+        newfenetre = pygame.display.set_mode((1000,600))
+        fond = pygame.image.load(os.path.join('img_cartes',"Iceberg.jpg")).convert()    
+        newfenetre.blit(fond,(0,0))
+        
+        winframe=pygame.Surface((700,400))
+        winframe.fill(WHITE)
+        newfenetre.blit(winframe,(170,100))
+        bouton_quit=Button(fenetre, " Quitter ",BLEU,pygame.font.SysFont('chiller', 30), -150, 550,fontcol=WHITE)
+        bouton_quit.display_button(fenetre)
+        
     
 if __name__=="__main__":
     ecran(Jeu_mine.JEU())
