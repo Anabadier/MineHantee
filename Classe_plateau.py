@@ -284,11 +284,11 @@ class Plateau(object) :
         self.carte_en_dehors.elements = carte_sortante.elements
         self.carte_en_dehors.element_virtuels = carte_sortante.element_virtuels
         
-        print(self.carte_en_dehors.elements, self.carte_en_dehors.element_virtuels)
-        print("======================================================")
+        #print(self.carte_en_dehors.elements, self.carte_en_dehors.element_virtuels)
+        #print("======================================================")
         #carte_sortante.elements = dict_vide
         self.carte_en_dehors = carte_sortante
-        print(self.carte_en_dehors.elements, self.carte_en_dehors.element_virtuels)
+        #print(self.carte_en_dehors.elements, self.carte_en_dehors.element_virtuels)
         # actualiser network graph
 
 
@@ -434,15 +434,19 @@ class Plateau(object) :
         move :
             code touche du clavier
         """
-        
+        print('move detected',move)
         pos_init=joueur.position_detail #ancienne position
         node_init = self.node_pos.index(pos_init)
+        carte_init=self.labyrinthe_detail[pos_init].nom
         
-        move_dict={275:(pos_init[0],pos_init[1]+1), #dico des mouvements
-                   273:(pos_init[0]-1,pos_init[1]),
-                   274:(pos_init[0]+1,pos_init[1]),
-                   276:(pos_init[0],pos_init[1]-1)}
-        #verif contraintes
+        
+        #dico des mouvements
+        move_dict={275:(pos_init[0],pos_init[1]+1),#droite 
+                   273:(pos_init[0]-1,pos_init[1]),#haut
+                   274:(pos_init[0]+1,pos_init[1]),#bas
+                   276:(pos_init[0],pos_init[1]-1)}#gauche
+        
+        #verif contraintes surface plateau
         if pos_init[0]==0:
             move_dict[273]=pos_init
         elif pos_init[0]==self.taille-1:
@@ -451,10 +455,26 @@ class Plateau(object) :
             move_dict[276]=pos_init
         elif pos_init[1]==self.taille-1:
             move_dict[275]=pos_init
+            
         pos_target=move_dict[move] #position de la carte visée par le déplacement
         node_target=self.node_pos.index(pos_target)
+        carte_target=self.labyrinthe_detail[pos_target].nom
         
+        #verif contrainte murs
+        if move==273 and (int(carte_init[0])==0 or int(carte_target[1])==0) : 
+            node_target=node_init
+            pos_target=pos_init
+        if move==274 and (int(carte_init[1])==0 or int(carte_target[0])==0):
+            node_target=node_init
+            pos_target=pos_init
+        if move==275 and (int(carte_init[2])==0 or int(carte_target[3])==0):
+            node_target=node_init
+            pos_target=pos_init
+        if move==276 and (int(carte_init[3])==0 or int(carte_target[2])==0):
+            node_target=node_init
+            pos_target=pos_init
         
+        #verif contrainte chemin accessible
         chemins=plat.chemin_possible(joueur.identifiant).values()
         path=[]
         for coord in chemins:
@@ -462,7 +482,10 @@ class Plateau(object) :
                 path.append(elem)
         path=set(path)
         
-        if pos_target in path:
+        print(joueur.carte_visit)
+        if pos_target in path and pos_target not in joueur.carte_visit:
             joueur.effectuer_chemin(self,[node_init,node_target])
+            joueur.carte_visit.append(pos_init)
+            joueur.carte_visit.append(pos_target)
         
       

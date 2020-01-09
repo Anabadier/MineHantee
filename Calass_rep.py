@@ -7,6 +7,7 @@ Created on Fri Nov 22 14:30:15 2019
 
 import random as rd
 import networkx as nx
+import math
 import copy as cp
 import numpy as np
 import pickle
@@ -49,6 +50,10 @@ class Joueur(object):
             self.position_graphe = "Non placé"
             self.position_detail = ("xcarte" , "ycarte")
             self.pepite=0
+            self.deplacement_effectué=False
+            self.carte_visit=[]
+            
+            
     
     def determiner_joueur_voisins_ordre(self):
         index = self.ref_plateau.Liste_Joueur.index(self)
@@ -164,6 +169,8 @@ class Joueur(object):
     def maj_position(self, _carte):
          self.position_graphe = _carte.position_G
          self.position_detail = _carte.position_D
+         self.carte_visit.append(self.position_detail)
+         
    
     def oriente_carte_libre(self, carte_libre, sens):
         test = ["horaire","anti-horaire"]
@@ -282,7 +289,6 @@ class Joueur_IA(Joueur):
         self.niv = _niv
         
         self.UCT_solver = None
-        
         self.liste_paths = [] #liste des chemins accessibles au joueur. Utile après rot card et coullissage
     
     def generate_list_paths(self, _plateau):
@@ -313,10 +319,13 @@ class Joueur_IA(Joueur):
 #                 print('Le coup était:',coup_alea)
 # =============================================================================
                 
-        elif (self.niv == "Normale"):
+        elif (self.niv == "Normale"): #0 fleche , 1 ori 
             #Mettre AlphaBeta ici
-            pass
-            
+            coup = self.mini_max(self.ref_plateau, self.identifiant, self.identifiant, 1, -math.inf, math.inf, True)
+            self.rotation_carte(self.ref_plateau, coup[1])
+            self.ref_plateau.coulisser(coup[0][0],coup[0][1])
+            chemin = [self.ref_plateau.node_pos.index(t) for t in coup[2]]
+            self.effectuer_chemin(self.ref_plateau, chemin)
         elif (self.niv == "Difficile"):
             description_coup = self.UCT_solver.jouer_UCT(self.ref_plateau, self)
             self.coup_cible(self.ref_plateau, description_coup)
@@ -355,9 +364,94 @@ class Joueur_IA(Joueur):
             self.effectuer_chemin(_plateau, _description_coup[2])
             #print(303, 'going forward', "après chemin")
             self.ref_plateau.compteur_coup += 1
+            
+    def is_terminal_node(self,plateau) : ## actualiser pour dire que s'il ne reste pas suffisament de points pour dépasser le premier is over
+        dict_vide = {'fantome' : False , 'pepite' : False, 'joueur': False}
+        taille = len(plateau)
+        compteur=0
+        for i in plateau :
+            if i.elements == dict_vide :
+                compteur += 1
+        return (compteur == taille^2)
+            
+    def mini_max(self,plateau, id_joueur, joueur_initial, depth, alpha, beta, maximizingPlayer):
+        """
+        La fonction mini_max permet de calculer le meilleur gain que le joueur peut faire, c'est-à-dire :
+            1) maximiser son gain en minimisant, potentiellement, le gain dans les prochains tour du joueur avec le plus de points
+            2) si 1 n'est pas possible / simple dans un futur proche, maximiser le gain du joueur en minimisant celui dont le tour est le prochain. 
+        
+        :param position: position du joueur
+        :param joueur: c'est le tour de quel joueur
+        :param ordre_joueurs: quel est l'ordre des joueurs
+            
+        :returns chemin_optimal: le chemin que le joueur a intérêt à suivre pour garantir un gain maximal dans le court terme
+        """
+        is_terminal = self.is_terminal_node(plateau)
+        carte_test = plateau.carte_en_dehors
+        #joker = self
+        
+        if depth == 0 or is_terminal:
+            if is_terminal: #il n'y a plus de pépites ni de fantonmes à capturer
+                return (None, None, None, 0)
+            else: # Depth is zero
+                dico_chemins = plateau.chemin_possible(id_joueur)
+                chemins_coord = [dico_chemins[coord] for coord in dico_chemins.keys()]
+                points = [self.fonction_evaluation(plateau, i) for i in chemins_coord]
+                le_chemin = chemins_coord[points.index(max(points))]
+                return (None, None, le_chemin,max(points))
+        
+        if maximizingPlayer: #joker player #la personne qui utilise le joker
+            value = -math.inf
+            entree = rd.choice(plateau.entrees)
+            for orientation in range(1,5):
+                carte_test.orientation = orientation
+                for une_entree in plateau.entrees:
+                    p_copy = plateau.copy()
+                    p_copy.coulisser_detail(une_entree[0], une_entree[1], carte_test)
+                    dico_chemins = p_copy.chemin_possible(id_joueur)
+                    # chemins_coord = [dico_chemins[coord] for coord in dico_chemins.keys()]
+                    # points = [self.fonction_evaluation(plateau, i) for i in chemins_coord]
+                    # le_chemin = chemins_coord[points.index(max(points))]
+                    id_next_joueur = self.joueur_suivant.identification
+                    new_score = self.mini_max(self, p_copy, id_next_joueur,joueur_initial, depth-1, alpha, beta, False)[3]
+                    if new_score > value:
+                        value = new_score
+                        entree = une_entree
+                        ori = orientation
+                        chem = self.mini_max(self, p_copy, id_next_joueur,joueur_initial, depth-1, alpha, beta, False)[2]
+                    alpha = max(alpha, value)
+                    if alpha >= beta:
+                        break
+            return (entree, ori, le_chemin, value)
+        
+        else: # Minimizing player
+            value = math.inf
+            entree = rd.choice(plateau.entrees)
+            for orientation in range(1,5):
+                carte_test.orientation = orientation
+                for une_entree in plateau.entrees:
+                    p_copy = plateau.copy()
+                    p_copy.coulisser_detail(une_entree[0], une_entree[1], carte_test)
+                    id_next_joueur = self.joueur_suivant.identification
+                    if id_next_joueur == joueur_initial :
+                        mini = self.mini_max(self, p_copy, id_next_joueur, joueur_initial, depth-1, alpha, beta, True)
+                        new_score = mini[3]
+                    else :
+                        mini = self.mini_max(self, p_copy, id_next_joueur, joueur_initial, depth-1, alpha, beta, False)
+                        new_score = mini[3]
+                    if new_score < value:
+                        value = new_score
+                        entree = une_entree
+                        ori = orientation
+                        chem = mini[2]
+                        beta = min(beta, value)
+                    if alpha >= beta:
+                        break
+            return (entree, ori, chem, value)
+       
     
     def greedy(self, plateau):
-        best_coup = [0,0,"",[]]
+        best_coup = [-1,0,"",[]]
         for i in range (1,5):
             self.rotation_carte(plateau,i)
             for j in plateau.liste_row_col:
@@ -372,9 +466,12 @@ class Joueur_IA(Joueur):
                     gain = self.heuristique(t,plateau)
                     if gain > best_coup[0]:
                         best_coup = [gain,i,j,t]
-        print(best_coup[3])
-        self.effectuer_chemin(plateau, best_coup[3])
-        return best_coup
+                self.modifier_plateau(plateau, fleche, True)
+            self.rotation_carte(plateau, i, True)
+        print(best_coup)
+        self.coup_cible(plateau, best_coup[1:])
+        #self.effectuer_chemin(plateau, best_coup[3])
+        return best_coup[1:]
     
     def coup_alea(self, _plateau):
         """
@@ -654,11 +751,11 @@ class UCT_2(object):
             while (not _plateau.check_gagnant() and nb_coup_rollout < _nb_coup_max):
                 j_playing = _plateau.dict_ID2J[j_playing.joueur_suivant]
                 #print(j_playing.identifiant, "is playing")
-                coup_alea = j_playing.coup_alea(_plateau)
-                #coup_greedy = j_playing.greedy(_plateau)
+                #coup_alea = j_playing.coup_alea(_plateau)
+                coup_greedy = j_playing.greedy(_plateau)
                 #print(coup_alea)
-                rollout_action_list += [[j_playing]+coup_alea]
-                #rollout_action_list += [[j_playing]+coup_greedy]
+                #rollout_action_list += [[j_playing]+coup_alea]
+                rollout_action_list += [[j_playing]+coup_greedy]
                 #print([j_playing.identifiant]+coup_alea)
                 #j_playing.coup_cible(_plateau, coup_alea)
                 
@@ -666,8 +763,10 @@ class UCT_2(object):
                 
                 nb_coup_rollout+=1
             
-            pts5 = j_playing.nb_points
-            pts6 = _plateau.dict_ID2J[j_playing.joueur_suivant].nb_points
+# =============================================================================
+#             pts5 = j_playing.nb_points
+#             pts6 = _plateau.dict_ID2J[j_playing.joueur_suivant].nb_points
+# =============================================================================
 # =============================================================================
 #             print(j_playing.identifiant, pts5, end = " ")
 #             print(j_playing.joueur_suivant, pts6)
