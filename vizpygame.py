@@ -49,19 +49,19 @@ def genere_carte(carte,size):
     carte=pygame.transform.scale(image, size) #forcer la taille de la case
     return(carte)
 
-def afficher(plat,plateau,fenetre,id_joueur):
+def afficher(plat,plateau,fenetre,joueur):
     """afficher les cartes sur le plateau"""
     global img_pepite,img_fantome,img_perso
 
     print('actualisation plateau')
-    print(id_joueur)
+    
     Mat_plat=plat.labyrinthe_detail
     
     dic_boutons_fleches={} #dictionnaire de tous les boutons flèches
-    img_fleche_haut=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"fleche_haut.png"))).convert_alpha()
-    img_fleche_bas=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"fleche_bas.png"))).convert_alpha()
-    img_fleche_gauche=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"fleche_gauche.png"))).convert_alpha()
-    img_fleche_droite=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"fleche_droite.png"))).convert_alpha()
+    img_fleche_haut=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"Fleche_sud.png"))).convert_alpha()
+    img_fleche_bas=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"Fleche_nord.png"))).convert_alpha()
+    img_fleche_gauche=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"Fleche_est.png"))).convert_alpha()
+    img_fleche_droite=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"Fleche_ouest.png"))).convert_alpha()
     
     img_pepite=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"triskel.png"))).convert_alpha()
     pepite=pygame.transform.scale(img_pepite,(int((taille_case-1)/2),int((taille_case-1)/2)))
@@ -70,7 +70,7 @@ def afficher(plat,plateau,fenetre,id_joueur):
     fantome=pygame.transform.scale(img_fantome,(int((taille_case-1)/2),int((taille_case-1)/2)))
     
     
-    chemins=plat.chemin_possible(id_joueur.identifiant).values()
+    chemins=plat.chemin_possible(joueur.identifiant).values()
     path=[]
     for coord in chemins:
         for elem in coord :
@@ -96,14 +96,14 @@ def afficher(plat,plateau,fenetre,id_joueur):
             
             #case surlignée si accessible
             
-            if coord in path:
+            if coord in path and (joueur in plat.Liste_Joueur_H and coord not in joueur.carte_visit):
                 cache= pygame.Surface((int(taille_case),int(taille_case))) #case à surligner
                 cache.set_alpha(70)  #transparence
                 cache.fill((255,255,0))   #jaune
                 plateau.blit(cache,(x,y))
             
             num_case+=1  
-            #Si pépite/fantome sur la carte, voir condition avec la matrice des instances de cartes
+            #Si pépite/fan ààpm tome sur la carte, voir condition avec la matrice des instances de cartes
             if case.elements['pepite'] == True:
                 plateau.blit(pepite,(x,y))
             if case.elements['fantome'] != []:
@@ -232,7 +232,7 @@ def ecran(plat):
     for j in plat.Liste_Joueur:
         dict_pinguin_img[j.identifiant]=img_pinguin[c]
         c+=1
-    print(dict_pinguin_img)
+    
     
     fenetre = pygame.display.set_mode((1000,600))
     fenetre.fill((255,255,255)) #remplissage fond blanc
@@ -251,7 +251,7 @@ def ecran(plat):
     #plateau.blit(fond, (0,0))
     #pour Colorer le fond :
     plateau.fill((250,250,250))
-    dic_boutons_fleches=afficher(plat,plateau,fenetre,id_joueur=current_player)
+    dic_boutons_fleches=afficher(plat,plateau,fenetre,joueur=current_player)
     fenetre.blit(plateau,(100,100))
     
     #Boutons menus
@@ -353,17 +353,19 @@ def deplacement(i):
     fleche=i[0]
     plat=i[1]
     current_player=i[2]
-    print(current_player)
-    coord_x, coord_y = plat.convertir_Fleche2Coord(fleche)
-    #print(coord_x,coord_y)
-    #régénérer plat
-    plat.coulisser(coord_x,coord_y)
-    plateau=pygame.Surface((cote_fenetre,cote_fenetre)) #vider le plateau
-#    fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()
-#    plateau.blit(fond, (0,0))
-    plateau.fill((250,250,250)) #fond blanc
-    afficher(plat,plateau,fenetre,current_player)
-    fenetre.blit(plateau,(100,100))
+    if current_player in plat.Liste_Joueur_H:
+        if current_player.deplacement_effectué==False:
+            coord_x, coord_y = plat.convertir_Fleche2Coord(fleche)
+            #print(coord_x,coord_y)
+            #régénérer plat
+            plat.coulisser(coord_x,coord_y)
+            current_player.deplacement_effectué=True
+            plateau=pygame.Surface((cote_fenetre,cote_fenetre)) #vider le plateau
+        #    fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()
+        #    plateau.blit(fond, (0,0))
+            plateau.fill((250,250,250)) #fond blanc
+            afficher(plat,plateau,fenetre,current_player)
+            fenetre.blit(plateau,(100,100))
     
     
 def chgmt_orientation(arg):
@@ -377,12 +379,13 @@ def chgmt_orientation(arg):
     
 
 def move_player(plat,joueur,move,plateau,fenetre):
-    plat.deplacement_joueur(plat,joueur,move)
-    plateau=pygame.Surface((cote_fenetre,cote_fenetre)) #vider le plateau
-    plateau.fill((250,250,250)) #fond blanc
-    afficher(plat,plateau,fenetre,joueur)
-    fenetre.blit(plateau,(100,100))
-    fenetreScore(joueur,plat)
+    if joueur in plat.Liste_Joueur_H:
+        plat.deplacement_joueur(plat,joueur,move)
+        plateau=pygame.Surface((cote_fenetre,cote_fenetre)) #vider le plateau
+        plateau.fill((250,250,250)) #fond blanc
+        afficher(plat,plateau,fenetre,joueur)
+        fenetre.blit(plateau,(100,100))
+        fenetreScore(joueur,plat)
     
 def IA():
     print("help needed")
@@ -392,6 +395,8 @@ def nextplayer(arg):
     
     plat=arg[0]
     current_player=arg[1]
+    current_player.deplacement_effectué=False
+    current_player.carte_visit=[current_player.position_detail]
     current_player=plat.dict_ID2J[current_player.joueur_suivant]
     
     plateau=pygame.Surface((cote_fenetre,cote_fenetre)) #vider le plateau
@@ -414,6 +419,8 @@ def fenetreScore(joueur,plat):
     
     scoreframe=pygame.Surface((400,400))
     scoreframe.fill(CIEL)
+    
+    fenetre.fill(WHITE , (550,20,250,40))
     ecrire("Au tour de: "+str(joueur.identifiant),
                        fenetre,
                        (550,30),
@@ -479,7 +486,6 @@ def fenetreScore(joueur,plat):
             taille_espace=(300-50*nombre_fantomes)/(nombre_fantomes-1)
             for j in range (nombre_fantomes):
                 frameJoueur.blit(fantome,(50+j*(50+taille_espace),0))      
-                print(adv.ordre_de_mission[list(adv.ordre_de_mission.keys())[j]])
                 if adv.ordre_de_mission[list(adv.ordre_de_mission.keys())[j]]==False:
                     frameJoueur.blit(croix,(50+j*(50+taille_espace),0))
             
