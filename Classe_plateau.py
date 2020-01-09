@@ -284,11 +284,11 @@ class Plateau(object) :
         self.carte_en_dehors.elements = carte_sortante.elements
         self.carte_en_dehors.element_virtuels = carte_sortante.element_virtuels
         
-        print(self.carte_en_dehors.elements, self.carte_en_dehors.element_virtuels)
-        print("======================================================")
+        #print(self.carte_en_dehors.elements, self.carte_en_dehors.element_virtuels)
+        #print("======================================================")
         #carte_sortante.elements = dict_vide
         self.carte_en_dehors = carte_sortante
-        print(self.carte_en_dehors.elements, self.carte_en_dehors.element_virtuels)
+        #print(self.carte_en_dehors.elements, self.carte_en_dehors.element_virtuels)
         # actualiser network graph
 
 
