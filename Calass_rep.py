@@ -109,25 +109,27 @@ class Joueur(object):
                 _card.elements["pepite"] = False
             
         if (_card.elements["fantome"] != []):
-            if (_card.elements["fantome"] in list(self.ordre_de_mission.keys())):
-                self.maj_points(self.ref_plateau.pts_ordre_mission)
-                self.ordre_de_mission[_card.elements["fantome"]]=False #maj ordre de mission
-                _card.element_virtuels['coup_capture'] = self.ref_plateau.compteur_coup
-                _card.element_virtuels['joueur_capture'] = self.identifiant
+            if (_card.elements["fantome"] == self.ref_plateau.ordre_fantome):
+                if (_card.elements["fantome"] in list(self.ordre_de_mission.keys())):
+                    self.maj_points(self.ref_plateau.pts_ordre_mission)
+                    self.ordre_de_mission[_card.elements["fantome"]]=False #maj ordre de mission
+                    _card.element_virtuels['coup_capture'] = self.ref_plateau.compteur_coup
+                    _card.element_virtuels['joueur_capture'] = self.identifiant
 # =============================================================================
 #                 print('add, ', _card.nom, _card.position_D, _card.position_G,
 #                       self.ref_plateau.pts_ordre_mission, self.nb_points)
 # =============================================================================
-            else:
-                self.maj_points(self.ref_plateau.pts_fantome)
-                _card.element_virtuels['coup_capture'] = self.ref_plateau.compteur_coup
-                _card.element_virtuels['joueur_capture'] = self.identifiant
+                else:
+                    self.maj_points(self.ref_plateau.pts_fantome)
+                    _card.element_virtuels['coup_capture'] = self.ref_plateau.compteur_coup
+                    _card.element_virtuels['joueur_capture'] = self.identifiant
 # =============================================================================
 #                 print('add, ', _card.nom, _card.position_D, _card.position_G,
 #                       self.ref_plateau.pts_fantome, self.nb_points)
 # =============================================================================
-            if _reset_value:
-                _card.elements["fantome"] = []
+                if _reset_value:
+                    _card.elements["fantome"] = []
+                self.ref_plateau.ordre_fantome += 1
     
     def retrancher_pts_carte(self, _card, _reset_value = True):
         """
@@ -150,21 +152,24 @@ class Joueur(object):
                     _card.elements["pepite"] = True
                 
             if (_card.element_virtuels["fantome"] != []):
-                if (_card.element_virtuels["fantome"] in list(self.ordre_de_mission.keys())):
-                    self.maj_points(self.ref_plateau.pts_ordre_mission, -1)
-                    self.ordre_de_mission[_card.element_virtuels["fantome"]]=True
+                if (_card.elements["fantome"] == self.ref_plateau.ordre_fantome):
+                    if (_card.element_virtuels["fantome"] in list(self.ordre_de_mission.keys())):
+                        self.maj_points(self.ref_plateau.pts_ordre_mission, -1)
+                        self.ordre_de_mission[_card.element_virtuels["fantome"]]=True
 # =============================================================================
 #                     print('ret, ',_card.nom, _card.position_D, _card.position_G,
 #                           self.ref_plateau.pts_ordre_mission, self.nb_points)
 # =============================================================================
-                else:
-                    self.maj_points(self.ref_plateau.pts_fantome, -1)
+                    else:
+                        self.maj_points(self.ref_plateau.pts_fantome, -1)
 # =============================================================================
 #                     print('ret, ',_card.nom, _card.position_D, _card.position_G,
 #                           self.ref_plateau.pts_fantome, self.nb_points)
 # =============================================================================
-                if _reset_value:
-                    _card.elements["fantome"] = _card.element_virtuels["fantome"]
+                    if _reset_value:
+                        _card.elements["fantome"] = _card.element_virtuels["fantome"]
+                    
+                    self.ref_plateau.ordre_fantome -= 1
     
     def maj_position(self, _carte):
          self.position_graphe = _carte.position_G
@@ -367,7 +372,7 @@ class Joueur_IA(Joueur):
             
     def is_terminal_node(self,plateau) : ## actualiser pour dire que s'il ne reste pas suffisament de points pour dépasser le premier is over
         dict_vide = {'fantome' : False , 'pepite' : False, 'joueur': False}
-        taille = len(plateau)
+        taille = plateau.taille
         compteur=0
         for i in plateau :
             if i.elements == dict_vide :

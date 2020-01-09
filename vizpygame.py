@@ -48,7 +48,8 @@ def genere_carte(carte,size):
     image=pygame.image.load(os.path.abspath(os.path.join('img_cartes',dic_case_img[carte]))).convert_alpha()
     carte=pygame.transform.scale(image, size) #forcer la taille de la case
     return(carte)
-
+    
+    
 def afficher(plat,plateau,fenetre,joueur):
     """afficher les cartes sur le plateau"""
     global img_pepite,img_fantome,img_perso
@@ -221,6 +222,8 @@ def ecrire(texte,frame,pos,fontcolor=pygame.Color("#000000"),fontsize=36):
     rectTexte.topleft=pos #ancrage du texte
     
     frame.blit(texte,rectTexte)
+    
+
 		
 #Création de la fenêtre
 def ecran(plat):
@@ -244,7 +247,6 @@ def ecran(plat):
     plateau=pygame.Surface((cote_fenetre,cote_fenetre))
     
     current_player=plat.Liste_Joueur[0]
-    #current_player=nextplayer([plat,current_player])
     
     #si on veut importer une image de fond
     #fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()     
@@ -302,7 +304,10 @@ def ecran(plat):
     #Fenetre Score
     fenetreScore(current_player,plat)
     
-     
+    while current_player in plat.Liste_Joueur_IA and plat.check_gagnant: #si le joueur est une IA 
+        current_player.jouer()
+        nextplayer([plat,current_player])
+        
     
     
     #BOUCLE INFINIE
@@ -354,7 +359,7 @@ def deplacement(i):
     plat=i[1]
     current_player=i[2]
     if current_player in plat.Liste_Joueur_H:
-        if current_player.deplacement_effectué==False:
+        if current_player.deplacement_effectué==False :
             coord_x, coord_y = plat.convertir_Fleche2Coord(fleche)
             #print(coord_x,coord_y)
             #régénérer plat
@@ -379,7 +384,7 @@ def chgmt_orientation(arg):
     
 
 def move_player(plat,joueur,move,plateau,fenetre):
-    if joueur in plat.Liste_Joueur_H:
+    if joueur in plat.Liste_Joueur_H and joueur.deplacement_effectué==True:
         plat.deplacement_joueur(plat,joueur,move)
         plateau=pygame.Surface((cote_fenetre,cote_fenetre)) #vider le plateau
         plateau.fill((250,250,250)) #fond blanc
@@ -397,6 +402,7 @@ def nextplayer(arg):
     current_player=arg[1]
     current_player.deplacement_effectué=False
     current_player.carte_visit=[current_player.position_detail]
+    print(current_player.carte_visit)
     current_player=plat.dict_ID2J[current_player.joueur_suivant]
     
     plateau=pygame.Surface((cote_fenetre,cote_fenetre)) #vider le plateau
@@ -404,8 +410,12 @@ def nextplayer(arg):
     afficher(plat,plateau,fenetre,current_player)
     fenetre.blit(plateau,(100,100))
     fenetreScore(current_player,plat)
-    return current_player
     
+    while current_player in plat.Liste_Joueur_IA and plat.check_gagnant: #si le joueur est une IA 
+        current_player.jouer()
+        nextplayer([plat,current_player])
+        
+    return current_player
     
 def fenetreScore(joueur,plat):
     '''joueur : objet de la classe joueur
