@@ -43,7 +43,18 @@ class LauncherMineHantee(object):
         self.SaverCharger = SaC.Save_and_Charge(_ref_launcher=self)
         
         self.partie_en_ligne = False
+        self.joigning_server = False
         self.server_subprocess = None
+    
+        self.value_DimPlateau = 0
+        self.value_NbJoueur = 0
+        self.value_NbJoueur_IA = 0
+        self.value_NbFantome = 0
+        self.value_NbFantomeOdM = 0
+        self.value_NbPepite = 0
+        self.value_PtsPepite = 0
+        self.value_PtsFantome = 0
+        self.value_PtsFantomeOdM = 0
         
         self.launch()
         self.fen.mainloop()
@@ -52,6 +63,8 @@ class LauncherMineHantee(object):
         
         if (self.partie_en_ligne):
             self.partie_en_ligne = False
+        if (self.joigning_server):
+            self.joigning_server = False
         
         self.navigation_flow = self.navigation_flow[:-1]
         self.navigation_tool[self.navigation_flow[-1]]()
@@ -342,9 +355,11 @@ class LauncherMineHantee(object):
     def subprocess_creation_serveur(self):
         subprocess.Popen(["cmd.exe", "/c", "start",
                           "python", "serveurMH.py",
-                          self.PORT, self.HOST],shell = True)
+                          self.PORT, self.HOST,
+                          str(self.value_NbJoueur), str(self.value_NbJoueur_IA)],shell = True)
         
     def creer_serveur(self):
+        self.get_plateau_options()
         self.PORT = self.PORT.get()
         self.HOST = self.HOST.get()
         self.thread_serveur = threading.Thread(target = self.subprocess_creation_serveur)
@@ -356,12 +371,14 @@ class LauncherMineHantee(object):
         self.PORT = self.PORT.get()
         self.HOST = self.HOST.get()
         self.partie_en_ligne = True
+        self.joigning_server = True
         self.choix_pseudo()
     
     def choix_pseudo(self):
         #avant de construire la fenetre du pseudo, on enregistre les valeurs des
         #scalers
-        self.get_plateau_options()
+        if (not self.partie_en_ligne):
+            self.get_plateau_options()
         
         
         self.fen.title("Joindre la partie - Mine Hantée")
@@ -379,7 +396,7 @@ class LauncherMineHantee(object):
             self.PSEUDO_Entry.insert(0,"Joueur_1")
             self.PSEUDO.append(self.PSEUDO_Entry)
         
-        else:
+        if (not self.joigning_server):
             for i in range (self.value_NbJoueur-self.value_NbJoueur_IA):
                 tk.Label(self.fen, text = "Pseudonyme Joueur "+str(i)+":").grid(
                                                     column=0, row=i, padx = 15)
@@ -388,18 +405,19 @@ class LauncherMineHantee(object):
                 self.PSEUDO_Entry.insert(0,"Joueur_"+str(i))
                 self.PSEUDO.append(self.PSEUDO_Entry)
         
-        #choix des IAs
-        self.IA_NIV = []
-        for i in range (self.value_NbJoueur_IA):
-            k = i+self.value_NbJoueur-self.value_NbJoueur_IA
-            tk.Label(self.fen, text = "Difficulté IA "+str(i)+":").grid(
-                                                column=0, row=k, padx = 15)
-            self.IA_NIV_Entry = ttk.Combobox(self.fen,
-                                       state = "readonly",
-                                       values = ["Facile", "Normale", "Difficile"])
-            self.IA_NIV_Entry.grid(column = 1, row = k, padx = 15)
-            self.IA_NIV_Entry.set("Normale")
-            self.IA_NIV.append(self.IA_NIV_Entry)
+        
+            #choix des IAs
+            self.IA_NIV = []
+            for i in range (self.value_NbJoueur_IA):
+                k = i+self.value_NbJoueur-self.value_NbJoueur_IA
+                tk.Label(self.fen, text = "Difficulté IA "+str(i)+":").grid(
+                                                    column=0, row=k, padx = 15)
+                self.IA_NIV_Entry = ttk.Combobox(self.fen,
+                                           state = "readonly",
+                                           values = ["Facile", "Normale", "Difficile"])
+                self.IA_NIV_Entry.grid(column = 1, row = k, padx = 15)
+                self.IA_NIV_Entry.set("Normale")
+                self.IA_NIV.append(self.IA_NIV_Entry)
         
         self.message_space = tk.Label(self.fen)
         self.message_space.grid(column=0, row=1, columnspan = 2)
@@ -452,9 +470,10 @@ class LauncherMineHantee(object):
         for _pseudo_entry in self.PSEUDO:
             self.value_pseudos += [_pseudo_entry.get()]
         
-        self.value_IA_niv = []
-        for _IA_niv in self.IA_NIV:
-            self.value_IA_niv += [_IA_niv.get()]
+        if (not self.joigning_server):
+            self.value_IA_niv = []
+            for _IA_niv in self.IA_NIV:
+                self.value_IA_niv += [_IA_niv.get()]
             
     
     def rejoindre_partie(self):
@@ -463,24 +482,47 @@ class LauncherMineHantee(object):
         
         if (self.partie_en_ligne):
             self.ref_client = cMH.Client(self)
-            self.plateau_exemple()
+            #self.plateau_exemple()
+            print(486, self.value_DimPlateau,
+            self.value_NbJoueur,
+            self.value_NbJoueur_IA,
+            self.value_NbFantome,
+            self.value_NbFantomeOdM,
+            self.value_NbPepite,
+            self.value_PtsPepite,
+            self.value_PtsFantome,
+            self.value_PtsFantomeOdM)
         
         else:
             self.fen.destroy()
-            plateau = Jm.JEU(dimension = self.value_DimPlateau,
-                              nombre_joueur = self.value_NbJoueur,
-                              pseudos_joueurs = self.value_pseudos,
-                              nombre_joueur_IA = self.value_NbJoueur_IA,
-                              IA_niv = self.value_IA_niv,
-                              nombre_ghost = self.value_NbFantome,
-                              nombre_ordre_mission = self.value_NbFantomeOdM,
-                              nombre_pepite = self.value_NbPepite,
-                              pts_pepite = self.value_PtsPepite,
-                              pts_fantome = self.value_PtsFantome,
-                              pts_ordre_mission = self.value_PtsFantomeOdM,
-                              _SaC = self.SaverCharger)
-            vpyg.ecran(plateau)
+            self.launch_game()
             
+    def launch_game(self):
+        print(502)
+        print(486, self.value_DimPlateau,
+            self.value_NbJoueur,
+            self.value_NbJoueur_IA,
+            self.value_NbFantome,
+            self.value_NbFantomeOdM,
+            self.value_NbPepite,
+            self.value_PtsPepite,
+            self.value_PtsFantome,
+            self.value_PtsFantomeOdM)
+        plateau = Jm.JEU(dimension = self.value_DimPlateau,
+                          nombre_joueur = self.value_NbJoueur,
+                          pseudos_joueurs = self.value_pseudos,
+                          nombre_joueur_IA = self.value_NbJoueur_IA,
+                          IA_niv = self.value_IA_niv,
+                          nombre_ghost = self.value_NbFantome,
+                          nombre_ordre_mission = self.value_NbFantomeOdM,
+                          nombre_pepite = self.value_NbPepite,
+                          pts_pepite = self.value_PtsPepite,
+                          pts_fantome = self.value_PtsFantome,
+                          pts_ordre_mission = self.value_PtsFantomeOdM,
+                          _SaC = self.SaverCharger)
+        print(516)
+        vpyg.ecran(plateau)
+        #self.fen.destroy()
     
     def plateau_exemple(self):
         self.fen.title("Joindre la partie - Mine Hantée")
@@ -496,4 +538,4 @@ class LauncherMineHantee(object):
 
         
 if __name__=="__main__":
-    LauncherMineHantee()
+    launcher =LauncherMineHantee()
