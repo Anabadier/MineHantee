@@ -269,6 +269,7 @@ class Joueur(object):
         :returns gain: gain que l'on peut obtenir si on suit un chelin
         """
         gain = 0
+        ordre_fantomes = self.ref_plateau.ordre_fantome
 # =============================================================================
 #         for coord in chemin :
 #             carte = plateau.labyrinthe_detail[coord]
@@ -278,11 +279,36 @@ class Joueur(object):
             if carte.elements['pepite'] == True :
                 gain+= plateau.pts_pepite
             if carte.elements['fantome'] != [] :
-                if carte.elements['fantome'] in self.ordre_de_mission : 
-                    gain+= plateau.pts_ordre_mission
-                else:
-                    gain+= plateau.pts_fantome
+                if (carte.elements['fantome'] == ordre_fantomes):
+                    if carte.elements['fantome'] in self.ordre_de_mission : 
+                        gain+= plateau.pts_ordre_mission
+                    else:
+                        gain+= plateau.pts_fantome
+                    ordre_fantomes += 1
         return(gain)
+    
+    def greedy(self, plateau):
+        best_coup = [-1,0,"",[]]
+        for i in range (1,5):
+            self.rotation_carte(plateau,i)
+            for j in plateau.liste_row_col:
+                fleche = j
+                self.modifier_plateau(plateau,fleche)
+                self.generate_list_paths(plateau)
+# =============================================================================
+#                 liste_chemin = plateau.chemin_possible(self.identifiant)
+#                 print(liste_chemin)
+# =============================================================================
+                for t in self.liste_paths:
+                    gain = self.heuristique(t,plateau)
+                    if gain > best_coup[0]:
+                        best_coup = [gain,i,j,t]
+                self.modifier_plateau(plateau, fleche, True)
+            self.rotation_carte(plateau, i, True)
+        print(best_coup)
+        self.coup_cible(plateau, best_coup[1:])
+        #self.effectuer_chemin(plateau, best_coup[3])
+        return best_coup[1:]
 
 class Joueur_IA(Joueur):
     
@@ -450,30 +476,6 @@ class Joueur_IA(Joueur):
                     if alpha >= beta:
                         break
             return (entree, ori, chem, value)
-       
-    
-    def greedy(self, plateau):
-        best_coup = [-1,0,"",[]]
-        for i in range (1,5):
-            self.rotation_carte(plateau,i)
-            for j in plateau.liste_row_col:
-                fleche = j
-                self.modifier_plateau(plateau,fleche)
-                self.generate_list_paths(plateau)
-# =============================================================================
-#                 liste_chemin = plateau.chemin_possible(self.identifiant)
-#                 print(liste_chemin)
-# =============================================================================
-                for t in self.liste_paths:
-                    gain = self.heuristique(t,plateau)
-                    if gain > best_coup[0]:
-                        best_coup = [gain,i,j,t]
-                self.modifier_plateau(plateau, fleche, True)
-            self.rotation_carte(plateau, i, True)
-        print(best_coup)
-        self.coup_cible(plateau, best_coup[1:])
-        #self.effectuer_chemin(plateau, best_coup[3])
-        return best_coup[1:]
     
     def coup_alea(self, _plateau):
         """

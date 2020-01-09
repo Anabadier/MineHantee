@@ -13,6 +13,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import SaC
+import SaC2
 import clientMH as cMH
 
 import Jeu_mine as Jm
@@ -41,6 +42,7 @@ class LauncherMineHantee(object):
                                 5:self.creer_configurer_serveur}
         
         self.SaverCharger = SaC.Save_and_Charge(_ref_launcher=self)
+        self.SaverCharger2 = SaC2.SandC2()
         
         self.partie_en_ligne = False
         self.joigning_server = False
@@ -104,10 +106,15 @@ class LauncherMineHantee(object):
                                  command = self.configurer_partie)
         Configurer_partie.grid(column = 1, row = 0, padx = 15)
         
+        Charger_partie = ttk.Button(self.fen,
+                                 text = "Charger une partie",
+                                 command = self.SaverCharger2.charge_game_file)
+        Charger_partie.grid(column = 2, row = 0, padx = 15)
+        
         Retour = ttk.Button(self.fen,
                                  text = "Retour",
                                  command = self.retour)
-        Retour.grid(column = 2, row = 0, padx = 15)
+        Retour.grid(column = 3, row = 0, padx = 15)
     
     def setup_scalers(self, _start_row = 0):
         

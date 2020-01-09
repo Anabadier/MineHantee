@@ -14,7 +14,7 @@ from tkinter import filedialog as tkfd
 class SandC2(object):
     
     def __init__(self):
-        print('yeah')
+        pass
     
     def read_file(self, _file_path):
         
@@ -25,18 +25,17 @@ class SandC2(object):
         file.close()
         return content
         
-    def charge_game_file(self,plateau):
-        
+    def charge_game_file(self):#,plateau):
         
         """ Ouvre un fichier de sauvegarde au bon format et transfère les informations 
         de ce dernier dans les bon attributs du jeu """
-        
         
         file = tkfd.askopenfilename()
         if file!= "":
             content = self.read_file(file)
             sauv = [val.split(",") for val in content]
-            plateau.taille = int(sauv[0][1])
+            #plateau.taille = int(sauv[0][1])
+            taille = int(sauv[0][1])
             pts_pepite = int(sauv[1][1])
             pts_fantome = int(sauv[2][1])
             pts_ordre_mission = int(sauv[3][1])
@@ -45,7 +44,7 @@ class SandC2(object):
             """ Génération d'un plateau avec les paramètres de sauvegarde """
             
             compteur = 5
-            new_plateau = Plateau(plateau.taille)
+            new_plateau = Plateau(taille)
             plateau = new_plateau
             plateau.pts_pepite = pts_pepite
             plateau.pts_fantome = pts_fantome
