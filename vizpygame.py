@@ -67,7 +67,7 @@ def afficher(plat,plateau,fenetre,joueur):
     img_pepite=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"triskel.png"))).convert_alpha()
     pepite=pygame.transform.scale(img_pepite,(int((taille_case-1)/2),int((taille_case-1)/2)))
     
-    img_fantome=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"fantome.png"))).convert_alpha()
+    img_fantome=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"poisson.png"))).convert_alpha()
     fantome=pygame.transform.scale(img_fantome,(int((taille_case-1)/2),int((taille_case-1)/2)))
     
     
@@ -238,7 +238,9 @@ def ecran(plat):
     
     
     fenetre = pygame.display.set_mode((1000,600))
+    fond = pygame.image.load(os.path.join('img_cartes',"Iceberg.jpg")).convert()    
     fenetre.fill((255,255,255)) #remplissage fond blanc
+    fenetre.blit(fond,(540,0))
   
     nombre_case_cote=plat.taille
     taille_case = 350/nombre_case_cote
@@ -249,7 +251,7 @@ def ecran(plat):
     current_player=plat.Liste_Joueur[0]
     
     #si on veut importer une image de fond
-    #fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()     
+    #fond = pygame.image.load(os.path.join('img_cartes',"Iceberg.jpg")).convert()     
     #plateau.blit(fond, (0,0))
     #pour Colorer le fond :
     plateau.fill((250,250,250))
@@ -366,8 +368,8 @@ def deplacement(i):
             plat.coulisser(coord_x,coord_y)
             current_player.deplacement_effectué=True
             plateau=pygame.Surface((cote_fenetre,cote_fenetre)) #vider le plateau
-        #    fond = pygame.image.load(os.path.join('img_cartes',"fondbeige.png")).convert()
-        #    plateau.blit(fond, (0,0))
+            #fond = pygame.image.load(os.path.join('img_cartes',"Iceberg.jpg")).convert()
+            #plateau.blit(fond, (0,0))
             plateau.fill((250,250,250)) #fond blanc
             afficher(plat,plateau,fenetre,current_player)
             fenetre.blit(plateau,(100,100))
@@ -427,8 +429,9 @@ def fenetreScore(joueur,plat):
     img_croix=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"croix.png"))).convert_alpha()
     croix=pygame.transform.scale(img_croix,(25,25))
     
-    scoreframe=pygame.Surface((400,400))
-    scoreframe.fill(CIEL)
+    scoreframe=pygame.Surface((400,400),pygame.SRCALPHA)
+    
+    #scoreframe.fill(CIEL)
     
     fenetre.fill(WHITE , (550,20,250,40))
     ecrire("Au tour de: "+str(joueur.identifiant),
@@ -446,7 +449,7 @@ def fenetreScore(joueur,plat):
     scoreframe.blit(pepite,(250,50))
     ecrire(pepitescore,scoreframe,(280,50))
     
-    ordreMission=pygame.Surface((380,100))
+    ordreMission=pygame.Surface((380,100),pygame.SRCALPHA)
     ordreMission.fill(WHITE)
     ecrire('Ordre de mission : ',
            ordreMission,
