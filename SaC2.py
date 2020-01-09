@@ -17,12 +17,21 @@ class SandC2(object):
         print('yeah')
     
     def read_file(self, _file_path):
+        
+        """ Permet d'ouvrir un fichier en mode lecture """
+        
         file = open(_file_path, 'r')
         content = file.readlines()
         file.close()
         return content
         
     def charge_game_file(self,plateau):
+        
+        
+        """ Ouvre un fichier de sauvegarde au bon format et transfère les informations 
+        de ce dernier dans les bon attributs du jeu """
+        
+        
         file = tkfd.askopenfilename()
         if file!= "":
             content = self.read_file(file)
@@ -32,7 +41,9 @@ class SandC2(object):
             pts_fantome = int(sauv[2][1])
             pts_ordre_mission = int(sauv[3][1])
             nb_ordre_mission = int(sauv[4][1])
-            """ Généaration d'un plateau avec nos paramètres ? """
+            
+            """ Génération d'un plateau avec les paramètres de sauvegarde """
+            
             compteur = 5
             new_plateau = Plateau(plateau.taille)
             plateau = new_plateau
@@ -62,7 +73,9 @@ class SandC2(object):
                     compteur+=1
             print(sauv[compteur])
             print(plateau.labyrinthe_detail)
-            "" "On génère les connexions ?"
+            
+            """ On génère les connexions """
+            
             for i in range(plateau.taille):
                 for j in range(plateau.taille):
                     plateau.etablir_connexion(plateau.labyrinthe_detail[i][j])
@@ -103,7 +116,8 @@ class SandC2(object):
     
      
     def save_game_file(self,plateau):
-        
+        """ Permet de sauvegarder les fichiers sous forme de texte dans un fichier csv crée, permet d'accéder
+        aux informations """
        
         file = tkfd.asksaveasfile(mode='w' , filetypes = [('CSV Files', '*.csv')],
                                   defaultextension=".csv")
