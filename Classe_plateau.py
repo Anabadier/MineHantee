@@ -222,6 +222,10 @@ class Plateau(object) :
                                                dico_connectivite[type_CF].index(orientation_CF),
                                                mobilite=False)
                     self.labyrinthe_detail[i][j] = carte_in
+        self.labyrinthe_detail[0][taille-1].orientation = 3
+        self.labyrinthe_detail[0][taille-1].nom = '0101'
+        self.labyrinthe_detail[taille-1][0].orientation = 1
+        self.labyrinthe_detail[taille-1][0].nom = '1010'
                 
              
     def coulisser_detail (self, coord_x, coord_y):
