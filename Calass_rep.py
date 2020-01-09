@@ -52,8 +52,6 @@ class Joueur(object):
             self.pepite=0
             self.deplacement_effectué=False
             self.carte_visit=[]
-            
-            
     
     def determiner_joueur_voisins_ordre(self):
         index = self.ref_plateau.Liste_Joueur.index(self)
@@ -175,7 +173,6 @@ class Joueur(object):
          self.position_graphe = _carte.position_G
          self.position_detail = _carte.position_D
          self.carte_visit.append(self.position_detail)
-         
    
     def oriente_carte_libre(self, carte_libre, sens):
         test = ["horaire","anti-horaire"]
@@ -413,7 +410,7 @@ class Joueur_IA(Joueur):
                 for une_entree in plateau.entrees:
                     p_copy = plateau.copy()
                     p_copy.coulisser_detail(une_entree[0], une_entree[1], carte_test)
-                    dico_chemins = p_copy.chemin_possible(id_joueur)
+                    #dico_chemins = p_copy.chemin_possible(id_joueur)
                     # chemins_coord = [dico_chemins[coord] for coord in dico_chemins.keys()]
                     # points = [self.fonction_evaluation(plateau, i) for i in chemins_coord]
                     # le_chemin = chemins_coord[points.index(max(points))]
