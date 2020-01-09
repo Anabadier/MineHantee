@@ -364,7 +364,7 @@ class Joueur_IA(Joueur):
             
     def is_terminal_node(self,plateau) : ## actualiser pour dire que s'il ne reste pas suffisament de points pour dépasser le premier is over
         dict_vide = {'fantome' : False , 'pepite' : False, 'joueur': False}
-        taille = len(plateau)
+        taille = plateau.taille
         compteur=0
         for i in plateau :
             if i.elements == dict_vide :
