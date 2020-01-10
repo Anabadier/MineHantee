@@ -36,6 +36,7 @@ RED = 255, 0, 0
 ORANGE = 255, 100, 0
 GREEN = 0, 255, 0
 BLEU = 3,34,76
+BLEUGRIS=178,198,213
 
 
 
@@ -433,6 +434,7 @@ def Joker(arg):
         current_player.greedy(plat)
         nextplayer([plat,current_player])
         current_player.joker_used=True
+        fenetreScore(current_player,plat)
 
         
 def fenetreScore(joueur,plat):
@@ -450,7 +452,7 @@ def fenetreScore(joueur,plat):
     
     scoreframe.fill(WHITE)
     
-    fenetre.fill(WHITE , (530,30,250,40))
+    fenetre.fill(BLEUGRIS , (530,30,250,40))
     ecrire("Au tour de: "+str(joueur.identifiant),
                        fenetre,
                        (550,30),
@@ -543,7 +545,8 @@ def fenetreScore(joueur,plat):
     
     fenetre.fill(WHITE , (550,170,250,30))
     if current_player.joker_used==True:
-       ecrire("Joker déjà utilisé ",
+        print('Joker used')
+        ecrire("Joker déjà utilisé ",
                        fenetre,
                        (600,170),
                        RED,
@@ -563,9 +566,17 @@ def winner(plat):
     winframe=pygame.Surface((700,400))
     winframe.fill(WHITE)
     
+    Ladverse=plat.Liste_Joueur #suppression du joueur concerné
+    gagnant=plat.Liste_Classement[0][1]
+    idj=Ladverse.index(gagnant)        
+
+    
+    for i in range(len(Ladverse)):
+        if i !=idj:
+            ecrire(i.identifiant+" tu es un looser...",winframe,(150,150+50*i),BLEU,50,'chiller')
     print(plat.Liste_Classement)
-    gagnant=plat.Liste_Classement[0][1].identifiant
-    ecrire(gagnant+" a gagné !",winframe,(150,150),BLEU,50,'chiller')
+    
+    ecrire(gagnant.identifiant+" a gagné !",winframe,(150,150),BLEU,50,'chiller')
     bouton_quit=Button(fenetre, " Quitter ",BLEU,pygame.font.SysFont('chiller', 30), -150, 550,fontcol=WHITE)
     bouton_quit.display_button(fenetre)
     newfenetre.blit(winframe,(170,100))
