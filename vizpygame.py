@@ -554,8 +554,11 @@ def fenetreScore(joueur,plat):
                        fontname="chiller") 
     
     #print("==========================",plat.check_gagnant())
+    
     if plat.check_gagnant()==True:
         winner(plat)
+        
+    
         
         
 def winner(plat):
@@ -563,20 +566,45 @@ def winner(plat):
     fond = pygame.image.load(os.path.join('img_cartes',"Iceberg.jpg")).convert()    
     newfenetre.blit(fond,(0,0))
     
+    podium_img=pygame.image.load(os.path.join("img_cartes","podium.png")).convert_alpha()
+    podium=pygame.transform.scale(podium_img,(450,300))
     winframe=pygame.Surface((700,400))
     winframe.fill(WHITE)
+    winframe.blit(podium,(120,70))
     
-    Ladverse=plat.Liste_Joueur #suppression du joueur concerné
-    gagnant=plat.Liste_Classement[0][1]
-    idj=Ladverse.index(gagnant)        
+    Classement=plat.Liste_Classement
+    gagnant=Classement[0][1]
+    
+    img_perso=pygame.image.load(os.path.abspath(os.path.join('img_cartes',dict_pinguin_img[gagnant.identifiant]))).convert_alpha()
+    perso=pygame.transform.scale(img_perso,(100,100))
+    winframe.blit(perso,(300,30))    
+    ecrire(gagnant.nb_points,winframe,(310,150),BLACK,70,'chiller')
 
     
-    for i in range(len(Ladverse)):
-        if i !=idj:
-            ecrire(i.identifiant+" tu es un looser...",winframe,(150,150+50*i),BLEU,50,'chiller')
-    print(plat.Liste_Classement)
     
-    ecrire(gagnant.identifiant+" a gagné !",winframe,(150,150),BLEU,50,'chiller')
+    n=0 #compteur joueur
+    for adv in Classement[1:]:
+            pos=(140+n*300,130)
+            if len(Classement)==4 :
+                if adv!=Classement[-1]: # on n'affiche pas le 4e
+                    img_perso=pygame.image.load(os.path.abspath(os.path.join('img_cartes',dict_pinguin_img[adv[1].identifiant]))).convert_alpha()
+                    perso=pygame.transform.scale(img_perso,(100,100))                
+                    winframe.blit(perso,pos)
+            else :
+                img_perso=pygame.image.load(os.path.abspath(os.path.join('img_cartes',dict_pinguin_img[adv[1].identifiant]))).convert_alpha()
+                perso=pygame.transform.scale(img_perso,(100,100))                
+                winframe.blit(perso,pos)
+            if n==0: #joueur2
+                ecrire(adv[1].nb_points,winframe,(pos[0]+70,pos[1]+130),BLACK,70,'chiller')
+            if n==1 : #joueur 3
+                ecrire(adv[1].nb_points,winframe,(pos[0]-40,pos[1]+130),BLACK,70,'chiller')
+            n+=1
+    
+    
+    if len(Classement)>3:
+        ecrire(Classement[-1][1].identifiant+" tu es un looser...",winframe,(200,350),BLEU,30,'chiller')
+        
+        
     bouton_quit=Button(fenetre, " Quitter ",BLEU,pygame.font.SysFont('chiller', 30), -150, 550,fontcol=WHITE)
     bouton_quit.display_button(fenetre)
     newfenetre.blit(winframe,(170,100))

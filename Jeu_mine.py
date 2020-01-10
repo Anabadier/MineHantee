@@ -18,7 +18,7 @@ import SaC
 
 def JEU(dimension = 7,
         nombre_joueur = 2, pseudos_joueurs = ["Joueur_1"],
-        nombre_joueur_IA = 1, IA_niv = ["Facile"],#Difficile
+        nombre_joueur_IA = 2, IA_niv = ["Facile","Facile"],#Difficile
         nombre_ghost = 21, nombre_ordre_mission = 3,
         nombre_pepite = 49, pts_pepite = 1, pts_fantome = 5, pts_ordre_mission = 15,
         _SaC = SaC.Save_and_Charge()):    
