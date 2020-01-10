@@ -98,44 +98,39 @@ class Joueur(object):
         """
         ajoute les points contenu dans _card
         """
-# =============================================================================
-#         print("add, ", self.nb_points, _card.position_D, _card.position_G, _card.elements,
-#               _card.element_virtuels)
-# =============================================================================
+        print("add, ", self.nb_points, _card.position_D, _card.position_G, _card.elements,
+              _card.element_virtuels)
         if (_card.elements["pepite"]):
-            self.pepite = self.pepite +  1
+            
             self.maj_points(self.ref_plateau.pts_pepite)
             _card.element_virtuels['coup_capture'] = self.ref_plateau.compteur_coup
             _card.element_virtuels['joueur_capture'] = self.identifiant
-# =============================================================================
-#             print('add, ', _card.nom, _card.position_D, _card.position_G,
-#                   self.ref_plateau.pts_pepite, self.nb_points)
-# =============================================================================
+            print('add, ', _card.nom, _card.position_D, _card.position_G, _card.elements,
+                  self.ref_plateau.pts_pepite, self.nb_points)
             if _reset_value:
+                self.pepite = self.pepite +  1
                 _card.elements["pepite"] = False
             
         if (_card.elements["fantome"] != []):
             if (_card.elements["fantome"] == self.ref_plateau.ordre_fantome):
                 if (_card.elements["fantome"] in list(self.ordre_de_mission.keys())):
                     self.maj_points(self.ref_plateau.pts_ordre_mission)
-                    self.ordre_de_mission[_card.elements["fantome"]]=False #maj ordre de mission
                     _card.element_virtuels['coup_capture'] = self.ref_plateau.compteur_coup
                     _card.element_virtuels['joueur_capture'] = self.identifiant
-# =============================================================================
-#                 print('add, ', _card.nom, _card.position_D, _card.position_G,
-#                       self.ref_plateau.pts_ordre_mission, self.nb_points)
-# =============================================================================
+                    print('add, 120', _card.nom, _card.position_D, _card.position_G,_card.elements,
+                      self.ref_plateau.pts_ordre_mission, self.nb_points,self.ordre_de_mission )
+                    if _reset_value:
+                        self.ordre_de_mission[_card.elements["fantome"]]=False#maj ordre de mission
                 else:
                     self.maj_points(self.ref_plateau.pts_fantome)
                     _card.element_virtuels['coup_capture'] = self.ref_plateau.compteur_coup
                     _card.element_virtuels['joueur_capture'] = self.identifiant
-# =============================================================================
-#                 print('add, ', _card.nom, _card.position_D, _card.position_G,
-#                       self.ref_plateau.pts_fantome, self.nb_points)
-# =============================================================================
+                    print('add, ', _card.nom, _card.position_D, _card.position_G,_card.elements,
+                      self.ref_plateau.pts_fantome, self.nb_points)
                 if _reset_value:
                     _card.elements["fantome"] = []
-                self.ref_plateau.ordre_fantome += 1
+                    self.ref_plateau.ordre_fantome += 1
+                
     
     def retrancher_pts_carte(self, _card, _reset_value = True):
         """
@@ -148,7 +143,7 @@ class Joueur(object):
 # =============================================================================
         if (_card.element_virtuels['coup_capture'] == self.ref_plateau.compteur_coup):
             if (_card.element_virtuels["pepite"]):
-                self.pepite = self.pepite +  1
+                self.pepite = self.pepite -  1
                 self.maj_points(self.ref_plateau.pts_pepite, -1)
 # =============================================================================
 #                 print('ret, ',_card.nom, _card.position_D, _card.position_G,
@@ -158,7 +153,7 @@ class Joueur(object):
                     _card.elements["pepite"] = True
                 
             if (_card.element_virtuels["fantome"] != []):
-                if (_card.elements["fantome"] == self.ref_plateau.ordre_fantome):
+                if (_card.element_virtuels["fantome"] == self.ref_plateau.ordre_fantome):
                     if (_card.element_virtuels["fantome"] in list(self.ordre_de_mission.keys())):
                         self.maj_points(self.ref_plateau.pts_ordre_mission, -1)
                         self.ordre_de_mission[_card.element_virtuels["fantome"]]=True

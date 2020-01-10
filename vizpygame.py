@@ -309,6 +309,7 @@ def ecran(plat):
     fenetreScore(current_player,plat)
     
     while current_player in plat.Liste_Joueur_IA and plat.check_gagnant()==False: #si le joueur est une IA 
+    #while current_player in plat.Liste_Joueur_IA:
         current_player.jouer()
         nextplayer([plat,current_player])
         
@@ -417,7 +418,8 @@ def nextplayer(arg):
         
     fenetreScore(current_player,plat)
     
-    while current_player in plat.Liste_Joueur_IA and plat.check_gagnant()==False: #si le joueur est une IA 
+    while current_player in plat.Liste_Joueur_IA and plat.check_gagnant()==False: #si le joueur est une IA
+    #while current_player in plat.Liste_Joueur_IA:
         current_player.jouer()
         nextplayer([plat,current_player])
         
@@ -548,7 +550,7 @@ def fenetreScore(joueur,plat):
                        25,
                        fontname="chiller") 
     
-    print("==========================",plat.check_gagnant())
+    #print("==========================",plat.check_gagnant())
     if plat.check_gagnant()==True:
         winner(plat)
         
