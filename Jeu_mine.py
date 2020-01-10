@@ -18,7 +18,7 @@ import SaC
 
 def JEU(dimension = 7,
         nombre_joueur = 2, pseudos_joueurs = ["Joueur_1"],
-        nombre_joueur_IA = 2, IA_niv = ["Facile","Facile"],#Difficile
+        nombre_joueur_IA = 2, IA_niv = ["Facile","Normale"],#Difficile
         nombre_ghost = 21, nombre_ordre_mission = 3,
         nombre_pepite = 49, pts_pepite = 1, pts_fantome = 5, pts_ordre_mission = 15,
         _SaC = SaC.Save_and_Charge()):    
@@ -129,7 +129,7 @@ def JEU(dimension = 7,
     for i in range(nombre_joueur_IA):#génération des joueurs IA
         new_joueur = Joueur_IA(_identifiant = IA_niv[i]+"_"+str(i), _niv = IA_niv[i])
         new_joueur.ref_plateau = plateau
-        if (new_joueur.niv == "Difficile"):
+        if (new_joueur.niv == "Normale"):
             new_joueur.UCT_solver = UCT_2()
         plateau.Liste_Joueur_IA.append(new_joueur)
     

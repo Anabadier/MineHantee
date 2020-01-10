@@ -141,12 +141,12 @@ class SandC2(object):
                 Liste_joueur.append(A)
                 compteur+=1
             plateau.Liste_Joueur_IA = Liste_joueur
-            plateau.Liste_Joueur = plateau.Liste_Joueur_H + plateau.Liste_Joueur_IA
+            plateau.Liste_Joueur = plateau.Liste_Joueur_IA + plateau.Liste_Joueur_H
             
             for _j in plateau.Liste_Joueur:
                 _j.determiner_joueur_voisins_ordre()
         #print(plateau.Liste_Joueur[0])
-            plateau.maj_classement
+            plateau.maj_classement()
             current = sauv[compteur][1]
             #print(current)
             for i in plateau.Liste_Joueur:

@@ -98,15 +98,19 @@ class Joueur(object):
         """
         ajoute les points contenu dans _card
         """
-        print("add, ", self.nb_points, _card.position_D, _card.position_G, _card.elements,
-              _card.element_virtuels)
+# =============================================================================
+#         print("add, ", self.nb_points, _card.position_D, _card.position_G, _card.elements,
+#               _card.element_virtuels)
+# =============================================================================
         if (_card.elements["pepite"]):
             
             self.maj_points(self.ref_plateau.pts_pepite)
             _card.element_virtuels['coup_capture'] = self.ref_plateau.compteur_coup
             _card.element_virtuels['joueur_capture'] = self.identifiant
-            print('add, ', _card.nom, _card.position_D, _card.position_G, _card.elements,
-                  self.ref_plateau.pts_pepite, self.nb_points)
+# =============================================================================
+#             print('add, ', _card.nom, _card.position_D, _card.position_G, _card.elements,
+#                   self.ref_plateau.pts_pepite, self.nb_points)
+# =============================================================================
             if _reset_value:
                 self.pepite = self.pepite +  1
                 _card.elements["pepite"] = False
@@ -117,16 +121,20 @@ class Joueur(object):
                     self.maj_points(self.ref_plateau.pts_ordre_mission)
                     _card.element_virtuels['coup_capture'] = self.ref_plateau.compteur_coup
                     _card.element_virtuels['joueur_capture'] = self.identifiant
-                    print('add, 120', _card.nom, _card.position_D, _card.position_G,_card.elements,
-                      self.ref_plateau.pts_ordre_mission, self.nb_points,self.ordre_de_mission )
+# =============================================================================
+#                     print('add, 120', _card.nom, _card.position_D, _card.position_G,_card.elements,
+#                       self.ref_plateau.pts_ordre_mission, self.nb_points,self.ordre_de_mission )
+# =============================================================================
                     if _reset_value:
                         self.ordre_de_mission[_card.elements["fantome"]]=False#maj ordre de mission
                 else:
                     self.maj_points(self.ref_plateau.pts_fantome)
                     _card.element_virtuels['coup_capture'] = self.ref_plateau.compteur_coup
                     _card.element_virtuels['joueur_capture'] = self.identifiant
-                    print('add, ', _card.nom, _card.position_D, _card.position_G,_card.elements,
-                      self.ref_plateau.pts_fantome, self.nb_points)
+# =============================================================================
+#                     print('add, ', _card.nom, _card.position_D, _card.position_G,_card.elements,
+#                       self.ref_plateau.pts_fantome, self.nb_points)
+# =============================================================================
                 if _reset_value:
                     _card.elements["fantome"] = []
                     self.ref_plateau.ordre_fantome += 1
@@ -137,11 +145,10 @@ class Joueur(object):
         retranche les points qui était contenus dans _card en se basant sur les
         souvenir de _card.element_virtuels
         """
-# =============================================================================
-#         print("ret, ", self.nb_points, _card.position_D, _card.position_G,
-#               _card.element_virtuels, self.ref_plateau.compteur_coup)
-# =============================================================================
+        print("ret, ", self.nb_points, _card.position_D, _card.position_G, _card.elements,
+              _card.element_virtuels, self.ref_plateau.compteur_coup)
         if (_card.element_virtuels['coup_capture'] == self.ref_plateau.compteur_coup):
+            print(154)
             if (_card.element_virtuels["pepite"]):
                 self.pepite = self.pepite -  1
                 self.maj_points(self.ref_plateau.pts_pepite, -1)
@@ -151,26 +158,30 @@ class Joueur(object):
 # =============================================================================
                 if _reset_value:
                     _card.elements["pepite"] = True
+                    self.pepite = self.pepite -  1
                 
             if (_card.element_virtuels["fantome"] != []):
+                print(166, self.ref_plateau.ordre_fantome, _card.element_virtuels["fantome"])
                 if (_card.element_virtuels["fantome"] == self.ref_plateau.ordre_fantome):
                     if (_card.element_virtuels["fantome"] in list(self.ordre_de_mission.keys())):
                         self.maj_points(self.ref_plateau.pts_ordre_mission, -1)
-                        self.ordre_de_mission[_card.element_virtuels["fantome"]]=True
-# =============================================================================
-#                     print('ret, ',_card.nom, _card.position_D, _card.position_G,
-#                           self.ref_plateau.pts_ordre_mission, self.nb_points)
-# =============================================================================
+                        #self.ordre_de_mission[_card.element_virtuels["fantome"]]=True
+                        if _reset_value:
+                            self.ordre_de_mission[_card.elements["fantome"]]=True
+    # =============================================================================
+    #                     print('ret, ',_card.nom, _card.position_D, _card.position_G,
+    #                           self.ref_plateau.pts_ordre_mission, self.nb_points)
+    # =============================================================================
                     else:
                         self.maj_points(self.ref_plateau.pts_fantome, -1)
-# =============================================================================
-#                     print('ret, ',_card.nom, _card.position_D, _card.position_G,
-#                           self.ref_plateau.pts_fantome, self.nb_points)
-# =============================================================================
+    # =============================================================================
+    #                     print('ret, ',_card.nom, _card.position_D, _card.position_G,
+    #                           self.ref_plateau.pts_fantome, self.nb_points)
+    # =============================================================================
                     if _reset_value:
                         _card.elements["fantome"] = _card.element_virtuels["fantome"]
-                    
                     self.ref_plateau.ordre_fantome -= 1
+                    print(184, _card.elements)
     
     def maj_position(self, _carte):
          self.position_graphe = _carte.position_G
@@ -309,6 +320,30 @@ class Joueur(object):
             self.effectuer_chemin(_plateau, _description_coup[2])
             #print(303, 'going forward', "après chemin")
             self.ref_plateau.compteur_coup += 1
+    
+    def coup_alea(self, _plateau):
+        """
+        Retourne le coup complet aléatoirement (rotation de la carte libre, choix
+        de la ligne ou de la colonne à jouer, déplacement)
+        
+        _plateau(instance de la classe Plateau):
+            référence du plateau sur lequel on joue. Important car on utiisera
+            cette fonction dans le "RollOut" de l'UCT sur des copies du plateau
+            d'origine.
+        """
+        nb_rotation = rd.choice([1,2,3,4])
+        fleche = rd.choice(_plateau.liste_row_col)
+        self.rotation_carte(_plateau, nb_rotation)
+        self.modifier_plateau(_plateau, fleche)
+        path = []
+        self.generate_list_paths(_plateau)
+        if (self.liste_paths != []):
+            path = rd.choice(self.liste_paths)
+            self.effectuer_chemin(_plateau, path)
+        
+        self.ref_plateau.compteur_coup += 1
+        
+        return [nb_rotation, fleche, path]
     
     def heuristique(self,chemin,plateau):
         """
@@ -537,29 +572,7 @@ class Joueur_IA(Joueur):
                         break
             return (entree, ori, chem, value)
     
-    def coup_alea(self, _plateau):
-        """
-        Retourne le coup complet aléatoirement (rotation de la carte libre, choix
-        de la ligne ou de la colonne à jouer, déplacement)
-        
-        _plateau(instance de la classe Plateau):
-            référence du plateau sur lequel on joue. Important car on utiisera
-            cette fonction dans le "RollOut" de l'UCT sur des copies du plateau
-            d'origine.
-        """
-        nb_rotation = rd.choice([1,2,3,4])
-        fleche = rd.choice(_plateau.liste_row_col)
-        self.rotation_carte(_plateau, nb_rotation)
-        self.modifier_plateau(_plateau, fleche)
-        path = []
-        self.generate_list_paths(_plateau)
-        if (self.liste_paths != []):
-            path = rd.choice(self.liste_paths)
-            self.effectuer_chemin(_plateau, path)
-        
-        self.ref_plateau.compteur_coup += 1
-        
-        return [nb_rotation, fleche, path]
+    
         
     
 
@@ -794,11 +807,11 @@ class UCT_2(object):
             while (not _plateau.check_gagnant() and nb_coup_rollout < _nb_coup_max):
                 j_playing = _plateau.dict_ID2J[j_playing.joueur_suivant]
                 #print(j_playing.identifiant, "is playing")
-                #coup_alea = j_playing.coup_alea(_plateau)
-                coup_greedy = j_playing.greedy(_plateau)
+                coup_alea = j_playing.coup_alea(_plateau)
+                #coup_greedy = j_playing.greedy(_plateau)
                 #print(coup_alea)
-                #rollout_action_list += [[j_playing]+coup_alea]
-                rollout_action_list += [[j_playing]+coup_greedy]
+                rollout_action_list += [[j_playing]+coup_alea]
+                #rollout_action_list += [[j_playing]+coup_greedy]
                 #print([j_playing.identifiant]+coup_alea)
                 #j_playing.coup_cible(_plateau, coup_alea)
                 
@@ -817,7 +830,6 @@ class UCT_2(object):
                 
             #comptabilise la victoire du vainqueur
             compteur_victoires[_plateau.Liste_Classement[0][1].identifiant] += 1#on incrémente le compteur de victoire
-            
             #remet le plateau dans l'etat AVANT ROLLOUT
             for i in range(nb_coup_rollout-1, -1, -1):
                 #print(605,rollout_action_list[i])

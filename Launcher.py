@@ -108,13 +108,17 @@ class LauncherMineHantee(object):
         
         Charger_partie = ttk.Button(self.fen,
                                  text = "Charger une partie",
-                                 command = self.SaverCharger2.charge_game_file)
+                                 command = self.charge_partie)
         Charger_partie.grid(column = 2, row = 0, padx = 15)
         
         Retour = ttk.Button(self.fen,
                                  text = "Retour",
                                  command = self.retour)
         Retour.grid(column = 3, row = 0, padx = 15)
+    
+    def charge_partie(self):
+        self.fen.destroy()
+        self.SaverCharger2.charge_game_file()
     
     def setup_scalers(self, _start_row = 0):
         
@@ -423,7 +427,7 @@ class LauncherMineHantee(object):
                                            state = "readonly",
                                            values = ["Facile", "Normale", "Difficile"])
                 self.IA_NIV_Entry.grid(column = 1, row = k, padx = 15)
-                self.IA_NIV_Entry.set("Normale")
+                self.IA_NIV_Entry.set("Difficile")
                 self.IA_NIV.append(self.IA_NIV_Entry)
         
         self.message_space = tk.Label(self.fen)
