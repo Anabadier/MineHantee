@@ -377,6 +377,7 @@ class Plateau(object) :
         
         nb_joueur = len(self.Liste_Joueur)
         save_nb_points = [self.Liste_Classement[i][0] for i in range(nb_joueur)]
+        print(380, save_nb_points)
         
         for i in range(self.taille):#on traverse toutes les cartes
             for j in range(self.taille):
@@ -392,6 +393,9 @@ class Plateau(object) :
 
         if c == nb_joueur-1:#si le compteur est egal au nb d'adversaires alors le joueur en tête à gagné
             gagnant = True
+        
+        print(397, save_nb_points, self.Liste_Classement[0][1].nb_points,
+              self.Liste_Classement[1][1].nb_points)
         
         return gagnant
     
