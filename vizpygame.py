@@ -105,6 +105,7 @@ def afficher(plat,plateau,fenetre,joueur):
                 plateau.blit(cache,(x,y))
             
             num_case+=1  
+            print(case.elements)
             #Si pépite/fan ààpm tome sur la carte, voir condition avec la matrice des instances de cartes
             if case.elements['pepite'] == True:
                 plateau.blit(pepite,(x,y))
@@ -407,7 +408,6 @@ def nextplayer(arg):
     current_player=arg[1]
     current_player.deplacement_effectué=False
     current_player.carte_visit=[current_player.position_detail]
-    print(current_player.carte_visit)
     current_player=plat.dict_ID2J[current_player.joueur_suivant]
     
     plateau=pygame.Surface((cote_fenetre,cote_fenetre)) #vider le plateau
