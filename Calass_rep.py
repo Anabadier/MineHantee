@@ -393,8 +393,8 @@ class Joueur_IA(Joueur):
         if (self.niv == "Facile"):
             
             #p_d, p_g = self.position_detail, self.position_graphe
-            #coup_alea = self.coup_alea(self.ref_plateau)#a changer pour une approche greedy
-            self.greedy(self.ref_plateau)
+            self.coup_alea(self.ref_plateau)#a changer pour une approche greedy
+            #self.greedy(self.ref_plateau)
             #self.coup_cible(self.ref_plateau, coup_alea)
             #print(268, "===================")
             #self.coup_cible(self.ref_plateau, coup_alea, True)
@@ -410,15 +410,18 @@ class Joueur_IA(Joueur):
 # =============================================================================
                 
         elif (self.niv == "Normale"): #0 fleche , 1 ori 
-            #Mettre AlphaBeta ici
-            coup = self.mini_max(self.ref_plateau, self.identifiant, self.identifiant, 1, -math.inf, math.inf, True)
-            self.rotation_carte(self.ref_plateau, coup[1])
-            self.ref_plateau.coulisser(coup[0][0],coup[0][1])
-            chemin = [self.ref_plateau.node_pos.index(t) for t in coup[2]]
-            self.effectuer_chemin(self.ref_plateau, chemin)
-        elif (self.niv == "Difficile"):
             description_coup = self.UCT_solver.jouer_UCT(self.ref_plateau, self)
             self.coup_cible(self.ref_plateau, description_coup)
+            #Mettre AlphaBeta ici
+            # coup = self.mini_max(self.ref_plateau, self.identifiant, self.identifiant, 1, -math.inf, math.inf, True)
+            # self.rotation_carte(self.ref_plateau, coup[1])
+            # self.ref_plateau.coulisser(coup[0][0],coup[0][1])
+            # chemin = [self.ref_plateau.node_pos.index(t) for t in coup[2]]
+            # self.effectuer_chemin(self.ref_plateau, chemin)
+        elif (self.niv == "Difficile"):
+            self.greedy(self.ref_plateau)
+            # description_coup = self.UCT_solver.jouer_UCT(self.ref_plateau, self)
+            # self.coup_cible(self.ref_plateau, description_coup)
     
     def coup_cible(self, _plateau, _description_coup, _backward = False):
         """
