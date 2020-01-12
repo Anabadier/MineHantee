@@ -10,7 +10,7 @@ import socket, threading
 import Launcher as Lch
 import Jeu_mine as Jm
 import vizpygame as vpyg
-
+import time
 
 class Client(object):
     def __init__(self, _ref_launcher):
@@ -19,6 +19,8 @@ class Client(object):
         self.PORT = int(self.launcher.PORT)
         self.HOST = self.launcher.HOST
         self.pseudo = self.launcher.value_pseudos[0]
+        print(22, self.launcher.value_pseudos[0])
+        print(22, self.pseudo)
         # création ref
         self.ref_socket = {}
         
@@ -45,7 +47,9 @@ class Client(object):
                 
                 print("Connecté au serveur", self.HOST, self.PORT)
                 
+                print(48)
                 self.envoyer_Pseudo()
+                print(50)
                 
             except socket.error:
                 print('Erreur','La connexion au serveur a échoué.')
@@ -67,6 +71,7 @@ class Client(object):
     
     def envoyer_ordre_set_paramatre_in_client(self):
         message = "SET PARA CLIENT"
+        print(70, message)
         message = bytes(message,"UTF8")
         self.ref_socket[0].send(message)
         print(68, "sent")
@@ -74,7 +79,7 @@ class Client(object):
     def envoyer_Pseudo(self):
         if self.CONNEXION == True:
             try:
-                message = self.pseudo
+                message = "PSEUDO " + self.pseudo
                 # émission 
                 self.ref_socket[0].send(bytes(message,"UTF8"))
                 print("Pseudo envoyé au serveur")
@@ -88,7 +93,7 @@ class Client(object):
             try:
                 print("Envoie de la touche au serveur...")
                 # émission 
-                self.ref_socket[0].sendall(bytes(_touche,"UTF8"))
+                self.ref_socket[0].send(bytes(_touche,"UTF8"))
                 
             except socket.error:
                 print("Echec de l'envoie de la touche au server")

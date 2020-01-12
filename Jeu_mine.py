@@ -163,7 +163,7 @@ if __name__=="__main__":
     plateau = JEU()
     c = 0
     actions = []
-    while (not plateau.check_gagnant() and c < 30):
+    while (not plateau.check_gagnant() and c < 100):#not plateau.check_gagnant() and 
         print("Coup numéro:", c)
         for _j in plateau.Liste_Joueur_IA:
             print("=====================================================")
@@ -171,22 +171,36 @@ if __name__=="__main__":
                   _j.position_detail, _j.position_graphe)
             _j.jouer()
 # =============================================================================
+#             pts = _j.nb_points
 #             coup_alea = _j.coup_alea(_j.ref_plateau)
 #             print(coup_alea)
-#             actions += [[_j]+coup_alea]
+#             actions += [[_j]+coup_alea+[pts]]
 # =============================================================================
             print("Après avoir joué,",_j.identifiant,",", _j.nb_points, "points",
                   _j.position_detail, _j.position_graphe)
+# =============================================================================
+#             if (_j.nb_points !=0):
+#                 c = 200
+#                 break
+# =============================================================================
             c+=1
     #print(actions)
 # =============================================================================
 #     for i in range(c-1, -1, -1):
 #         print("=====================================================")
-#         print(actions[i][1:])
+#         print("retro coup", actions[i][1:])
+#         print("Avant retro coup", _j.identifiant, ",", _j.nb_points, "points",
+#                   _j.position_detail, _j.position_graphe)
 #         #print(605,rollout_action_list[i])
 #         j_retro_playing = actions[i][0]
 #         #print(606, j_retro_playing.identifiant, j_retro_playing.nb_points)
 #         j_retro_playing.coup_cible(plateau, actions[i][1:], True)
+#         print("Après retro coup", _j.identifiant, ",", _j.nb_points, "points", "({0})".format(actions[i][-1]),
+#                   _j.position_detail, _j.position_graphe)
+#         if j_retro_playing.nb_points != actions[i][-1]:
+#             break
+#        
+#     for _j in plateau.Liste_Joueur_IA:
+#         print(_j.nb_points == 0)
 # =============================================================================
-            
         

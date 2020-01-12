@@ -33,7 +33,8 @@ class carte():
         self.type=type_carte
         self.elements=dict_elements
         self.element_virtuels = {'fantome':[],'pepite':[],'joueur':[],
-                                 'coup_capture':[], 'joueur_capture':[]}#utilisé pour UCT
+                                 'coup_capture_pepite':[], 'joueur_capture_pepite':[],
+                                 'coup_capture_fantome':[], 'joueur_capture_fantome':[]}#utilisé pour UCT
         self.position_G=position_graph
         self.position_D=position_detail
         self.connectivite=dict_connectivité[type_carte]

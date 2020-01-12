@@ -286,17 +286,7 @@ class Plateau(object) :
         self.carte_en_dehors.elements = carte_sortante.elements
         self.carte_en_dehors.element_virtuels = carte_sortante.element_virtuels
         
-        #print(self.carte_en_dehors.elements, self.carte_en_dehors.element_virtuels)
-        #print("======================================================")
-        #carte_sortante.elements = dict_vide
         self.carte_en_dehors = carte_sortante
-        #print(self.carte_en_dehors.elements, self.carte_en_dehors.element_virtuels)
-        # actualiser network graph
-
-
-        
-        #la nouvelle carte à coulisser sera la carte qui est sortie
-        #self.carte_en_dehors = carte_sortante 
     
     
     def coulisser (self, coord_x, coord_y):
@@ -374,7 +364,7 @@ class Plateau(object) :
         gagnant = False
         
         nb_joueur = len(self.Liste_Joueur)
-        print(nb_joueur, self.Liste_Classement)
+        #print(nb_joueur, self.Liste_Classement)
         save_nb_points = [self.Liste_Classement[i][0] for i in range(nb_joueur)]
         
         for i in range(self.taille):#on traverse toutes les cartes
@@ -399,16 +389,6 @@ class Plateau(object) :
         for i in range(1, self.taille, 2):
             for _char in ["G", "D", "H", "B"]:
                 self.liste_row_col += [_char + str(i)]
-    
-# =============================================================================
-#     def __deepcopy__(self, memo):
-#         cls = self.__class__
-#         result = cls.__new__(cls)
-#         memo[id(self)] = result
-#         for k, v in self.__dict__.items():
-#             setattr(result, k, cp.deepcopy(v, memo))
-#         return result
-# =============================================================================
         
     def chemin_possible(self,id_joueur):
         for i in self.labyrinthe_detail: #recherche de la position du joueur
@@ -437,7 +417,7 @@ class Plateau(object) :
         move :
             code touche du clavier
         """
-        print('move detected',move)
+        #print('move detected',move)
                 
         pos_init=joueur.position_detail #ancienne position
         node_init = self.node_pos.index(pos_init)
@@ -486,7 +466,7 @@ class Plateau(object) :
                 path.append(elem)
         path=set(path)
         
-        print(joueur.carte_visit)
+        #print(joueur.carte_visit)
         if pos_target in path and pos_target not in joueur.carte_visit:
             joueur.effectuer_chemin(self,[node_init,node_target])
             joueur.carte_visit.append(pos_init)

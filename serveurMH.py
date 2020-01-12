@@ -85,6 +85,9 @@ class ThreadClient(threading.Thread):
         print("Connexion du client", self.connexion.getpeername(),self.nom, self.connexion)
     
     def receiver_manager(self, _message):
+        if _message[:6] == "PSEUDO":
+            self.get_pseudo_client(_message)
+        
         if _message[:6] == "PARA_S":
             if (self.serveur.connexion_counter == 1):
                 self.set_board_parameter_in_server(_message)
@@ -126,11 +129,16 @@ class ThreadClient(threading.Thread):
         self.serveur.dict_clients[self.nom].send(parametres)
         
     
-    def manage_connexion_client(self):
+    def get_pseudo_client(self, _message):
         # attente réponse client
-        pseudo = self.connexion.recv(4096)
-        pseudo = pseudo.decode(encoding='UTF-8')
+        #pseudo = self.connexion.recv(4096)
+        print(135)
+        pseudo = _message.split()[-1]
+        print(137, pseudo)
+        #pseudo = pseudo.decode(encoding='UTF-8')
+        print(139, pseudo)
         self.serveur.dict_pseudos[self.nom] = pseudo
+        print(141, self.serveur.dict_pseudos)
         print("Pseudo du client", self.connexion.getpeername(),"-->", pseudo)
     
     def get_creator_status(self):
@@ -144,8 +152,10 @@ class ThreadClient(threading.Thread):
         
     def run(self):
           
-        if (self.serveur.connexion_counter < self.serveur.serveur_NbJoueur):
-            self.manage_connexion_client()
+# =============================================================================
+#         if (self.serveur.connexion_counter < self.serveur.serveur_NbJoueur):
+#             self.manage_connexion_client()
+# =============================================================================
         
         self.get_creator_status()
         
@@ -158,8 +168,9 @@ class ThreadClient(threading.Thread):
                 
                 if (reponse != ""):
                     self.receiver_manager(reponse)
-                    
                 
+                reponse = ""
+                    
             except:
                 print(reponse)
                 # fin du thread
