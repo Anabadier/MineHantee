@@ -391,7 +391,6 @@ class LauncherMineHantee(object):
         if (not self.partie_en_ligne):
             self.get_plateau_options()
         
-        
         self.fen.title("Joindre la partie - Mine Hantée")
         if self.navigation_flow[-1] != 6:
             self.navigation_flow.append(6)
@@ -400,14 +399,14 @@ class LauncherMineHantee(object):
         
         # Choix des pseudos des joueurs
         self.PSEUDO = []
-        if (self.partie_en_ligne):
+        if (self.joigning_server):
             tk.Label(self.fen, text = "Pseudonyme:").grid(column=0, row=0, padx = 15)
             self.PSEUDO_Entry = tk.Entry(self.fen)
             self.PSEUDO_Entry.grid(column = 1, row = 0, padx = 15)
             self.PSEUDO_Entry.insert(0,"Joueur_1")
             self.PSEUDO.append(self.PSEUDO_Entry)
         
-        if (not self.joigning_server):
+        else:
             for i in range (self.value_NbJoueur-self.value_NbJoueur_IA):
                 tk.Label(self.fen, text = "Pseudonyme Joueur "+str(i)+":").grid(
                                                     column=0, row=i, padx = 15)
@@ -418,17 +417,18 @@ class LauncherMineHantee(object):
         
         
             #choix des IAs
-            self.IA_NIV = []
-            for i in range (self.value_NbJoueur_IA):
-                k = i+self.value_NbJoueur-self.value_NbJoueur_IA
-                tk.Label(self.fen, text = "Difficulté IA "+str(i)+":").grid(
-                                                    column=0, row=k, padx = 15)
-                self.IA_NIV_Entry = ttk.Combobox(self.fen,
-                                           state = "readonly",
-                                           values = ["Facile", "Normale", "Difficile"])
-                self.IA_NIV_Entry.grid(column = 1, row = k, padx = 15)
-                self.IA_NIV_Entry.set("Difficile")
-                self.IA_NIV.append(self.IA_NIV_Entry)
+            if (not self.partie_en_ligne):
+                self.IA_NIV = []
+                for i in range (self.value_NbJoueur_IA):
+                    k = i+self.value_NbJoueur-self.value_NbJoueur_IA
+                    tk.Label(self.fen, text = "Difficulté IA "+str(i)+":").grid(
+                                                        column=0, row=k, padx = 15)
+                    self.IA_NIV_Entry = ttk.Combobox(self.fen,
+                                               state = "readonly",
+                                               values = ["Facile", "Normale", "Difficile"])
+                    self.IA_NIV_Entry.grid(column = 1, row = k, padx = 15)
+                    self.IA_NIV_Entry.set("Difficile")
+                    self.IA_NIV.append(self.IA_NIV_Entry)
         
         self.message_space = tk.Label(self.fen)
         self.message_space.grid(column=0, row=1, columnspan = 2)
@@ -480,11 +480,13 @@ class LauncherMineHantee(object):
         self.value_pseudos = []
         for _pseudo_entry in self.PSEUDO:
             self.value_pseudos += [_pseudo_entry.get()]
+        print("value_pseudo =", self.value_pseudos)
         
-        if (not self.joigning_server):
-            self.value_IA_niv = []
-            for _IA_niv in self.IA_NIV:
-                self.value_IA_niv += [_IA_niv.get()]
+        self.value_IA_niv = []
+        if (not self.partie_en_ligne):
+            if (not self.joigning_server):
+                for _IA_niv in self.IA_NIV:
+                    self.value_IA_niv += [_IA_niv.get()]
             
     
     def rejoindre_partie(self):
@@ -494,31 +496,13 @@ class LauncherMineHantee(object):
         if (self.partie_en_ligne):
             self.ref_client = cMH.Client(self)
             #self.plateau_exemple()
-            print(486, self.value_DimPlateau,
-            self.value_NbJoueur,
-            self.value_NbJoueur_IA,
-            self.value_NbFantome,
-            self.value_NbFantomeOdM,
-            self.value_NbPepite,
-            self.value_PtsPepite,
-            self.value_PtsFantome,
-            self.value_PtsFantomeOdM)
         
         else:
             self.fen.destroy()
             self.launch_game()
             
     def launch_game(self):
-        print(502)
-        print(486, self.value_DimPlateau,
-            self.value_NbJoueur,
-            self.value_NbJoueur_IA,
-            self.value_NbFantome,
-            self.value_NbFantomeOdM,
-            self.value_NbPepite,
-            self.value_PtsPepite,
-            self.value_PtsFantome,
-            self.value_PtsFantomeOdM)
+        print("Instanciation du plateau")
         plateau = Jm.JEU(dimension = self.value_DimPlateau,
                           nombre_joueur = self.value_NbJoueur,
                           pseudos_joueurs = self.value_pseudos,
@@ -531,21 +515,24 @@ class LauncherMineHantee(object):
                           pts_fantome = self.value_PtsFantome,
                           pts_ordre_mission = self.value_PtsFantomeOdM,
                           _SaC = self.SaverCharger)
-        print(516)
-        vpyg.ecran(plateau)
-        #self.fen.destroy()
-    
-    def plateau_exemple(self):
-        self.fen.title("Joindre la partie - Mine Hantée")
-        if self.navigation_flow[-1] != 6:
-            self.navigation_flow.append(6)
-        for widget in self.fen.winfo_children():
-            widget.destroy()
         
-        Info_serveur = ttk.Button(self.fen,
-                                   text = "touche test",
-                                   command = self.ref_client.envoyer_Touche)
-        Info_serveur.grid(column = 0, row = 2, padx = 15)
+        print("Lancement de PyGame")
+        TpyG = ThreadPyGame(plateau)
+        TpyG.run()
+        self.fen.destroy()
+        
+
+class ThreadPyGame(threading.Thread):
+    '''dérivation de classe pour gérer la connexion avec un client'''
+    
+    def __init__(self, _plateau):
+        threading.Thread.__init__(self)
+        self.plateau = _plateau
+    
+    def run(self):
+        print("in")
+        #while True :
+        vpyg.ecran(self.plateau)
 
         
 if __name__=="__main__":

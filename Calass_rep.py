@@ -105,8 +105,8 @@ class Joueur(object):
         if (_card.elements["pepite"]):
             
             self.maj_points(self.ref_plateau.pts_pepite)
-            _card.element_virtuels['coup_capture'] = self.ref_plateau.compteur_coup
-            _card.element_virtuels['joueur_capture'] = self.identifiant
+            _card.element_virtuels['coup_capture_pepite'] = self.ref_plateau.compteur_coup
+            _card.element_virtuels['joueur_capture_pepite'] = self.identifiant
 # =============================================================================
 #             print('add, ', _card.nom, _card.position_D, _card.position_G, _card.elements,
 #                   self.ref_plateau.pts_pepite, self.nb_points)
@@ -119,8 +119,8 @@ class Joueur(object):
             if (_card.elements["fantome"] == self.ref_plateau.ordre_fantome):
                 if (_card.elements["fantome"] in list(self.ordre_de_mission.keys())):
                     self.maj_points(self.ref_plateau.pts_ordre_mission)
-                    _card.element_virtuels['coup_capture'] = self.ref_plateau.compteur_coup
-                    _card.element_virtuels['joueur_capture'] = self.identifiant
+                    _card.element_virtuels['coup_capture_fantome'] = self.ref_plateau.compteur_coup
+                    _card.element_virtuels['joueur_capture_fantome'] = self.identifiant
 # =============================================================================
 #                     print('add, 120', _card.nom, _card.position_D, _card.position_G,_card.elements,
 #                       self.ref_plateau.pts_ordre_mission, self.nb_points,self.ordre_de_mission )
@@ -129,8 +129,8 @@ class Joueur(object):
                         self.ordre_de_mission[_card.elements["fantome"]]=False#maj ordre de mission
                 else:
                     self.maj_points(self.ref_plateau.pts_fantome)
-                    _card.element_virtuels['coup_capture'] = self.ref_plateau.compteur_coup
-                    _card.element_virtuels['joueur_capture'] = self.identifiant
+                    _card.element_virtuels['coup_capture_fantome'] = self.ref_plateau.compteur_coup
+                    _card.element_virtuels['joueur_capture_fantome'] = self.identifiant
 # =============================================================================
 #                     print('add, ', _card.nom, _card.position_D, _card.position_G,_card.elements,
 #                       self.ref_plateau.pts_fantome, self.nb_points)
@@ -145,12 +145,12 @@ class Joueur(object):
         retranche les points qui était contenus dans _card en se basant sur les
         souvenir de _card.element_virtuels
         """
-        print("ret, ", self.nb_points, _card.position_D, _card.position_G, _card.elements,
-              _card.element_virtuels, self.ref_plateau.compteur_coup)
-        if (_card.element_virtuels['coup_capture'] == self.ref_plateau.compteur_coup):
-            print(154)
+# =============================================================================
+#         print("ret, ", self.nb_points, _card.position_D, _card.position_G, _card.elements,
+#               _card.element_virtuels, self.ref_plateau.compteur_coup)
+# =============================================================================
+        if (_card.element_virtuels['coup_capture_pepite'] == self.ref_plateau.compteur_coup):
             if (_card.element_virtuels["pepite"]):
-                self.pepite = self.pepite -  1
                 self.maj_points(self.ref_plateau.pts_pepite, -1)
 # =============================================================================
 #                 print('ret, ',_card.nom, _card.position_D, _card.position_G,
@@ -159,29 +159,32 @@ class Joueur(object):
                 if _reset_value:
                     _card.elements["pepite"] = True
                     self.pepite = self.pepite -  1
-                
+        
+        if (_card.element_virtuels['coup_capture_fantome'] == self.ref_plateau.compteur_coup):      
             if (_card.element_virtuels["fantome"] != []):
-                print(166, self.ref_plateau.ordre_fantome, _card.element_virtuels["fantome"])
-                if (_card.element_virtuels["fantome"] == self.ref_plateau.ordre_fantome):
+# =============================================================================
+#                 print(166, self.ref_plateau.ordre_fantome, _card.element_virtuels["fantome"])
+# =============================================================================
+                if (_card.element_virtuels["fantome"] == self.ref_plateau.ordre_fantome-1):
                     if (_card.element_virtuels["fantome"] in list(self.ordre_de_mission.keys())):
                         self.maj_points(self.ref_plateau.pts_ordre_mission, -1)
                         #self.ordre_de_mission[_card.element_virtuels["fantome"]]=True
                         if _reset_value:
-                            self.ordre_de_mission[_card.elements["fantome"]]=True
-    # =============================================================================
-    #                     print('ret, ',_card.nom, _card.position_D, _card.position_G,
-    #                           self.ref_plateau.pts_ordre_mission, self.nb_points)
-    # =============================================================================
+                            self.ordre_de_mission[_card.element_virtuels["fantome"]]=True
+# =============================================================================
+#                             print('ret, ',_card.nom, _card.position_D, _card.position_G,
+#                           self.ref_plateau.pts_ordre_mission, self.nb_points)
+# =============================================================================
                     else:
                         self.maj_points(self.ref_plateau.pts_fantome, -1)
-    # =============================================================================
-    #                     print('ret, ',_card.nom, _card.position_D, _card.position_G,
-    #                           self.ref_plateau.pts_fantome, self.nb_points)
-    # =============================================================================
+# =============================================================================
+#                     print('ret, ',_card.nom, _card.position_D, _card.position_G,
+#                           self.ref_plateau.pts_fantome, self.nb_points)
+# =============================================================================
                     if _reset_value:
                         _card.elements["fantome"] = _card.element_virtuels["fantome"]
                     self.ref_plateau.ordre_fantome -= 1
-                    print(184, _card.elements)
+        #print(184, _card.elements)
     
     def maj_position(self, _carte):
          self.position_graphe = _carte.position_G
@@ -261,14 +264,16 @@ class Joueur(object):
         
         card_path = _plateau.translate_GraphPath2CardsPath(_path)
         if (card_path != []):
-            try:
-                card_path[0].elements["joueur"].remove(self.identifiant)
-                card_path[-1].elements["joueur"].append(self.identifiant)
-            except ValueError:
-                print(self.identifiant, _path, card_path[0].elements, card_path[-1].elements)
-                card_path[0].elements["joueur"].remove(self.identifiant)
-                card_path[-1].elements["joueur"].append(self.identifiant)
-        print(card_path[0].elements["joueur"], card_path[-1].elements["joueur"])
+            #try:
+            card_path[0].elements["joueur"].remove(self.identifiant)
+            card_path[-1].elements["joueur"].append(self.identifiant)
+# =============================================================================
+#             except ValueError:
+#                 print(self.identifiant, _path, card_path[0].elements, card_path[-1].elements)
+#                 card_path[0].elements["joueur"].remove(self.identifiant)
+#                 card_path[-1].elements["joueur"].append(self.identifiant)
+# =============================================================================
+        #print(card_path[0].elements["joueur"], card_path[-1].elements["joueur"])
 # =============================================================================
 #         else:
 #             print(215, self.identifiant, _path, card_path)
@@ -401,7 +406,7 @@ class Joueur(object):
                         best_coup = [gain,i,j,t]
                 self.modifier_plateau(plateau, fleche, True)
             self.rotation_carte(plateau, i, True)
-        print(best_coup)
+        #print(best_coup)
         self.coup_cible(plateau, best_coup[1:])
         #self.effectuer_chemin(plateau, best_coup[3])
         return best_coup[1:]
@@ -422,12 +427,10 @@ class Joueur_IA(Joueur):
         """
         if (self.niv == "Facile"):
             
-            #p_d, p_g = self.position_detail, self.position_graphe
-            self.coup_alea(self.ref_plateau)#a changer pour une approche greedy
+            coup_alea = self.coup_alea(self.ref_plateau)#a changer pour une approche greedy
             #self.greedy(self.ref_plateau)
-            #self.coup_cible(self.ref_plateau, coup_alea)
             #print(268, "===================")
-            #self.coup_cible(self.ref_plateau, coup_alea, True)
+            self.coup_cible(self.ref_plateau, coup_alea, True)
             
 # =============================================================================
 #             if (p_d != self.position_detail and p_g != self.position_graphe):
@@ -571,10 +574,6 @@ class Joueur_IA(Joueur):
                     if alpha >= beta:
                         break
             return (entree, ori, chem, value)
-    
-    
-        
-    
 
 class UCT_node(object):
     def __init__(self, _C = np.sqrt(2)):
@@ -658,7 +657,6 @@ class UCT_2(object):
             self.recherche_UCT()
             
         _max = 0
-        print(self.racine.enfants[0].nb_visit, self.racine.enfants[0].nb_gagne)
         for _enfant in self.racine.enfants:
             if (_enfant.nb_visit != 0):
                 _enfant.calcul_ucb_score()
@@ -675,30 +673,24 @@ class UCT_2(object):
         """
         Réalise les 4 étapes de l'UCT et met à jour le meilleur_noeud
         """
-        print(510, self.racine.joueur_createur)
+        
         #1
         self.selection()
         
         #2 si nécessaire
         _extension = False
         if (self.noeud_selectionne.nb_visit != 0 or self.noeud_selectionne == self.racine):
-            print(515)
             _extension = True
             self.extension(self.noeud_selectionne)
             self.noeud_selectionne = self.noeud_selectionne.enfants[0]
             
         
         #3
-        print(520)
         compteur_victoires = self.rollout(self.noeud_selectionne, _extension,
                                           self.nb_rollout)
         
         #4
         self.retro_propagation(self.noeud_selectionne, compteur_victoires)
-        print(self.racine.plateau.dict_ID2J[self.racine.joueur_createur].position_detail,
-              self.racine.plateau.dict_ID2J[
-                      self.racine.plateau.dict_ID2J[
-                              self.racine.joueur_createur].joueur_suivant].position_detail)
     
     def selection(self):
         """
@@ -718,13 +710,14 @@ class UCT_2(object):
                     noeud_max = _enfant
             
             self.noeud_selectionne = noeud_max
-            print(542,
-                  self.racine.plateau.dict_ID2J[self.noeud_selectionne.joueur_createur].position_detail,
-                  self.racine.plateau.dict_ID2J[self.noeud_selectionne.joueur_createur].position_graphe)
+# =============================================================================
+#             print(542,
+#                   self.racine.plateau.dict_ID2J[self.noeud_selectionne.joueur_createur].position_detail,
+#                   self.racine.plateau.dict_ID2J[self.noeud_selectionne.joueur_createur].position_graphe)
+# =============================================================================
             self.racine.plateau.dict_ID2J[self.noeud_selectionne.joueur_createur].coup_cible(
                                                             self.racine.plateau,
                                                             self.noeud_selectionne.description_coup)
-            print(546)
             
     def extension(self, _noeud_source):
         """
@@ -736,7 +729,6 @@ class UCT_2(object):
         _noeud_source(UCT_node):
             noeud à partir duquel on étend les choix possibles
         """
-        print(558)
         c = 0
         joueur = self.racine.plateau.dict_ID2J[
                     self.racine.plateau.dict_ID2J[_noeud_source.joueur_createur].joueur_suivant]
@@ -867,13 +859,13 @@ class UCT_2(object):
         noeud = _feuille
         
         while noeud.parent != None:
-            print(682, noeud.joueur_createur)
+            #print(682, noeud.joueur_createur)
             noeud.nb_visit += 1
             noeud.nb_gagne += _compteur_victoires[noeud.joueur_createur]
             
             j_retro_playing = self.racine.plateau.dict_ID2J[noeud.joueur_createur]
             j_retro_playing.coup_cible(self.racine.plateau, noeud.description_coup, True)
-            print(687, j_retro_playing.identifiant, j_retro_playing.nb_points)
+            #print(687, j_retro_playing.identifiant, j_retro_playing.nb_points)
             noeud = noeud.parent
         
         noeud.nb_visit += 1

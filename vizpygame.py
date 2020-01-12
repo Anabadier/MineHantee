@@ -106,7 +106,7 @@ def afficher(plat,plateau,fenetre,joueur):
                 plateau.blit(cache,(x,y))
             
             num_case+=1  
-            print(case.elements)
+            #print(case.elements)
             #Si pépite/fan ààpm tome sur la carte, voir condition avec la matrice des instances de cartes
             if case.elements['pepite'] == True:
                 plateau.blit(pepite,(x,y))
@@ -360,13 +360,13 @@ def gamequit():
     pygame.quit()
     sys.exit()
     
-def deplacement(i):
+def deplacement(arg):
     """Actualise la matrice des cartes
-    i : list[fleche,plateau]"""
+    arg : list[fleche,plateau]"""
     global carte_ej
-    fleche=i[0]
-    plat=i[1]
-    current_player=i[2]
+    fleche=arg[0]
+    plat=arg[1]
+    current_player=arg[2]
     if current_player in plat.Liste_Joueur_H:
         if current_player.deplacement_effectué==False :
             coord_x, coord_y = plat.convertir_Fleche2Coord(fleche)
@@ -400,8 +400,6 @@ def move_player(plat,joueur,move,plateau,fenetre):
         afficher(plat,plateau,fenetre,joueur)
         fenetre.blit(plateau,(100,100))
         fenetreScore(joueur,plat)
-    
-
     
 def nextplayer(arg):
     global current_player
@@ -486,7 +484,7 @@ def fenetreScore(joueur,plat):
 
     for i in range (nombre_fantomes):
         ordreMission.blit(fantome,(10+i*(50+taille_espace),50))
-        print(joueur.ordre_de_mission[list(joueur.ordre_de_mission.keys())[i]])
+        #print(joueur.ordre_de_mission[list(joueur.ordre_de_mission.keys())[i]])
         if joueur.ordre_de_mission[list(joueur.ordre_de_mission.keys())[i]]==False:
             ordreMission.blit(croix,(10+i*(50+taille_espace),50))
         ecrire(list(joueur.ordre_de_mission.keys())[i],
@@ -528,7 +526,7 @@ def fenetreScore(joueur,plat):
             taille_espace=(300-50*nombre_fantomes)/(nombre_fantomes-1)
             for j in range (nombre_fantomes):
                 frameJoueur.blit(fantome,(50+j*(50+taille_espace),0))  
-                print(adv.ordre_de_mission[list(adv.ordre_de_mission.keys())[j]])
+                #print(adv.ordre_de_mission[list(adv.ordre_de_mission.keys())[j]])
                 if adv.ordre_de_mission[list(adv.ordre_de_mission.keys())[j]]==False:
                     frameJoueur.blit(croix,(50+j*(50+taille_espace),0))
             

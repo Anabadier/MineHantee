@@ -17,8 +17,8 @@ import SaC
 
 
 def JEU(dimension = 7,
-        nombre_joueur = 2, pseudos_joueurs = ["Joueur_1"],
-        nombre_joueur_IA = 2, IA_niv = ["Facile","Normale"],#Difficile
+        nombre_joueur = 2, pseudos_joueurs = ["Joueur_0","Joueur_1"],
+        nombre_joueur_IA = 0, IA_niv = ["Facile","Normale"],#Difficile
         nombre_ghost = 21, nombre_ordre_mission = 3,
         nombre_pepite = 49, pts_pepite = 1, pts_fantome = 5, pts_ordre_mission = 15,
         _SaC = SaC.Save_and_Charge()):    
@@ -120,7 +120,7 @@ def JEU(dimension = 7,
     for i in range (dimension):
         for j in range(dimension):
             plateau.etablir_connexion(plateau.labyrinthe_detail[i,j])
-    #nx.draw_networkx(plateau.graph, pos = plateau.node_pos, ax = plateau.ax_graph)
+    nx.draw_networkx(plateau.graph, pos = plateau.node_pos, ax = plateau.ax_graph)
     
     """ 
     Génération des jouers et placement sur le plateau
@@ -151,10 +151,7 @@ def JEU(dimension = 7,
     
     plateau.generate_liste_row_col()
 
-    ################################################################################
-    # Déroulement du jeu
-    ################################################################################
-    _SaC.log_plateau(_plateau = plateau, _overwrite = True)#initialise le log
+    #_SaC.log_plateau(_plateau = plateau, _overwrite = True)#initialise le log
     
     
     return(plateau)
@@ -163,30 +160,46 @@ if __name__=="__main__":
     plateau = JEU()
     c = 0
     actions = []
-    while (not plateau.check_gagnant() and c < 30):
-        print("Coup numéro:", c)
-        for _j in plateau.Liste_Joueur_IA:
-            print("=====================================================")
-            print("Avant de jouer", _j.identifiant, ",", _j.nb_points, "points",
-                  _j.position_detail, _j.position_graphe)
-            _j.jouer()
 # =============================================================================
-#             coup_alea = _j.coup_alea(_j.ref_plateau)
-#             print(coup_alea)
-#             actions += [[_j]+coup_alea]
+#     while (not plateau.check_gagnant() and c < 100):#not plateau.check_gagnant() and 
+#         print("Coup numéro:", c)
+#         for _j in plateau.Liste_Joueur_IA:
+#             print("=====================================================")
+#             print("Avant de jouer", _j.identifiant, ",", _j.nb_points, "points",
+#                   _j.position_detail, _j.position_graphe)
+#             _j.jouer()
+# # =============================================================================
+# #             pts = _j.nb_points
+# #             coup_alea = _j.coup_alea(_j.ref_plateau)
+# #             print(coup_alea)
+# #             actions += [[_j]+coup_alea+[pts]]
+# # =============================================================================
+#             print("Après avoir joué,",_j.identifiant,",", _j.nb_points, "points",
+#                   _j.position_detail, _j.position_graphe)
+# # =============================================================================
+# #             if (_j.nb_points !=0):
+# #                 c = 200
+# #                 break
+# # =============================================================================
+#             c+=1
 # =============================================================================
-            print("Après avoir joué,",_j.identifiant,",", _j.nb_points, "points",
-                  _j.position_detail, _j.position_graphe)
-            c+=1
     #print(actions)
 # =============================================================================
 #     for i in range(c-1, -1, -1):
 #         print("=====================================================")
-#         print(actions[i][1:])
+#         print("retro coup", actions[i][1:])
+#         print("Avant retro coup", _j.identifiant, ",", _j.nb_points, "points",
+#                   _j.position_detail, _j.position_graphe)
 #         #print(605,rollout_action_list[i])
 #         j_retro_playing = actions[i][0]
 #         #print(606, j_retro_playing.identifiant, j_retro_playing.nb_points)
 #         j_retro_playing.coup_cible(plateau, actions[i][1:], True)
+#         print("Après retro coup", _j.identifiant, ",", _j.nb_points, "points", "({0})".format(actions[i][-1]),
+#                   _j.position_detail, _j.position_graphe)
+#         if j_retro_playing.nb_points != actions[i][-1]:
+#             break
+#        
+#     for _j in plateau.Liste_Joueur_IA:
+#         print(_j.nb_points == 0)
 # =============================================================================
-            
         
