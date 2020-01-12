@@ -8,9 +8,6 @@ Created on Wed Nov 20 11:14:37 2019
 
 import socket, threading
 import Launcher as Lch
-import Jeu_mine as Jm
-import vizpygame as vpyg
-import time
 
 class Client(object):
     def __init__(self, _ref_launcher):
@@ -19,8 +16,6 @@ class Client(object):
         self.PORT = int(self.launcher.PORT)
         self.HOST = self.launcher.HOST
         self.pseudo = self.launcher.value_pseudos[0]
-        print(22, self.launcher.value_pseudos[0])
-        print(22, self.pseudo)
         # création ref
         self.ref_socket = {}
         
@@ -46,16 +41,13 @@ class Client(object):
                 self.CONNEXION = True
                 
                 print("Connecté au serveur", self.HOST, self.PORT)
-                
-                print(48)
                 self.envoyer_Pseudo()
-                print(50)
                 
             except socket.error:
                 print('Erreur','La connexion au serveur a échoué.')
     
     def envoyer_parametre_plateau(self):
-        
+        print("Envoie des paramètres du plateau au serveur")
         parametres = "PARA_S {0} {1} {2} {3} {4} {5} {6}".format(
                                               self.launcher.value_DimPlateau,
                                               self.launcher.value_NbFantome,
@@ -66,15 +58,14 @@ class Client(object):
                                               self.launcher.value_PtsFantomeOdM)
         parametres = bytes(parametres,"UTF8")
         self.ref_socket[0].send(parametres)
-        self.launch_game()
+        #self.launch_game()
     
     
     def envoyer_ordre_set_paramatre_in_client(self):
-        message = "SET PARA CLIENT"
-        print(70, message)
+        print("Envoie de la requête pour obtnir les paramètres du plateau")
+        message = "SET_PARA_CLIENT"
         message = bytes(message,"UTF8")
         self.ref_socket[0].send(message)
-        print(68, "sent")
     
     def envoyer_Pseudo(self):
         if self.CONNEXION == True:
@@ -86,7 +77,6 @@ class Client(object):
                 
             except socket.error:
                 print("L'envoie du pseudo a échoué")
-                pass
     
     def envoyer_Touche(self, _touche ='touche test'):
         if self.CONNEXION == True:
@@ -100,7 +90,7 @@ class Client(object):
                 pass
     
     def launch_game(self):
-        print("in 98")
+        print("Launch game")
         self.launcher.launch_game()
 
 class ThreadReception(threading.Thread):
@@ -118,16 +108,18 @@ class ThreadReception(threading.Thread):
         if _message[:7] == "PARA_CL":
             self.set_board_parameter_in_client_launcher(_message)
         
+        if _message[:7] == "LISTE_J":
+            self.set_pseudo_liste_and_launch(_message)
+        
     def maj_server_creator_bool(self, _val):
-        print(109, _val)
         if (_val == 1):
             self.client.serveur_creator = True
             self.client.envoyer_parametre_plateau()
         else:
-            print(113)
             self.client.envoyer_ordre_set_paramatre_in_client()
     
     def set_board_parameter_in_client_launcher(self, _message):
+        print("Récupération des paramètres envoyés par le serveur")
         _message_split = _message.split()
         self.client.launcher.value_DimPlateau = int(_message_split[1])
         self.client.launcher.value_NbJoueur = int(_message_split[2])
@@ -139,8 +131,14 @@ class ThreadReception(threading.Thread):
         self.client.launcher.value_PtsFantome = int(_message_split[8])
         self.client.launcher.value_PtsFantomeOdM = int(_message_split[9])
         
+        #self.client.launch_game()
+    
+    def set_pseudo_liste_and_launch(self, _message):
+        pseudos = _message.split()[1:]
+        print('La liste des pseudos reçue est', pseudos )
+        self.client.launcher.value_pseudos = pseudos
         self.client.launch_game()
-              
+    
     def run(self):
         while True:
             try:
@@ -159,6 +157,7 @@ class ThreadReception(threading.Thread):
                 pass       
         
 
+        
 if __name__=="__main__":
     Lch.LauncherMineHantee()
     

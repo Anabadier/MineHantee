@@ -77,8 +77,8 @@ class Plateau(object) :
         self.liste_row_col = [] #liste des lignes et colonnes que l'on peut faire coulisser
 
         #pour visualiser le graphe
-        #self.fig = plt.figure()
-        #self.ax_graph = self.fig.add_subplot(111)
+        self.fig = plt.figure()
+        self.ax_graph = self.fig.add_subplot(111)
         
     def placer_carte_libre(self,liste_carte):
         for i in range (self.taille):
@@ -147,16 +147,15 @@ class Plateau(object) :
         '''
         Place les joueurs sur le plateau
         '''
-        for joueur in liste_joueur:
-            a = random.choice([2,self.taille-3])
-            b = random.choice([2,self.taille-3])
-            while self.labyrinthe_detail[a][b].elements['joueur'] != []:
-                a = random.choice([2,self.taille-3])
-                b = random.choice([2,self.taille-3])
-            self.labyrinthe_detail[a][b].elements['joueur'].append(joueur.identifiant)
-            self.labyrinthe_detail[a][b].element_virtuels['joueur'] = joueur.identifiant
-            joueur.position_detail=(a,b)
-            joueur.position_graphe=self.node_pos.index((a,b))
+        positions = [(2,self.taille-3), (self.taille-3, 2),
+                     (2,2), (self.taille-3,self.taille-3)]
+        l = len(liste_joueur)
+        for i in range (l):
+            a, b = positions[i][0], positions[i][1]
+            self.labyrinthe_detail[a][b].elements['joueur'].append(liste_joueur[i].identifiant)
+            self.labyrinthe_detail[a][b].element_virtuels['joueur'] = liste_joueur[i].identifiant
+            liste_joueur[i].position_detail=(a,b)
+            liste_joueur[i].position_graphe=self.node_pos.index((a,b))
     
     def placer_fantomes(self,liste_ghost):
         compteur=0
@@ -308,10 +307,11 @@ class Plateau(object) :
                 for _jID in (self.labyrinthe_detail[i,j].elements["joueur"]): #mise à jour des positions des joueurs sur la carte
                     _j = self.dict_ID2J[_jID]
                     _j.maj_position(self.labyrinthe_detail[i,j])
-                    
+                    _j.carte_visit=[_j.position_detail]
+    
         #on dessine
-        #self.ax_graph.clear()
-        #nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph)
+        self.ax_graph.clear()
+        nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph)
             
 
     def translate_GraphPath2CardsPath(self, _graph_path):

@@ -360,13 +360,13 @@ def gamequit():
     pygame.quit()
     sys.exit()
     
-def deplacement(i):
+def deplacement(arg):
     """Actualise la matrice des cartes
-    i : list[fleche,plateau]"""
+    arg : list[fleche,plateau]"""
     global carte_ej
-    fleche=i[0]
-    plat=i[1]
-    current_player=i[2]
+    fleche=arg[0]
+    plat=arg[1]
+    current_player=arg[2]
     if current_player in plat.Liste_Joueur_H:
         if current_player.deplacement_effectué==False :
             coord_x, coord_y = plat.convertir_Fleche2Coord(fleche)
@@ -400,8 +400,6 @@ def move_player(plat,joueur,move,plateau,fenetre):
         afficher(plat,plateau,fenetre,joueur)
         fenetre.blit(plateau,(100,100))
         fenetreScore(joueur,plat)
-    
-
     
 def nextplayer(arg):
     global current_player
