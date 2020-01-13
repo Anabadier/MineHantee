@@ -30,7 +30,6 @@ class LauncherMineHantee(object):
         self.fen.grid_rowconfigure(1,weight=1)
         
         style = ttk.Style(self.fen)
-        #theme dispo : ('winnative', 'clam', 'alt', 'default', 'classic', 'vista', 'xpnative')
         style.theme_use('xpnative')
         
         self.navigation_flow = [0]
