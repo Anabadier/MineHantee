@@ -1,9 +1,9 @@
 dim_plateau,7
 nb_joueur,2
-nb_joueur_IA,1
+nb_joueur_IA,0
 nb_fantome,21
-nb_fantome_OdM,3
+nb_fantome_OdM,4
 nb_pepite,49
-pts_pepite,1
-pts_fantome,5
-pts_fantome_OdM,15
+pts_pepite,15
+pts_fantome,43
+pts_fantome_OdM,80

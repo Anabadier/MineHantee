@@ -77,10 +77,8 @@ class Plateau(object) :
         self.liste_row_col = [] #liste des lignes et colonnes que l'on peut faire coulisser
 
         #pour visualiser le graphe
-        #self.fig = plt.figure()
-        #self.ax_graph = self.fig.add_subplot(111)
-        
-        
+        self.fig = plt.figure()
+        self.ax_graph = self.fig.add_subplot(111)
         
     def placer_carte_libre(self,liste_carte):
         for i in range (self.taille):
@@ -149,16 +147,15 @@ class Plateau(object) :
         '''
         Place les joueurs sur le plateau
         '''
-        for joueur in liste_joueur:
-            a = random.choice([2,self.taille-3])
-            b = random.choice([2,self.taille-3])
-            while self.labyrinthe_detail[a][b].elements['joueur'] != []:
-                a = random.choice([2,self.taille-3])
-                b = random.choice([2,self.taille-3])
-            self.labyrinthe_detail[a][b].elements['joueur'].append(joueur.identifiant)
-            self.labyrinthe_detail[a][b].element_virtuels['joueur'] = joueur.identifiant
-            joueur.position_detail=(a,b)
-            joueur.position_graphe=self.node_pos.index((a,b))
+        positions = [(2,self.taille-3), (self.taille-3, 2),
+                     (2,2), (self.taille-3,self.taille-3)]
+        l = len(liste_joueur)
+        for i in range (l):
+            a, b = positions[i][0], positions[i][1]
+            self.labyrinthe_detail[a][b].elements['joueur'].append(liste_joueur[i].identifiant)
+            self.labyrinthe_detail[a][b].element_virtuels['joueur'] = liste_joueur[i].identifiant
+            liste_joueur[i].position_detail=(a,b)
+            liste_joueur[i].position_graphe=self.node_pos.index((a,b))
     
     def placer_fantomes(self,liste_ghost):
         compteur=0
@@ -288,17 +285,7 @@ class Plateau(object) :
         self.carte_en_dehors.elements = carte_sortante.elements
         self.carte_en_dehors.element_virtuels = carte_sortante.element_virtuels
         
-        #print(self.carte_en_dehors.elements, self.carte_en_dehors.element_virtuels)
-        #print("======================================================")
-        #carte_sortante.elements = dict_vide
         self.carte_en_dehors = carte_sortante
-        #print(self.carte_en_dehors.elements, self.carte_en_dehors.element_virtuels)
-        # actualiser network graph
-
-
-        
-        #la nouvelle carte à coulisser sera la carte qui est sortie
-        #self.carte_en_dehors = carte_sortante 
     
     
     def coulisser (self, coord_x, coord_y):
@@ -320,10 +307,11 @@ class Plateau(object) :
                 for _jID in (self.labyrinthe_detail[i,j].elements["joueur"]): #mise à jour des positions des joueurs sur la carte
                     _j = self.dict_ID2J[_jID]
                     _j.maj_position(self.labyrinthe_detail[i,j])
-                    
+                    _j.carte_visit=[_j.position_detail]
+    
         #on dessine
-        #self.ax_graph.clear()
-        #nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph)
+        self.ax_graph.clear()
+        nx.draw_networkx(self.graph, pos = self.node_pos, ax = self.ax_graph)
             
 
     def translate_GraphPath2CardsPath(self, _graph_path):
@@ -376,6 +364,7 @@ class Plateau(object) :
         gagnant = False
         
         nb_joueur = len(self.Liste_Joueur)
+        #print(nb_joueur, self.Liste_Classement)
         save_nb_points = [self.Liste_Classement[i][0] for i in range(nb_joueur)]
         
         for i in range(self.taille):#on traverse toutes les cartes
@@ -400,16 +389,6 @@ class Plateau(object) :
         for i in range(1, self.taille, 2):
             for _char in ["G", "D", "H", "B"]:
                 self.liste_row_col += [_char + str(i)]
-    
-# =============================================================================
-#     def __deepcopy__(self, memo):
-#         cls = self.__class__
-#         result = cls.__new__(cls)
-#         memo[id(self)] = result
-#         for k, v in self.__dict__.items():
-#             setattr(result, k, cp.deepcopy(v, memo))
-#         return result
-# =============================================================================
         
     def chemin_possible(self,id_joueur):
         for i in self.labyrinthe_detail: #recherche de la position du joueur
@@ -438,7 +417,7 @@ class Plateau(object) :
         move :
             code touche du clavier
         """
-        print('move detected',move)
+        #print('move detected',move)
                 
         pos_init=joueur.position_detail #ancienne position
         node_init = self.node_pos.index(pos_init)
@@ -487,7 +466,7 @@ class Plateau(object) :
                 path.append(elem)
         path=set(path)
         
-        print(joueur.carte_visit)
+        #print(joueur.carte_visit)
         if pos_target in path and pos_target not in joueur.carte_visit:
             joueur.effectuer_chemin(self,[node_init,node_target])
             joueur.carte_visit.append(pos_init)

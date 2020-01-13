@@ -54,7 +54,7 @@ class Server(object):
             # Attente connexion nouveau client
             try:
                 connexion, adresse = mySocket.accept()
-                print("Someone is trying to connect with,", connexion)
+                print("\nSomeone is trying to connect with,", connexion)
                 # Créer un nouvel objet thread pour gérer la connexion
                 self.connexion_counter+=1
                 th = ThreadClient(connexion, self)
@@ -64,8 +64,24 @@ class Server(object):
             except:
                 sys.exit()
         
-        print("Le quota de joueurs est atteints {0}/{1}".format(self.connexion_counter,
+        print("Le quota de joueurs est atteints {0}/{1}\n".format(self.connexion_counter,
                                                                   self.serveur_NbJoueur))
+        #print(self.dict_pseudos.values())
+        self.envoyer_liste_joueur()
+    
+    def envoyer_liste_joueur(self):
+        time.sleep(1)
+        liste_joueur = list(self.dict_pseudos.values())
+        str_liste_joueur = "LISTE_J"
+        for _nom in liste_joueur:
+            str_liste_joueur += " " + _nom
+        
+        str_liste_joueur = bytes(str_liste_joueur,"UTF8")
+        
+        for _k in self.dict_clients.keys():
+            print(_k, str_liste_joueur )
+            self.dict_clients[_k].send(str_liste_joueur)
+        
 
 class ThreadClient(threading.Thread):
     '''dérivation de classe pour gérer la connexion avec un client'''
@@ -82,14 +98,17 @@ class ThreadClient(threading.Thread):
         self.serveur.dict_clients[self.nom] = self.connexion
         self.serveur.dict_scores[self.nom] = 0
         
-        print("Connexion du client", self.connexion.getpeername(),self.nom, self.connexion)
+        print("Connexion du client", self.connexion.getpeername(), self.nom, self.connexion)
     
     def receiver_manager(self, _message):
-        if _message[:6] == "PARA_S":
-            if (self.serveur.connexion_counter == 1):
+        if _message[:6] == "PSEUDO":
+            self.get_pseudo_client(_message)
+        
+        elif _message[:6] == "PARA_S":
+            if (self.serveur.connexion_counter >= 1):
                 self.set_board_parameter_in_server(_message)
         
-        if _message == "SET PARA CLIENT":
+        elif _message == "SET_PARA_CLIENT":
             self.set_board_parameter_in_client()
         
     
@@ -103,7 +122,8 @@ class ThreadClient(threading.Thread):
         self.serveur.serveur_PtsFantome = int(_message_split[6])
         self.serveur.serveur_PtsFantomeOdM = int(_message_split[7])
         
-        print(106, self.serveur.serveur_DimPlateau,
+        print('Paramètres du plateau récupérés :',
+              self.serveur.serveur_DimPlateau,
         self.serveur.serveur_NbFantome,
         self.serveur.serveur_NbFantomeOdM,
         self.serveur.serveur_NbPepite,
@@ -112,6 +132,7 @@ class ThreadClient(threading.Thread):
         self.serveur.serveur_PtsFantomeOdM)
         
     def set_board_parameter_in_client(self):
+        print("Envoie des paramètres du plateau au client :", self.serveur.dict_clients[self.nom])
         parametres = "PARA_CL {0} {1} {2} {3} {4} {5} {6} {7} {8}".format(
                                               self.serveur.serveur_DimPlateau,
                                               self.serveur.serveur_NbJoueur,
@@ -126,12 +147,14 @@ class ThreadClient(threading.Thread):
         self.serveur.dict_clients[self.nom].send(parametres)
         
     
-    def manage_connexion_client(self):
+    def get_pseudo_client(self, _message):
         # attente réponse client
-        pseudo = self.connexion.recv(4096)
-        pseudo = pseudo.decode(encoding='UTF-8')
+        #pseudo = self.connexion.recv(4096)
+        pseudo = _message.split()[-1]
+        #pseudo = pseudo.decode(encoding='UTF-8')
         self.serveur.dict_pseudos[self.nom] = pseudo
         print("Pseudo du client", self.connexion.getpeername(),"-->", pseudo)
+        self.get_creator_status()
     
     def get_creator_status(self):
         try :
@@ -144,11 +167,10 @@ class ThreadClient(threading.Thread):
         
     def run(self):
           
-        if (self.serveur.connexion_counter < self.serveur.serveur_NbJoueur):
-            self.manage_connexion_client()
-        
-        self.get_creator_status()
-        
+# =============================================================================
+#         if (self.serveur.connexion_counter < self.serveur.serveur_NbJoueur):
+#             self.manage_connexion_client()
+# =============================================================================
         while True:
             try:
                 # attente action du client
@@ -158,8 +180,9 @@ class ThreadClient(threading.Thread):
                 
                 if (reponse != ""):
                     self.receiver_manager(reponse)
-                    
                 
+                reponse = ""
+                    
             except:
                 print(reponse)
                 # fin du thread

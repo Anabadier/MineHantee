@@ -36,6 +36,7 @@ RED = 255, 0, 0
 ORANGE = 255, 100, 0
 GREEN = 0, 255, 0
 BLEU = 3,34,76
+BLEUGRIS=178,198,213
 
 
 
@@ -54,7 +55,7 @@ def genere_carte(carte,size):
     
 def afficher(plat,plateau,fenetre,joueur):
     """afficher les cartes sur le plateau"""
-    global img_pepite,img_fantome,img_perso
+    global img_pepite,img_fantome
 
     print('actualisation plateau')
     
@@ -105,6 +106,7 @@ def afficher(plat,plateau,fenetre,joueur):
                 plateau.blit(cache,(x,y))
             
             num_case+=1  
+            #print(case.elements)
             #Si pépite/fan ààpm tome sur la carte, voir condition avec la matrice des instances de cartes
             if case.elements['pepite'] == True:
                 plateau.blit(pepite,(x,y))
@@ -155,14 +157,14 @@ class Button:
     Source : https://wiki.labomedia.org/index.php/Pygame:_des_exemples_pour_d%C3%A9buter.html#Des_rectangles_comme_boutons
     '''
 
-    def __init__(self, fond, text, color, font, dx, dy):
+    def __init__(self, fond, text, color, font, dx, dy,fontcol=BLACK):
         self.fond = fond
         self.text = text
         self.color = color
         self.font = font
         self.dec = dx, dy
         self.state = False  # enable or not
-        self.title = self.font.render(self.text, True, BLACK)
+        self.title = self.font.render(self.text, True, fontcol )
         textpos = self.title.get_rect()
         textpos.centerx = self.fond.get_rect().centerx + self.dec[0]
         textpos.centery = self.dec[1]
@@ -213,11 +215,11 @@ class Button_img:
         self.fond.blit(self.img, self.textpos)
         
         
-def ecrire(texte,frame,pos,fontcolor=pygame.Color("#000000"),fontsize=36):
+def ecrire(texte,frame,pos,fontcolor=pygame.Color("#000000"),fontsize=36,fontname=None):
     """texte : str
     frame : surface
     pos : (tuple)"""
-    police = pygame.font.Font(None,fontsize)
+    police = pygame.font.SysFont(fontname,fontsize)
     texte = police.render(str(texte),True,fontcolor)
     rectTexte = texte.get_rect() #surface rectangle autour du texte
     rectTexte.topleft=pos #ancrage du texte
@@ -264,16 +266,17 @@ def ecran(plat):
     
     bouton_save=Button(fenetre, 
                        " Sauvegarder ",
-                       GREY,
-                       pygame.font.SysFont('freesans', 18), 
+                       BLEU,
+                       pygame.font.SysFont('chiller', 24), 
                        -300, 
-                       550)
+                       550,
+                       fontcol=WHITE)
     bouton_save.display_button(fenetre)
     
-    bouton_quit=Button(fenetre, " Quitter ",GREY,pygame.font.SysFont('freesans', 18), -150, 550)
+    bouton_quit=Button(fenetre, " Quitter ",BLEU,pygame.font.SysFont('chiller', 24), -150, 550,fontcol=WHITE)
     bouton_quit.display_button(fenetre)
     
-    bouton_suiv=Button(fenetre, " Suivant ",GREY,pygame.font.SysFont('freesans', 18), 350,40)
+    bouton_suiv=Button(fenetre, " Suivant ",BLEU,pygame.font.SysFont('chiller', 24), 350,40,fontcol=WHITE)
     bouton_suiv.display_button(fenetre)
     
     
@@ -306,7 +309,8 @@ def ecran(plat):
     #Fenetre Score
     fenetreScore(current_player,plat)
     
-    while current_player in plat.Liste_Joueur_IA and plat.check_gagnant: #si le joueur est une IA 
+    while current_player in plat.Liste_Joueur_IA and plat.check_gagnant()==False: #si le joueur est une IA 
+    #while current_player in plat.Liste_Joueur_IA:
         current_player.jouer()
         nextplayer([plat,current_player])
         
@@ -356,13 +360,13 @@ def gamequit():
     pygame.quit()
     sys.exit()
     
-def deplacement(i):
+def deplacement(arg):
     """Actualise la matrice des cartes
-    i : list[fleche,plateau]"""
+    arg : list[fleche,plateau]"""
     global carte_ej
-    fleche=i[0]
-    plat=i[1]
-    current_player=i[2]
+    fleche=arg[0]
+    plat=arg[1]
+    current_player=arg[2]
     if current_player in plat.Liste_Joueur_H:
         if current_player.deplacement_effectué==False :
             coord_x, coord_y = plat.convertir_Fleche2Coord(fleche)
@@ -397,8 +401,6 @@ def move_player(plat,joueur,move,plateau,fenetre):
         fenetre.blit(plateau,(100,100))
         fenetreScore(joueur,plat)
     
-
-    
 def nextplayer(arg):
     global current_player
     
@@ -406,16 +408,17 @@ def nextplayer(arg):
     current_player=arg[1]
     current_player.deplacement_effectué=False
     current_player.carte_visit=[current_player.position_detail]
-    print(current_player.carte_visit)
     current_player=plat.dict_ID2J[current_player.joueur_suivant]
     
     plateau=pygame.Surface((cote_fenetre,cote_fenetre)) #vider le plateau
     plateau.fill((250,250,250)) #fond blanc
     afficher(plat,plateau,fenetre,current_player)
     fenetre.blit(plateau,(100,100))
+        
     fenetreScore(current_player,plat)
     
-    while current_player in plat.Liste_Joueur_IA and plat.check_gagnant: #si le joueur est une IA 
+    while current_player in plat.Liste_Joueur_IA and plat.check_gagnant()==False: #si le joueur est une IA
+    #while current_player in plat.Liste_Joueur_IA:
         current_player.jouer()
         nextplayer([plat,current_player])
         
@@ -425,47 +428,55 @@ def Joker(arg):
     print("help needed")
     plat=arg[0]
     current_player=arg[1]
-    if current_player.joker_used==False:
+    if current_player.joker_used==False and current_player.deplacement_effectué==False :
         current_player.greedy(plat)
         nextplayer([plat,current_player])
-        current_player.joker_used=True    
+        current_player.joker_used=True
+        fenetreScore(current_player,plat)
+
         
 def fenetreScore(joueur,plat):
     '''joueur : objet de la classe joueur
     plat : objet plateau'''
     pepite=pygame.transform.scale(img_pepite,(25,25))
     fantome=pygame.transform.scale(img_fantome,(25,25))
-    perso=pygame.transform.scale(img_perso,(25,25))
+    
     
     img_croix=pygame.image.load(os.path.abspath(os.path.join('img_cartes',"croix.png"))).convert_alpha()
     croix=pygame.transform.scale(img_croix,(25,25))
+    
     
     scoreframe=pygame.Surface((400,400))
     
     scoreframe.fill(WHITE)
     
-    fenetre.fill(WHITE , (530,20,250,40))
+    fenetre.fill(BLEUGRIS , (530,30,250,40))
     ecrire("Au tour de: "+str(joueur.identifiant),
                        fenetre,
                        (550,30),
                        BLEU,
-                       30)
-    
+                       30,
+                       fontname="chiller")
     
     
     valscore=joueur.nb_points
     pepitescore=joueur.pepite
     
-    ecrire('Score : '+str(valscore),scoreframe,(50,50))
-    scoreframe.blit(pepite,(250,50))
-    ecrire(pepitescore,scoreframe,(280,50))
+    img_perso=pygame.image.load(os.path.abspath(os.path.join('img_cartes',dict_pinguin_img[joueur.identifiant]))).convert_alpha()
+    perso=pygame.transform.scale(img_perso,(25,25))
+    scoreframe.blit(perso,(50,50))
+    ecrire('Score : '+str(valscore),scoreframe,(100,50),BLEU,fontname="chiller")
+    scoreframe.blit(pepite,(350,60))
+    ecrire(pepitescore,scoreframe,(280,60))
     
     ordreMission=pygame.Surface((380,100),pygame.SRCALPHA)
     ordreMission.fill(WHITE)
     ecrire('Ordre de mission : ',
            ordreMission,
            (5,5),
-           fontsize=20)
+           BLEU,
+           fontsize=30,
+           fontname="chiller")
  
     
     nombre_fantomes=len(joueur.ordre_de_mission)
@@ -473,6 +484,7 @@ def fenetreScore(joueur,plat):
 
     for i in range (nombre_fantomes):
         ordreMission.blit(fantome,(10+i*(50+taille_espace),50))
+        #print(joueur.ordre_de_mission[list(joueur.ordre_de_mission.keys())[i]])
         if joueur.ordre_de_mission[list(joueur.ordre_de_mission.keys())[i]]==False:
             ordreMission.blit(croix,(10+i*(50+taille_espace),50))
         ecrire(list(joueur.ordre_de_mission.keys())[i],
@@ -488,7 +500,9 @@ def fenetreScore(joueur,plat):
     ecrire('Scores des pinguins ennemis : ',
            scoreAdverse,
            (5,5),
-           fontsize=20)
+           BLEU,
+           fontsize=30,
+           fontname="chiller")
     
     
     Ladverse=plat.Liste_Joueur #suppression du joueur concerné
@@ -500,6 +514,8 @@ def fenetreScore(joueur,plat):
             frameJoueur=pygame.Surface((360,50))
             frameJoueur.fill(WHITE)
             adv=Ladverse[i]
+            img_perso=pygame.image.load(os.path.abspath(os.path.join('img_cartes',dict_pinguin_img[adv.identifiant]))).convert_alpha()
+            perso=pygame.transform.scale(img_perso,(25,25))
             frameJoueur.blit(perso,(0,0))
             ecrire(adv.nb_points,
                    frameJoueur,
@@ -509,7 +525,8 @@ def fenetreScore(joueur,plat):
             nombre_fantomes=len(adv.ordre_de_mission)
             taille_espace=(300-50*nombre_fantomes)/(nombre_fantomes-1)
             for j in range (nombre_fantomes):
-                frameJoueur.blit(fantome,(50+j*(50+taille_espace),0))      
+                frameJoueur.blit(fantome,(50+j*(50+taille_espace),0))  
+                #print(adv.ordre_de_mission[list(adv.ordre_de_mission.keys())[j]])
                 if adv.ordre_de_mission[list(adv.ordre_de_mission.keys())[j]]==False:
                     frameJoueur.blit(croix,(50+j*(50+taille_espace),0))
             
@@ -519,10 +536,76 @@ def fenetreScore(joueur,plat):
                        CIEL,
                        20)
                 
-            scoreAdverse.blit(frameJoueur,(10,30+i*50)) 
+            scoreAdverse.blit(frameJoueur,(10,40+i*50)) 
         
     scoreframe.blit(scoreAdverse,(10,200))
     fenetre.blit(scoreframe,(550,150))
+    
+    fenetre.fill(WHITE , (550,170,250,30))
+    if current_player.joker_used==True:
+        print('Joker used')
+        ecrire("Joker déjà utilisé ",
+                       fenetre,
+                       (600,170),
+                       RED,
+                       25,
+                       fontname="chiller") 
+    
+    #print("==========================",plat.check_gagnant())
+    
+    if plat.check_gagnant()==True:
+        winner(plat)
+        
+    
+        
+        
+def winner(plat):
+    newfenetre = pygame.display.set_mode((1000,600))
+    fond = pygame.image.load(os.path.join('img_cartes',"Iceberg.jpg")).convert()    
+    newfenetre.blit(fond,(0,0))
+    
+    podium_img=pygame.image.load(os.path.join("img_cartes","podium.png")).convert_alpha()
+    podium=pygame.transform.scale(podium_img,(450,300))
+    winframe=pygame.Surface((700,400))
+    winframe.fill(WHITE)
+    winframe.blit(podium,(120,70))
+    
+    Classement=plat.Liste_Classement
+    gagnant=Classement[0][1]
+    
+    img_perso=pygame.image.load(os.path.abspath(os.path.join('img_cartes',dict_pinguin_img[gagnant.identifiant]))).convert_alpha()
+    perso=pygame.transform.scale(img_perso,(100,100))
+    winframe.blit(perso,(300,30))    
+    ecrire(gagnant.nb_points,winframe,(310,150),BLACK,70,'chiller')
+
+    
+    
+    n=0 #compteur joueur
+    for adv in Classement[1:]:
+            pos=(140+n*300,130)
+            if len(Classement)==4 :
+                if adv!=Classement[-1]: # on n'affiche pas le 4e
+                    img_perso=pygame.image.load(os.path.abspath(os.path.join('img_cartes',dict_pinguin_img[adv[1].identifiant]))).convert_alpha()
+                    perso=pygame.transform.scale(img_perso,(100,100))                
+                    winframe.blit(perso,pos)
+            else :
+                img_perso=pygame.image.load(os.path.abspath(os.path.join('img_cartes',dict_pinguin_img[adv[1].identifiant]))).convert_alpha()
+                perso=pygame.transform.scale(img_perso,(100,100))                
+                winframe.blit(perso,pos)
+            if n==0: #joueur2
+                ecrire(adv[1].nb_points,winframe,(pos[0]+70,pos[1]+130),BLACK,70,'chiller')
+            if n==1 : #joueur 3
+                ecrire(adv[1].nb_points,winframe,(pos[0]-40,pos[1]+130),BLACK,70,'chiller')
+            n+=1
+    
+    
+    if len(Classement)>3:
+        ecrire(Classement[-1][1].identifiant+" tu es un looser...",winframe,(200,350),BLEU,30,'chiller')
+        
+        
+    bouton_quit=Button(fenetre, " Quitter ",BLEU,pygame.font.SysFont('chiller', 30), -150, 550,fontcol=WHITE)
+    bouton_quit.display_button(fenetre)
+    newfenetre.blit(winframe,(170,100))
     
 if __name__=="__main__":
     ecran(Jeu_mine.JEU())
